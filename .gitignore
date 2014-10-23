@@ -1,0 +1,11 @@
+.arcconfig
+.gitignore
+.idea
+*.iml
+.classpath
+.project
+.settings/
+target/
+junit-report/
+dependency-reduced-pom.xml
+.travis.yml

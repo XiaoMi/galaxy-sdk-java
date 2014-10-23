@@ -1,0 +1,3 @@
+Fork libthrift 0.9.1 for the following purposes:
+ 1. shade different version of libthrift to avoid conflict
+ 2. further modification/enhancement/compaction for Android SDK (optional)

@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>com.xiaomi.infra.galaxy</groupId>
+  <artifactId>sds-android-examples</artifactId>
+  <version>1.3-SNAPSHOT</version>
+  <packaging>apk</packaging>
+  <name>Galaxy SDS Android Client Examples</name>
+
+  <properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <platform.version>4.1.1.4</platform.version>
+    <android.plugin.version>3.6.0</android.plugin.version>
+    <galaxy.version>1.3-SNAPSHOT</galaxy.version>
+    <android-log4j.version>1.0.2</android-log4j.version>
+  </properties>
+
+  <dependencies>
+    <dependency>
+      <groupId>com.google.android</groupId>
+      <artifactId>android</artifactId>
+      <version>${platform.version}</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.xiaomi.infra.galaxy</groupId>
+      <artifactId>galaxy-sds-client-java</artifactId>
+      <version>${galaxy.version}</version>
+      <exclusions>
+        <exclusion>
+          <groupId>org.apache.httpcomponents</groupId>
+          <artifactId>httpclient</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.apache.httpcomponents</groupId>
+          <artifactId>httpcore</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>de.mindpipe.android</groupId>
+      <artifactId>android-logging-log4j</artifactId>
+      <version>${android-log4j.version}</version>
+    </dependency>
+  </dependencies>
+  <build>
+    <finalName>${project.artifactId}</finalName>
+    <pluginManagement>
+      <plugins>
+        <plugin>
+          <groupId>com.jayway.maven.plugins.android.generation2</groupId>
+          <artifactId>android-maven-plugin</artifactId>
+          <version>${android.plugin.version}</version>
+          <extensions>true</extensions>
+        </plugin>
+      </plugins>
+    </pluginManagement>
+    <plugins>
+      <plugin>
+        <groupId>com.jayway.maven.plugins.android.generation2</groupId>
+        <artifactId>android-maven-plugin</artifactId>
+        <configuration>
+          <sdk>
+            <platform>19</platform>
+          </sdk>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+</project>
