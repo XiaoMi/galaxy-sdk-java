@@ -16,7 +16,7 @@
     <dependency>
       <groupId>com.xiaomi.infra.galaxy</groupId>
       <artifactId>galaxy-thrift-api</artifactId>
-      <version>${galaxy.version}</version>
+      <version>${galaxy-sdk.version}</version>
     </dependency>
     <dependency>
       <groupId>org.slf4j</groupId>

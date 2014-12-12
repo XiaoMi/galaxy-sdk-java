@@ -2,7 +2,7 @@
 <resources>
 
     <string name="app_name">SdsBasicDemo</string>
-    <string name="hello">Hello galaxy-sds-client-android-examples!</string>
+    <string name="hello">Hello sds-client-android-examples!</string>
     <string name="action_settings">Settings</string>
     <string name="hello_world">SDS Basic Example</string>
 

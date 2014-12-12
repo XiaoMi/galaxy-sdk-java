@@ -13,7 +13,7 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <commons-codec.version>1.4</commons-codec.version>
     <commons-lang3.version>3.1</commons-lang3.version>
-    <galaxy.version>1.3-SNAPSHOT</galaxy.version>
+    <galaxy-sdk.version>1.3-SNAPSHOT</galaxy-sdk.version>
     <httpcomponents.version>4.2.2</httpcomponents.version>
     <log4j.version>1.2.4</log4j.version>
     <junit.version>4.11</junit.version>
