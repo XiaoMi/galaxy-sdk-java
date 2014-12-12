@@ -143,7 +143,7 @@ public class ClientFactory {
   }
 
   public AdminService.Iface newAdminClient(String url) {
-    return newAdminClient(url, (int) CommonConstants.DEFAULT_CLIENT_TIMEOUT,
+    return newAdminClient(url, (int) CommonConstants.DEFAULT_ADMIN_CLIENT_TIMEOUT,
         (int) CommonConstants.DEFAULT_CLIENT_CONN_TIMEOUT);
   }
 
@@ -154,7 +154,7 @@ public class ClientFactory {
 
   public AdminService.Iface newAdminClient(String url, boolean isRetry, int maxRetry) {
     return createClient(AdminService.Iface.class, AdminService.Client.class, url,
-        (int) CommonConstants.DEFAULT_CLIENT_TIMEOUT,
+        (int) CommonConstants.DEFAULT_ADMIN_CLIENT_TIMEOUT,
         (int) CommonConstants.DEFAULT_CLIENT_CONN_TIMEOUT, isRetry, maxRetry);
   }
 

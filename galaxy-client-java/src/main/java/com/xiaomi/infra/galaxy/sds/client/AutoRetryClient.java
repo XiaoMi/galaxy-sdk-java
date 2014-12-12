@@ -48,7 +48,7 @@ public class AutoRetryClient {
           return ret;
         } catch (InvocationTargetException e) {
           Throwable cause = e.getCause();
-          if (retry >= maxRetry) {
+          if (maxRetry < 0 || retry >= maxRetry) {
             lastPauseTime.set(pauseTime < 0 ? 0 : pauseTime);
             LOG.debug("reach max retry number, retry = {}", retry);
             throw cause;
