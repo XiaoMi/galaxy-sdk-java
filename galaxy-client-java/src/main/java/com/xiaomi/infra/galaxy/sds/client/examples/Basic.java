@@ -79,9 +79,11 @@ public class Basic {
   }
 
   private static void printResult(Map<String, Datum> resultToPrint) {
-    for (Map.Entry<String, Datum> e : resultToPrint.entrySet()) {
-      System.out.println(
-          String.format("[%s] => %s", e.getKey(), DatumUtil.fromDatum(e.getValue()).toString()));
+    if (resultToPrint != null) {
+      for (Map.Entry<String, Datum> e : resultToPrint.entrySet()) {
+        System.out.println(
+            String.format("[%s] => %s", e.getKey(), DatumUtil.fromDatum(e.getValue()).toString()));
+      }
     }
   }
 
