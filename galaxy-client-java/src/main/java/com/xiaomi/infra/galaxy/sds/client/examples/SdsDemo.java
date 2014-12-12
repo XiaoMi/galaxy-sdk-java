@@ -88,7 +88,8 @@ public class SdsDemo {
         .setQuota(new TableQuota(100 * 1024 * 1024))
         .setThroughput(new ProvisionThroughput(20, 20));
 
-    return new TableSpec().setSchema(tableSchema).setMetadata(tableMetadata);
+    return new TableSpec().setSchema(tableSchema)
+        .setMetadata(tableMetadata);
   }
 
   private static void printResult(Map<String, Datum> resultToPrint) {

@@ -15,6 +15,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.SocketTimeoutException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Date;
@@ -38,6 +39,7 @@ import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.ByteArrayEntity;
 import org.apache.http.params.CoreConnectionPNames;
+import org.apache.http.params.HttpParams;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -63,7 +65,7 @@ public class SdsTHttpClient extends TTransport {
   private final ByteArrayOutputStream requestBuffer_ = new ByteArrayOutputStream();
   private InputStream inputStream_ = null;
   private int connectTimeout_ = 0;
-  private int readTimeout_ = 0;
+  private int socketTimeout_ = 0;
   private Map<String, String> customHeaders_ = null;
   private final HttpHost host;
   private final HttpClient client;
@@ -112,33 +114,51 @@ public class SdsTHttpClient extends TTransport {
     }
   }
 
-  public void setConnectTimeout(int timeout) {
+  public int getConnectTimeout() {
+    if (null != this.client) {
+      return client.getParams().getIntParameter(CoreConnectionPNames.CONNECTION_TIMEOUT, 0);
+    }
+    return -1;
+  }
+
+  public int getSocketTimeout() {
+    if (null != this.client) {
+      return client.getParams().getIntParameter(CoreConnectionPNames.SO_TIMEOUT, 0);
+    }
+    return -1;
+  }
+
+  public SdsTHttpClient setConnectTimeout(int timeout) {
     connectTimeout_ = timeout;
     if (null != this.client) {
       // WARNING, this modifies the HttpClient params, this might have an impact elsewhere if the
       // same HttpClient is used for something else.
       client.getParams().setParameter(CoreConnectionPNames.CONNECTION_TIMEOUT, connectTimeout_);
     }
+    return this;
   }
 
-  public void setReadTimeout(int timeout) {
-    readTimeout_ = timeout;
+  public SdsTHttpClient setSocketTimeout(int timeout) {
+    socketTimeout_ = timeout;
     if (null != this.client) {
       // WARNING, this modifies the HttpClient params, this might have an impact elsewhere if the
       // same HttpClient is used for something else.
-      client.getParams().setParameter(CoreConnectionPNames.SO_TIMEOUT, readTimeout_);
+      client.getParams().setParameter(CoreConnectionPNames.SO_TIMEOUT, socketTimeout_);
     }
+    return this;
   }
 
-  public void setCustomHeaders(Map<String, String> headers) {
+  public SdsTHttpClient setCustomHeaders(Map<String, String> headers) {
     customHeaders_ = headers;
+    return this;
   }
 
-  public void setCustomHeader(String key, String value) {
+  public SdsTHttpClient setCustomHeader(String key, String value) {
     if (customHeaders_ == null) {
       customHeaders_ = new HashMap<String, String>();
     }
     customHeaders_.put(key, value);
+    return this;
   }
 
   public void open() {
@@ -196,7 +216,7 @@ public class SdsTHttpClient extends TTransport {
 
   private void flushUsingHttpClient() throws TTransportException {
     if (null == this.client) {
-      throw new TTransportException("Null HttpClient, aborting.");
+      throw new RuntimeException("Null HttpClient, aborting.");
     }
 
     // Extract request and reset buffer
@@ -287,7 +307,7 @@ public class SdsTHttpClient extends TTransport {
     flushUsingHttpClient();
   }
 
-  private void setHeaders(HttpPost post, byte[] data) {
+  private SdsTHttpClient setHeaders(HttpPost post, byte[] data) {
     if (this.client != null) {
       post.setHeader("Content-Type", "application/x-thrift");
       post.setHeader("Accept", "application/x-thrift");
@@ -301,12 +321,13 @@ public class SdsTHttpClient extends TTransport {
 
       setAuthenticationHeaders(post, data);
     }
+    return this;
   }
 
   /**
    * Set signature related headers when credential is properly set
    */
-  private void setAuthenticationHeaders(HttpPost post, byte[] data) {
+  private SdsTHttpClient setAuthenticationHeaders(HttpPost post, byte[] data) {
     if (credential != null) {
       HttpAuthorizationHeader authHeader = null;
       if (credential.getType() != null && credential.getSecretKeyId() != null) {
@@ -345,6 +366,7 @@ public class SdsTHttpClient extends TTransport {
           encodeAuthorizationHeader(authHeader));
       }
     }
+    return this;
   }
 
   private HttpAuthorizationHeader createSecretKeyHeader() {

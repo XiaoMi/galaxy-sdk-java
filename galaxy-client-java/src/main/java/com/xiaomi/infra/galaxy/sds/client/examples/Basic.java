@@ -49,8 +49,10 @@ public class Basic {
     Credential credential = new Credential().setSecretKey(secretKey).setSecretKeyId(secretKeyId)
         .setType(userType);
     clientFactory = new ClientFactory(credential);
-    adminClient = clientFactory.newAdminClient(endpoint + CommonConstants.ADMIN_SERVICE_PATH);
-    tableClient = clientFactory.newTableClient(endpoint + CommonConstants.TABLE_SERVICE_PATH);
+    // socket timeout 10000 ms and connection timeout 3000
+    adminClient = clientFactory.newAdminClient(endpoint + CommonConstants.ADMIN_SERVICE_PATH, 10000, 3000);
+    // 5 retries at most
+    tableClient = clientFactory.newTableClient(endpoint + CommonConstants.TABLE_SERVICE_PATH, true, 5);
     isInit = true;
   }
 
@@ -72,7 +74,8 @@ public class Basic {
         .setQuota(new TableQuota(100 * 1024 * 1024))
         .setThroughput(new ProvisionThroughput(20, 20));
 
-    return new TableSpec().setSchema(tableSchema).setMetadata(tableMetadata);
+    return new TableSpec().setSchema(tableSchema)
+        .setMetadata(tableMetadata);
   }
 
   private static void printResult(Map<String, Datum> resultToPrint) {
@@ -129,7 +132,7 @@ public class Basic {
       // scan the whole table with retry
       scanRequest.clear();
       scanRequest.setTableName(tableName);
-      TableScanner scanner = new TableScanner(tableClient, scanRequest, 2);
+      TableScanner scanner = new TableScanner(tableClient, scanRequest);
       Iterator<Map<String, Datum>> iterator = scanner.iterator();
       while (iterator.hasNext()) {
         printResult(iterator.next());

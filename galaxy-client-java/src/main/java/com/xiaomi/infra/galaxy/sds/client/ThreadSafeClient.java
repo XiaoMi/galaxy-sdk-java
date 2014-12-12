@@ -33,10 +33,12 @@ public class ThreadSafeClient<IFace, Impl> {
     final Class<IFace> ifaceClass;
     final Class<Impl> implClass;
     final String url;
+    private int socketTimeout = 0;
+    private int connTimeout = 0;
 
-    private ThreadSafeInvocationHandler(HttpClient client,
-        Map<String, String> customHeaders, Credential credential,
-        AdjustableClock clock, Class<IFace> ifaceClass, Class<Impl> implClass, String url) {
+    private ThreadSafeInvocationHandler(HttpClient client, Map<String, String> customHeaders,
+        Credential credential, AdjustableClock clock, Class<IFace> ifaceClass,
+        Class<Impl> implClass, String url, int socketTimeout, int connTimeout) {
       this.client = client;
       this.customHeaders = customHeaders;
       this.credential = credential;
@@ -44,12 +46,17 @@ public class ThreadSafeClient<IFace, Impl> {
       this.ifaceClass = ifaceClass;
       this.implClass = implClass;
       this.url = url;
+      this.socketTimeout = socketTimeout;
+      this.connTimeout = connTimeout;
     }
 
     @Override
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
       try {
         SdsTHttpClient sdsHttpClient = new SdsTHttpClient(url, client, this.credential, clock);
+        sdsHttpClient.setSocketTimeout(socketTimeout)
+            .setConnectTimeout(connTimeout);
+
         TProtocol proto = new TJSONProtocol(sdsHttpClient);
 
         if (customHeaders != null) {
@@ -81,12 +88,12 @@ public class ThreadSafeClient<IFace, Impl> {
    * success or reaches max retry time.
    */
   @SuppressWarnings("unchecked")
-  public static <IFace, Impl> IFace getClient(HttpClient client,
-      Map<String, String> customHeaders, Credential credential,
-      AdjustableClock clock, Class<IFace> ifaceClass, Class<Impl> implClass, String url) {
+  public static <IFace, Impl> IFace getClient(HttpClient client, Map<String, String> customHeaders,
+      Credential credential, AdjustableClock clock, Class<IFace> ifaceClass, Class<Impl> implClass,
+      String url, int socketTimeout, int connTimeout) {
     return (IFace) Proxy.newProxyInstance(ThreadSafeClient.class.getClassLoader(),
         new Class[] { ifaceClass },
         new ThreadSafeInvocationHandler<IFace, Impl>(client, customHeaders, credential, clock,
-            ifaceClass, implClass, url));
+            ifaceClass, implClass, url, socketTimeout, connTimeout));
   }
 }

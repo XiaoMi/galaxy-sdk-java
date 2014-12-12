@@ -6,6 +6,8 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 
 import com.xiaomi.infra.galaxy.sds.thrift.Datum;
+import com.xiaomi.infra.galaxy.sds.thrift.ErrorCode;
+import com.xiaomi.infra.galaxy.sds.thrift.ErrorsConstants;
 import com.xiaomi.infra.galaxy.sds.thrift.ScanRequest;
 import com.xiaomi.infra.galaxy.sds.thrift.ScanResult;
 import com.xiaomi.infra.galaxy.sds.thrift.ServiceException;
@@ -16,37 +18,28 @@ import libthrift091.TException;
 public class TableScanner implements Iterable<Map<String, Datum>> {
   private final TableService.Iface tableClient;
   private final ScanRequest scan;
-  private final long mayRetryWhenTimeout;
-
-  public TableScanner(Iface tableClient, ScanRequest scan, long mayRetryWhenTimeout) {
-    this.tableClient = tableClient;
-    this.scan = scan;
-    this.mayRetryWhenTimeout = mayRetryWhenTimeout;
-  }
 
   public TableScanner(Iface tableClient, ScanRequest scan) {
-    // default retry 3 times at most
-    this(tableClient, scan, 3);
+    this.tableClient = tableClient;
+    this.scan = scan;
   }
 
   @Override
   public Iterator<Map<String, Datum>> iterator() {
-    return new RecordIterator(tableClient, scan.deepCopy(), mayRetryWhenTimeout);
+    return new RecordIterator(tableClient, scan.deepCopy());
   }
 
   class RecordIterator implements Iterator<Map<String, Datum>> {
     private final TableService.Iface tableClient;
     private final ScanRequest scan;
-    private final long mayRetryWhenTimeout;
     private boolean finished = false;
     private long mayRetry = 0;
     private long baseWaitTime = 100;
     private Iterator<Map<String, Datum>> bufferIterator = null;
 
-    public RecordIterator(Iface tableClient, ScanRequest scan, long mayRetryWhenTimeout) {
+    public RecordIterator(Iface tableClient, ScanRequest scan) {
       this.tableClient = tableClient;
       this.scan = scan;
-      this.mayRetryWhenTimeout = mayRetryWhenTimeout;
     }
 
     @Override
@@ -58,28 +51,15 @@ public class TableScanner implements Iterable<Map<String, Datum>> {
           return false;
         } else {
           ScanResult result = null;
-          try {
-            if (mayRetry > 0) {
-              Thread.sleep(baseWaitTime << (mayRetry - 1));
-            }
-          } catch (InterruptedException ie) {
-            throw new RuntimeException("thread sleep failed", ie);
+          if (mayRetry > 0) {
+            ThrottleUtils.sleepPauseTime(baseWaitTime << (mayRetry - 1));
           }
 
-          long retry = 0;
           while (true) {
             try {
               result = tableClient.scan(scan);
-            } catch (ServiceException se) {
-              throw new RuntimeException("failed to scan table", se);
-            } catch (TException te) {
-              // retry 3 times at most
-              if (retry < mayRetryWhenTimeout) {
-                retry++;
-                continue;
-              } else {
-                throw new RuntimeException("failed to scan table", te);
-              }
+            } catch (Throwable e) {
+              throw new RuntimeException("failed to scan table", e);
             }
             break;
           }
