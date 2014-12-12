@@ -25,7 +25,7 @@ import java.util.Random;
 public class TableAccessor {
   private static ClientFactory clientFactory;
   private static TableService.Iface tableClient;
-  private static String secretKeyId = ""; // Set your AppId
+  private static String secretKeyId = ""; // Set your AppKey
   private static String serviceToken = ""; // Set your ServiceToken
   private static UserType userType = UserType.APP_XIAOMI_SSO;
   private static final Logger LOG = LoggerFactory.getLogger(TableAccessor.class);

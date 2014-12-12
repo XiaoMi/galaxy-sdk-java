@@ -37,7 +37,7 @@ public class SdsDemo {
   private static ClientFactory clientFactory;
   private static AdminService.Iface adminClient;
   private static TableService.Iface tableClient;
-  private static String secretKeyId = ""; // Your AppId
+  private static String secretKeyId = ""; // Your AppKey
   private static String secretKey = ""; // Your AppSecret
   private static UserType userType = UserType.APP_SECRET;
   private static String endpoint = "http://sds.api.xiaomi.com";

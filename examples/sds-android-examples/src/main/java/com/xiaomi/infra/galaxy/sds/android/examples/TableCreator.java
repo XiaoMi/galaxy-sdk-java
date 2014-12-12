@@ -27,7 +27,7 @@ import java.util.Map;
 public class TableCreator {
   private static ClientFactory clientFactory;
   private static AdminService.Iface adminClient;
-  private static String secretKeyId = ""; // Set your AppId
+  private static String secretKeyId = ""; // Set your AppKey
   private static String secretKey = ""; // Set your AppSecret
   private static UserType userType = UserType.APP_SECRET;
   private static final Logger LOG = LoggerFactory.getLogger(TableAccessor.class);

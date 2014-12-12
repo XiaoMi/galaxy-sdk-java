@@ -34,7 +34,7 @@ public class Basic {
   private static ClientFactory clientFactory;
   private static AdminService.Iface adminClient;
   private static TableService.Iface tableClient;
-  private static String secretKeyId = ""; // Your AppId
+  private static String secretKeyId = ""; // Your AppKey
   private static String secretKey = ""; // Your AppSecret
   private static UserType userType = UserType.APP_SECRET;
   private static String endpoint = "http://sds.api.xiaomi.com";
@@ -52,7 +52,7 @@ public class Basic {
     // socket timeout 10000 ms and connection timeout 3000
     adminClient = clientFactory.newAdminClient(endpoint + CommonConstants.ADMIN_SERVICE_PATH, 10000, 3000);
     // 5 retries at most
-    tableClient = clientFactory.newTableClient(endpoint + CommonConstants.TABLE_SERVICE_PATH, true, 5);
+    tableClient = clientFactory.newTableClient(endpoint + CommonConstants.TABLE_SERVICE_PATH, 10000, 3000, true, 5);
     isInit = true;
   }
 
