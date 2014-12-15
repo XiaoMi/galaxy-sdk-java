@@ -37,7 +37,7 @@ public class Basic {
   private static String secretKeyId = ""; // Your AppKey
   private static String secretKey = ""; // Your AppSecret
   private static UserType userType = UserType.APP_SECRET;
-  private static String endpoint = "http://sds.api.xiaomi.com";
+  private static String endpoint = "https://cnbj-s0.sds.api.xiaomi.com";
   private static boolean isInit = false;
   private static String tableName = "java-test-weather";
   private static String[] cities = { "北京", "Beihai", "Dalian", "Dandong", "Fuzhou", "Guangzhou",
@@ -50,9 +50,11 @@ public class Basic {
         .setType(userType);
     clientFactory = new ClientFactory(credential);
     // socket timeout 10000 ms and connection timeout 3000
-    adminClient = clientFactory.newAdminClient(endpoint + CommonConstants.ADMIN_SERVICE_PATH, 10000, 3000);
+    adminClient = clientFactory
+        .newAdminClient(endpoint + CommonConstants.ADMIN_SERVICE_PATH, 50000, 3000);
     // 5 retries at most
-    tableClient = clientFactory.newTableClient(endpoint + CommonConstants.TABLE_SERVICE_PATH, 10000, 3000, true, 5);
+    tableClient = clientFactory
+        .newTableClient(endpoint + CommonConstants.TABLE_SERVICE_PATH, 10000, 3000, true, 5);
     isInit = true;
   }
 

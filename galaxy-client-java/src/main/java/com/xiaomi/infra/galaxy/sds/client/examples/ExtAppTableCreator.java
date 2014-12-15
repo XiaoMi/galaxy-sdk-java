@@ -1,7 +1,9 @@
-package com.xiaomi.infra.galaxy.sds.android.examples;
+package com.xiaomi.infra.galaxy.sds.client.examples;
 
 import com.xiaomi.infra.galaxy.sds.client.ClientFactory;
 import com.xiaomi.infra.galaxy.sds.thrift.AdminService;
+import com.xiaomi.infra.galaxy.sds.thrift.AppInfo;
+import com.xiaomi.infra.galaxy.sds.thrift.AppUserAuthProvider;
 import com.xiaomi.infra.galaxy.sds.thrift.CannedAcl;
 import com.xiaomi.infra.galaxy.sds.thrift.CommonConstants;
 import com.xiaomi.infra.galaxy.sds.thrift.Credential;
@@ -16,37 +18,51 @@ import com.xiaomi.infra.galaxy.sds.thrift.TableQuota;
 import com.xiaomi.infra.galaxy.sds.thrift.TableSchema;
 import com.xiaomi.infra.galaxy.sds.thrift.TableSpec;
 import com.xiaomi.infra.galaxy.sds.thrift.UserType;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import libthrift091.TException;
 
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class TableCreator {
-  private static ClientFactory clientFactory;
+public class ExtAppTableCreator {
   private static AdminService.Iface adminClient;
-  private static String appId = ""; // Set your AppId
-  private static String secretKeyId = ""; // Set your AppKey
-  private static String secretKey = ""; // Set your AppSecret
-  private static UserType userType = UserType.APP_SECRET;
-  private static final Logger LOG = LoggerFactory.getLogger(TableAccessor.class);
+  private static final UserType userType = UserType.APP_SECRET;
+  private String appId;
+  private String secretKeyId;
+  private String secretKey;
   private String endpoint;
   private String tableName;
+  private AppUserAuthProvider appUserAuthProvider;
+  private String extAppId;
 
-  public TableCreator(String tableName, String endpoint) {
+  public ExtAppTableCreator(String appId, String secretKeyId, String secretKey, String tableName,
+      String endpoint,
+      AppUserAuthProvider appUserAuthProvider, String extAppId) throws TException {
+    this.appId = appId;
+    this.secretKeyId = secretKeyId;
+    this.secretKey = secretKey;
     this.tableName = tableName;
     this.endpoint = endpoint;
+    this.appUserAuthProvider = appUserAuthProvider;
+    this.extAppId = extAppId;
+    init();
   }
 
-  private void init() {
-    Credential credential = new Credential().setSecretKey(secretKey).setSecretKeyId(secretKeyId)
+  private void init() throws TException {
+    Credential credential = new Credential().setSecretKeyId(secretKeyId).setSecretKey(secretKey)
         .setType(userType);
-    //Here use the default HttpClient, a more suitable HttpClient can be set here
-    clientFactory = new ClientFactory(credential);
+    ClientFactory clientFactory = new ClientFactory(credential);
     adminClient = clientFactory
         .newAdminClient(endpoint + CommonConstants.ADMIN_SERVICE_PATH, 50000, 3000);
+    // save the mapping from appUserAuthProvider to extAppId
+    // for use the xiaomi AppId and appUserAuthProvider to get extAppId in createCredential.
+    AppInfo appInfo = new AppInfo();
+    appInfo.setAppId(appId);
+    Map<String, String> oAuthMap = new HashMap<String, String>();
+    oAuthMap.put(appUserAuthProvider.name(), extAppId);
+    appInfo.setOauthAppMapping(oAuthMap);
+    adminClient.saveAppInfo(appInfo);
   }
 
   private TableSpec tableSpec() {
@@ -85,7 +101,6 @@ public class TableCreator {
     tableMetadata.setQuota(new TableQuota(100 * 1024 * 1024))
         .setThroughput(new ProvisionThroughput(20, 20))
         .setAppAcl(appGrant);
-
     return new TableSpec().setSchema(tableSchema).setMetadata(tableMetadata);
   }
 
@@ -98,6 +113,6 @@ public class TableCreator {
     }
     TableSpec tableSpec = tableSpec();
     adminClient.createTable(tableName, tableSpec);
-    LOG.info("Create table successfully");
+    System.out.println("Create table successfully");
   }
 }

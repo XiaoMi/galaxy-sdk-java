@@ -40,7 +40,7 @@ public class SdsDemo {
   private static String secretKeyId = ""; // Your AppKey
   private static String secretKey = ""; // Your AppSecret
   private static UserType userType = UserType.APP_SECRET;
-  private static String endpoint = "http://sds.api.xiaomi.com";
+  private static String endpoint = "https://cnbj-s0.sds.api.xiaomi.com";
   private static boolean isInit = false;
   private static String tableName = "java-test-note";
   private static String[] categories = { "work", "travel", "food" };
@@ -49,8 +49,10 @@ public class SdsDemo {
     Credential credential = new Credential().setSecretKey(secretKey).setSecretKeyId(secretKeyId)
         .setType(userType);
     clientFactory = new ClientFactory(credential);
-    adminClient = clientFactory.newAdminClient(endpoint + CommonConstants.ADMIN_SERVICE_PATH);
-    tableClient = clientFactory.newTableClient(endpoint + CommonConstants.TABLE_SERVICE_PATH);
+    adminClient = clientFactory
+        .newAdminClient(endpoint + CommonConstants.ADMIN_SERVICE_PATH, 50000, 3000);
+    tableClient = clientFactory
+        .newTableClient(endpoint + CommonConstants.TABLE_SERVICE_PATH, 10000, 3000, true, 3);
     isInit = true;
   }
 

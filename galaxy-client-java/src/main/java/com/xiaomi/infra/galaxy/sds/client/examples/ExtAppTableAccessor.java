@@ -1,6 +1,8 @@
-package com.xiaomi.infra.galaxy.sds.android.examples;
+package com.xiaomi.infra.galaxy.sds.client.examples;
 
 import com.xiaomi.infra.galaxy.sds.client.ClientFactory;
+import com.xiaomi.infra.galaxy.sds.thrift.AppUserAuthProvider;
+import com.xiaomi.infra.galaxy.sds.thrift.AuthService;
 import com.xiaomi.infra.galaxy.sds.thrift.CommonConstants;
 import com.xiaomi.infra.galaxy.sds.thrift.Credential;
 import com.xiaomi.infra.galaxy.sds.thrift.Datum;
@@ -11,9 +13,7 @@ import com.xiaomi.infra.galaxy.sds.thrift.PutRequest;
 import com.xiaomi.infra.galaxy.sds.thrift.ScanRequest;
 import com.xiaomi.infra.galaxy.sds.thrift.ScanResult;
 import com.xiaomi.infra.galaxy.sds.thrift.TableService;
-import com.xiaomi.infra.galaxy.sds.thrift.UserType;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import libthrift091.TException;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -22,45 +22,46 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
-public class TableAccessor {
-  private static ClientFactory clientFactory;
+public class ExtAppTableAccessor {
   private static TableService.Iface tableClient;
-  private static String secretKeyId = ""; // Set your AppId
-  private static String serviceToken = ""; // Set your ServiceToken
-  private static UserType userType = UserType.APP_XIAOMI_SSO;
-  private static final Logger LOG = LoggerFactory.getLogger(TableAccessor.class);
+  private String appId;
   private static String[] categories = { "work", "travel", "food" };
   private static int M = 10;
-  private boolean isInit = false;
   private String endpoint;
   private String tableName;
+  private AppUserAuthProvider appUserAuthProvider;
+  private String accessToken;
 
-  private void init() {
-    Credential credential = new Credential().setSecretKey(serviceToken).setSecretKeyId(secretKeyId)
-        .setType(userType);
+  public ExtAppTableAccessor(String appId, String tableName, String endpoint,
+      AppUserAuthProvider appUserAuthProvider, String accessToken) throws TException {
+    this.appId = appId;
+    this.tableName = tableName;
+    this.endpoint = endpoint;
+    this.appUserAuthProvider = appUserAuthProvider;
+    this.accessToken = accessToken;
+    init();
+  }
+
+  private void init() throws TException {
+    ClientFactory clientFactory = new ClientFactory();
+    AuthService.Iface authClient = clientFactory
+        .newAuthClient(endpoint + CommonConstants.AUTH_SERVICE_PATH);
+    Credential credential = authClient
+        .createCredential(appId, appUserAuthProvider, accessToken);
     clientFactory = new ClientFactory(credential);
     tableClient = clientFactory
         .newTableClient(endpoint + CommonConstants.TABLE_SERVICE_PATH, 10000, 3000, true, 3);
-    isInit = true;
-  }
-
-  public TableAccessor(String tableName, String endpoint) {
-    this.tableName = tableName;
-    this.endpoint = endpoint;
   }
 
   private void printResult(Map<String, Datum> resultToPrint) {
     for (Map.Entry<String, Datum> e : resultToPrint.entrySet()) {
-      LOG.info(
+      System.out.println(
           String.format("[%s] => %s", e.getKey(), DatumUtil.fromDatum(e.getValue()).toString()));
     }
   }
 
   //When access data, user need not specify the entity group
   public void putData() throws Exception {
-    if (!isInit) {
-      init();
-    }
     Date now = new Date();
     for (int i = 0; i < M; i++) {
       PutRequest putRequest = new PutRequest();
@@ -72,14 +73,11 @@ public class TableAccessor {
       putRequest.putToRecord("mtime", DatumUtil.toDatum(now.getTime()));
       putRequest.putToRecord("category", DatumUtil.toDatum(categories[i % categories.length]));
       tableClient.put(putRequest);
-      LOG.info("Put record # {}", i);
+      System.out.println("Put record # " + i);
     }
   }
 
   public void getData() throws Exception {
-    if (!isInit) {
-      init();
-    }
     GetRequest getRequest = new GetRequest();
     getRequest.setTableName(tableName);
     getRequest.putToKeys("noteId", DatumUtil.toDatum((long) (new Random().nextInt(M))));
@@ -88,9 +86,6 @@ public class TableAccessor {
   }
 
   public void scanData() throws Exception {
-    if (!isInit) {
-      init();
-    }
     Map<String, Datum> startKey = new HashMap<String, Datum>();
     startKey.put("noteId", DatumUtil.toDatum((long) 1));
     Map<String, Datum> stopKey = new HashMap<String, Datum>();
@@ -107,8 +102,14 @@ public class TableAccessor {
     List<Map<String, Datum>> kvsList = scanResult.getRecords();
     for (Map<String, Datum> kvs : kvsList) {
       for (Map.Entry<String, Datum> e : kvs.entrySet()) {
-        LOG.info(e.getKey() + "\t" + DatumUtil.fromDatum(e.getValue()));
+        System.out.println(e.getKey() + "\t" + DatumUtil.fromDatum(e.getValue()));
       }
     }
+  }
+
+  public void accessData() throws Exception {
+    putData();
+    getData();
+    scanData();
   }
 }

@@ -15,7 +15,7 @@ public class SdsBasicDemo extends Activity {
 
   private final Logger LOG = LoggerFactory.getLogger(SdsBasicDemo.class);
   private static String tableName = "android-example-table";
-  private static String endpoint = "http://sds.api.xiaomi.com";
+  private static String endpoint = "https://cnbj-s0.sds.api.xiaomi.com";
 
   public static void configure() {
     final LogConfigurator logConfigurator = new LogConfigurator();
