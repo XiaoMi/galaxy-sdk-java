@@ -82,8 +82,8 @@ public class TableCreator {
     Map<String, List<CannedAcl>> appGrant = new HashMap<String, List<CannedAcl>>();
     appGrant.put(appId, Arrays.asList(CannedAcl.APP_SECRET_READ, CannedAcl.APP_SECRET_WRITE,
         CannedAcl.APP_USER_ENTITY_GROUP_READ, CannedAcl.APP_USER_ENTITY_GROUP_WRITE));
-    tableMetadata.setQuota(new TableQuota(100 * 1024 * 1024))
-        .setThroughput(new ProvisionThroughput(20, 20))
+    tableMetadata.setQuota(new TableQuota().setSize(100 * 1024 * 1024))
+        .setThroughput(new ProvisionThroughput().setReadCapacity(20).setWriteCapacity(20));
         .setAppAcl(appGrant);
 
     return new TableSpec().setSchema(tableSchema).setMetadata(tableMetadata);

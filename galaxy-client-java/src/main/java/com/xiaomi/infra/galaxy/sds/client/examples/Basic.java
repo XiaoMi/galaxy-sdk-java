@@ -73,8 +73,8 @@ public class Basic {
 
     TableMetadata tableMetadata = new TableMetadata();
     tableMetadata
-        .setQuota(new TableQuota(100 * 1024 * 1024))
-        .setThroughput(new ProvisionThroughput(20, 20));
+        .setQuota(new TableQuota().setSize(100 * 1024 * 1024))
+        .setThroughput(new ProvisionThroughput().setReadCapacity(20).setWriteCapacity(20));
 
     return new TableSpec().setSchema(tableSchema)
         .setMetadata(tableMetadata);
