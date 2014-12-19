@@ -1,5 +1,10 @@
 package com.xiaomi.infra.galaxy.sds.thrift;
 
+import libthrift091.TDeserializer;
+import libthrift091.TException;
+import libthrift091.TSerializer;
+import libthrift091.protocol.TCompactProtocol;
+
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -10,14 +15,22 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
-import libthrift091.TDeserializer;
-import libthrift091.TException;
-import libthrift091.TSerializer;
-import libthrift091.protocol.TCompactProtocol;
-
-
-import static com.xiaomi.infra.galaxy.sds.thrift.Value.*;
 import static com.xiaomi.infra.galaxy.sds.thrift.Value.binarySetValue;
+import static com.xiaomi.infra.galaxy.sds.thrift.Value.binaryValue;
+import static com.xiaomi.infra.galaxy.sds.thrift.Value.boolSetValue;
+import static com.xiaomi.infra.galaxy.sds.thrift.Value.boolValue;
+import static com.xiaomi.infra.galaxy.sds.thrift.Value.doubleSetValue;
+import static com.xiaomi.infra.galaxy.sds.thrift.Value.doubleValue;
+import static com.xiaomi.infra.galaxy.sds.thrift.Value.int16SetValue;
+import static com.xiaomi.infra.galaxy.sds.thrift.Value.int16Value;
+import static com.xiaomi.infra.galaxy.sds.thrift.Value.int32SetValue;
+import static com.xiaomi.infra.galaxy.sds.thrift.Value.int32Value;
+import static com.xiaomi.infra.galaxy.sds.thrift.Value.int64SetValue;
+import static com.xiaomi.infra.galaxy.sds.thrift.Value.int64Value;
+import static com.xiaomi.infra.galaxy.sds.thrift.Value.int8SetValue;
+import static com.xiaomi.infra.galaxy.sds.thrift.Value.int8Value;
+import static com.xiaomi.infra.galaxy.sds.thrift.Value.stringSetValue;
+import static com.xiaomi.infra.galaxy.sds.thrift.Value.stringValue;
 
 public class DatumUtil {
   public static <T> Map<String, Datum> toDatum(Map<String, T> keyValues) {
@@ -287,6 +300,7 @@ public class DatumUtil {
       @Override public int compare(byte[] left, byte[] right) {
         return compareTo(left, 0, left.length, right, 0, right.length);
       }
+
       public int compareTo(byte[] buffer1, int offset1, int length1,
           byte[] buffer2, int offset2, int length2) {
         if (buffer1 == buffer2 &&
@@ -334,6 +348,26 @@ public class DatumUtil {
       Datum datum = new Datum();
       deserializer.deserialize(datum, bytes);
       return datum;
+    } catch (TException te) {
+      throw new RuntimeException("Failed to deserialize thrift object", te);
+    }
+  }
+
+  public static byte[] serializeDatumMap(Map<String, Datum> record) {
+    try {
+      TSerializer serializer = new TSerializer(new TCompactProtocol.Factory());
+      return serializer.serialize(new DatumMap().setData(record));
+    } catch (TException te) {
+      throw new RuntimeException("Failed to serialize thrift object: " + record, te);
+    }
+  }
+
+  public static Map<String, Datum> deserializeDatumMap(byte[] bytes) {
+    try {
+      TDeserializer deserializer = new TDeserializer(new TCompactProtocol.Factory());
+      DatumMap datumMap = new DatumMap();
+      deserializer.deserialize(datumMap, bytes);
+      return datumMap.getData();
     } catch (TException te) {
       throw new RuntimeException("Failed to deserialize thrift object", te);
     }
