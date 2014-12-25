@@ -54,8 +54,8 @@ public class ErrorsConstants {
    */
   public static final Map<ErrorCode,RetryType> ERROR_RETRY_TYPE = new HashMap<ErrorCode,RetryType>();
   static {
-    ERROR_RETRY_TYPE.put(com.xiaomi.infra.galaxy.sds.thrift.ErrorCode.SERVICE_UNAVAILABLE, com.xiaomi.infra.galaxy.sds.thrift.RetryType.SAFE);
     ERROR_RETRY_TYPE.put(com.xiaomi.infra.galaxy.sds.thrift.ErrorCode.THROUGHPUT_EXCEED, com.xiaomi.infra.galaxy.sds.thrift.RetryType.SAFE);
+    ERROR_RETRY_TYPE.put(com.xiaomi.infra.galaxy.sds.thrift.ErrorCode.SERVICE_UNAVAILABLE, com.xiaomi.infra.galaxy.sds.thrift.RetryType.SAFE);
     ERROR_RETRY_TYPE.put(com.xiaomi.infra.galaxy.sds.thrift.ErrorCode.CLOCK_TOO_SKEWED, com.xiaomi.infra.galaxy.sds.thrift.RetryType.SAFE);
     ERROR_RETRY_TYPE.put(com.xiaomi.infra.galaxy.sds.thrift.ErrorCode.INTERNAL_ERROR, com.xiaomi.infra.galaxy.sds.thrift.RetryType.UNSAFE);
     ERROR_RETRY_TYPE.put(com.xiaomi.infra.galaxy.sds.thrift.ErrorCode.TTRANSPORT_ERROR, com.xiaomi.infra.galaxy.sds.thrift.RetryType.UNSAFE);

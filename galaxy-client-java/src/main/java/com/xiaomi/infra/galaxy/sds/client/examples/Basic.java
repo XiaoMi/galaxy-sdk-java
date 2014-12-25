@@ -37,7 +37,7 @@ public class Basic {
   private static String secretKeyId = ""; // Your AppKey
   private static String secretKey = ""; // Your AppSecret
   private static UserType userType = UserType.APP_SECRET;
-  private static String endpoint = "https://cnbj-s0.sds.api.xiaomi.com";
+  private static String endpoint = "https://sds.api.xiaomi.com";
   private static boolean isInit = false;
   private static String tableName = "java-test-weather";
   private static String[] cities = { "北京", "Beihai", "Dalian", "Dandong", "Fuzhou", "Guangzhou",
@@ -60,7 +60,8 @@ public class Basic {
 
   private static TableSpec tableSpec() {
     List<KeySpec> primaryKey = Arrays
-        .asList(new KeySpec[] { new KeySpec("cityId"), new KeySpec("timestamp").setAsc(false) });
+        .asList(new KeySpec[] { new KeySpec().setAttribute("cityId"), new KeySpec().setAttribute(
+            "timestamp").setAsc(false) });
     Map<String, DataType> attributes = new HashMap<String, DataType>();
     attributes.put("cityId", DataType.STRING);
     attributes.put("timestamp", DataType.INT64);

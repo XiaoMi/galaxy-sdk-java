@@ -50,17 +50,17 @@ public class TableCreator {
   }
 
   private TableSpec tableSpec() {
-    EntityGroupSpec entityGroupSpec = new EntityGroupSpec(Arrays.asList(
-        new KeySpec[] { new KeySpec("userId") })); // This entity group is for access control
-    List<KeySpec> primaryKey = Arrays.asList(new KeySpec[] { new KeySpec("noteId") });
+    EntityGroupSpec entityGroupSpec = new EntityGroupSpec().setAttributes(Arrays.asList(
+        new KeySpec[] { new KeySpec().setAttribute("userId") })); // This entity group is for access control
+    List<KeySpec> primaryKey = Arrays.asList(new KeySpec[] { new KeySpec().setAttribute("noteId") });
     Map<String, LocalSecondaryIndexSpec> secondaryIndexSpecMap = new HashMap<String, LocalSecondaryIndexSpec>();
     LocalSecondaryIndexSpec mtimeIndex = new LocalSecondaryIndexSpec();
-    mtimeIndex.setIndexSchema(Arrays.asList(new KeySpec[] { new KeySpec("mtime") }));
+    mtimeIndex.setIndexSchema(Arrays.asList(new KeySpec[] { new KeySpec().setAttribute("mtime") }));
     mtimeIndex.setProjections(Arrays.asList("title", "noteId"));
     mtimeIndex.setConsistencyMode(SecondaryIndexConsistencyMode.EAGER);
     secondaryIndexSpecMap.put("mtime", mtimeIndex);
     LocalSecondaryIndexSpec catIndex = new LocalSecondaryIndexSpec();
-    catIndex.setIndexSchema(Arrays.asList(new KeySpec[] { new KeySpec("category") }));
+    catIndex.setIndexSchema(Arrays.asList(new KeySpec[] { new KeySpec().setAttribute("category") }));
     catIndex.setConsistencyMode(SecondaryIndexConsistencyMode.LAZY);
     secondaryIndexSpecMap.put("cat", catIndex);
     Map<String, DataType> attributes = new HashMap<String, DataType>();
@@ -83,7 +83,7 @@ public class TableCreator {
     appGrant.put(appId, Arrays.asList(CannedAcl.APP_SECRET_READ, CannedAcl.APP_SECRET_WRITE,
         CannedAcl.APP_USER_ENTITY_GROUP_READ, CannedAcl.APP_USER_ENTITY_GROUP_WRITE));
     tableMetadata.setQuota(new TableQuota().setSize(100 * 1024 * 1024))
-        .setThroughput(new ProvisionThroughput().setReadCapacity(20).setWriteCapacity(20));
+        .setThroughput(new ProvisionThroughput().setReadCapacity(20).setWriteCapacity(20))
         .setAppAcl(appGrant);
 
     return new TableSpec().setSchema(tableSchema).setMetadata(tableMetadata);
