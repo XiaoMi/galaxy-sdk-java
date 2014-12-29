@@ -4,7 +4,7 @@
  * DO NOT EDIT UNLESS YOU ARE SURE THAT YOU KNOW WHAT YOU ARE DOING
  *  @generated
  */
-package com.xiaomi.infra.galaxy.io.thrift;
+package com.xiaomi.infra.galaxy.sds.thrift;
 
 
 import java.util.Map;
@@ -12,15 +12,25 @@ import java.util.HashMap;
 import libthrift091.TEnum;
 
 /**
- * 数据完整性校验算法类型
+ * thrift传输协议
  */
-public enum Checksum implements libthrift091.TEnum {
-  NONE(0),
-  CRC32(1);
+public enum ThriftProtocol implements libthrift091.TEnum {
+  /**
+   * TCompactProtocl
+   */
+  TCOMPACT(0),
+  /**
+   * TJSONProtocol
+   */
+  TJSON(1),
+  /**
+   * TBINARYProtocol
+   */
+  TBINARY(2);
 
   private final int value;
 
-  private Checksum(int value) {
+  private ThriftProtocol(int value) {
     this.value = value;
   }
 
@@ -35,12 +45,14 @@ public enum Checksum implements libthrift091.TEnum {
    * Find a the enum type by its integer value, as defined in the Thrift IDL.
    * @return null if the value is not found.
    */
-  public static Checksum findByValue(int value) { 
+  public static ThriftProtocol findByValue(int value) { 
     switch (value) {
       case 0:
-        return NONE;
+        return TCOMPACT;
       case 1:
-        return CRC32;
+        return TJSON;
+      case 2:
+        return TBINARY;
       default:
         return null;
     }

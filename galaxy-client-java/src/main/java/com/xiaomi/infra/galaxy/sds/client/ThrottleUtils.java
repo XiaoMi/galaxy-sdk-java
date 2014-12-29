@@ -25,7 +25,7 @@ public class ThrottleUtils {
    * @return random time value
    */
   private static long getRandom(final long normalPause) {
-    long jitter =  (long)(normalPause * RANDOM.nextFloat() * 0.01f); // 1% possible jitter
+    long jitter =  (long)(normalPause * RANDOM.nextFloat() * 0.10f); // 10% possible jitter
     return normalPause + jitter;
   }
 
