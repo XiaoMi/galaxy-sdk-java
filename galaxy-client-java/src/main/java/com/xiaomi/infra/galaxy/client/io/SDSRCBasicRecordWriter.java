@@ -1,5 +1,10 @@
 package com.xiaomi.infra.galaxy.client.io;
 
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
 import com.xiaomi.infra.galaxy.api.io.ByteArrayRecordWriter;
 import com.xiaomi.infra.galaxy.api.io.RecordWriter;
 import com.xiaomi.infra.galaxy.sds.thrift.Datum;
@@ -7,12 +12,9 @@ import com.xiaomi.infra.galaxy.sds.thrift.RCBasicMeta;
 import com.xiaomi.infra.galaxy.sds.thrift.RCBasicRowGroupHeader;
 import com.xiaomi.infra.galaxy.sds.thrift.Value;
 import com.xiaomi.infra.galaxy.sds.thrift.ValueList;
+import libthrift091.TException;
 import libthrift091.TSerializer;
 import libthrift091.protocol.TCompactProtocol;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
 
 /**
  * This class is not thread safe
@@ -33,19 +35,19 @@ class SDSRCBasicRecordWriter implements RecordWriter<Map<String, Datum>> {
     }
   }
 
-  @Override public void append(Map<String, Datum> record) throws Exception {
+  @Override public void append(Map<String, Datum> record) throws IOException {
     if (groupBuffer.size() == groupSize) {
       flush();
     }
     groupBuffer.add(record);
   }
 
-  @Override public void seal() throws Exception {
+  @Override public void seal() throws IOException {
     flush();
     writer.seal();
   }
 
-  private void flush() throws Exception {
+  private void flush() throws IOException {
     if (!groupBuffer.isEmpty()) {
       TSerializer serializer = new TSerializer(new TCompactProtocol.Factory());
       int numKeys = keys.size();
@@ -59,7 +61,12 @@ class SDSRCBasicRecordWriter implements RecordWriter<Map<String, Datum>> {
           Value value = datum == null ? Value.nullValue(true) : datum.getValue();
           values.add(value);
         }
-        byte[] bytes = serializer.serialize(new ValueList().setValues(values));
+        byte[] bytes;
+        try {
+          bytes = serializer.serialize(new ValueList().setValues(values));
+        } catch (TException te) {
+          throw new IOException("Failed to serialize column: " + key, te);
+        }
         offsets.add(offset);
         offset += bytes.length;
         buffers.add(bytes);
@@ -68,12 +75,21 @@ class SDSRCBasicRecordWriter implements RecordWriter<Map<String, Datum>> {
       RCBasicRowGroupHeader groupHeader = new RCBasicRowGroupHeader()
           .setCount(groupBuffer.size())
           .setOffset(offsets);
-      writer.append(serializer.serialize(groupHeader));
+      try {
+        writer.append(serializer.serialize(groupHeader));
+      } catch (TException te) {
+        throw new IOException("Failed to serialize row group header", te);
+      }
       // write each column list
       for (byte[] bytes : buffers) {
         writer.append(bytes);
       }
       groupBuffer.clear();
     }
+  }
+
+  @Override public void close() throws IOException {
+    seal();
+    writer.close();
   }
 }

@@ -1,22 +1,25 @@
 package com.xiaomi.infra.galaxy.client.io;
 
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
+
 import com.xiaomi.infra.galaxy.api.io.ByteArrayRecordWriter;
 import com.xiaomi.infra.galaxy.api.io.RecordWriter;
 import com.xiaomi.infra.galaxy.sds.thrift.Datum;
 import com.xiaomi.infra.galaxy.sds.thrift.DatumMapMeta;
 import com.xiaomi.infra.galaxy.sds.thrift.DatumMapRecord;
+import libthrift091.TException;
 import libthrift091.TSerializer;
 import libthrift091.protocol.TCompactProtocol;
-
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * This class is not thread safe
  */
 class SDSDatumMapRecordWriter implements RecordWriter<Map<String, Datum>> {
   private ByteArrayRecordWriter writer;
-  private Map<String, Short> keyIdLookupTable = new HashMap<String, Short>();;
+  private Map<String, Short> keyIdLookupTable = new HashMap<String, Short>();
+  ;
   private TSerializer serializer = new TSerializer(new TCompactProtocol.Factory());
 
   SDSDatumMapRecordWriter(ByteArrayRecordWriter writer, DatumMapMeta metadata) {
@@ -28,7 +31,7 @@ class SDSDatumMapRecordWriter implements RecordWriter<Map<String, Datum>> {
     }
   }
 
-  @Override public void append(Map<String, Datum> record) throws Exception {
+  @Override public void append(Map<String, Datum> record) throws IOException {
     Map<Short, Datum> rec = new HashMap<Short, Datum>();
     boolean containsAll = true;
     short maxKeyId = -1;
@@ -58,11 +61,20 @@ class SDSDatumMapRecordWriter implements RecordWriter<Map<String, Datum>> {
       dmr.setKeyIdMap(newKeyIdMap);
     }
 
-    byte[] bytes = serializer.serialize(dmr.setData(rec));
+    byte[] bytes;
+    try {
+      bytes = serializer.serialize(dmr.setData(rec));
+    } catch (TException te) {
+      throw new IOException("Failed to serialize record", te);
+    }
     writer.append(bytes);
   }
 
-  @Override public void seal() throws Exception {
+  @Override public void seal() throws IOException {
     writer.seal();
+  }
+
+  @Override public void close() throws IOException {
+    writer.close();
   }
 }

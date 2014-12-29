@@ -1,5 +1,12 @@
 package com.xiaomi.infra.galaxy.client.io;
 
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+
 import com.xiaomi.infra.galaxy.api.io.ByteArrayRecordReader;
 import com.xiaomi.infra.galaxy.api.io.RecordReader;
 import com.xiaomi.infra.galaxy.io.thrift.RSFileHeader;
@@ -10,13 +17,8 @@ import com.xiaomi.infra.galaxy.sds.thrift.RCBasicRowGroupHeader;
 import com.xiaomi.infra.galaxy.sds.thrift.Value;
 import com.xiaomi.infra.galaxy.sds.thrift.ValueList;
 import libthrift091.TDeserializer;
+import libthrift091.TException;
 import libthrift091.protocol.TCompactProtocol;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
 
 /**
  * This class is not thread safe
@@ -27,28 +29,32 @@ class SDSRCBasicRecordReader implements RecordReader<Map<String, Datum>> {
   private Iterator<Map<String, Datum>> groupBufferIterator;
 
   public SDSRCBasicRecordReader(ByteArrayRecordReader reader,
-      RCBasicMeta meta) {
+                                RCBasicMeta meta) {
     this.reader = reader;
     this.meta = meta;
   }
 
-  @Override public RSFileHeader readHeader() throws Exception {
+  @Override public RSFileHeader readHeader() throws IOException {
     throw new UnsupportedOperationException("The header must be already read");
   }
 
-  @Override public boolean hasNext() throws Exception {
+  @Override public boolean hasNext() throws IOException {
     if (groupBufferIterator != null && groupBufferIterator.hasNext()) {
       return true;
     }
     return reader.hasNext();
   }
 
-  @Override public Map<String, Datum> next() throws Exception {
+  @Override public Map<String, Datum> next() throws IOException {
     if (groupBufferIterator == null || !groupBufferIterator.hasNext()) {
       TDeserializer deserializer = new TDeserializer(new TCompactProtocol.Factory());
       byte[] headerBytes = this.reader.next(); // read group header
       RCBasicRowGroupHeader groupHeader = new RCBasicRowGroupHeader();
-      deserializer.deserialize(groupHeader, headerBytes);
+      try {
+        deserializer.deserialize(groupHeader, headerBytes);
+      } catch (TException te) {
+        throw new IOException("Failed to parse row group header", te);
+      }
 
       int numKeys = meta.getKeys().size();
       List<String> keys = meta.getKeys();
@@ -61,11 +67,15 @@ class SDSRCBasicRecordReader implements RecordReader<Map<String, Datum>> {
 
       // read each column list
       for (int kid = 0; kid < numKeys; ++kid) {
+        String key = keys.get(kid);
         byte[] bytes = this.reader.next();
         ValueList columnList = new ValueList();
-        deserializer.deserialize(columnList, bytes);
+        try {
+          deserializer.deserialize(columnList, bytes);
+        } catch (TException te) {
+          throw new IOException("Failed to parse column: " + key, te);
+        }
         assert columnList.getValuesSize() == groupHeader.getCount();
-        String key = keys.get(kid);
         DataType dataType = dataTypes.get(key);
         for (int i = 0; i < columnList.getValuesSize(); ++i) {
           Value value = columnList.getValues().get(i);
@@ -79,5 +89,9 @@ class SDSRCBasicRecordReader implements RecordReader<Map<String, Datum>> {
     }
 
     return groupBufferIterator.next();
+  }
+
+  @Override public void close() throws IOException {
+    reader.close();
   }
 }

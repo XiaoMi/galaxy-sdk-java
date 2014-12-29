@@ -52,7 +52,7 @@ public class SDSRecordReaderWriterTest {
             RecordWriter<Map<String, Datum>> recordWriter = null;
             try {
               recordWriter = SDSRecordReaderWriterFactory.getRecordWriter(outputStream, types,
-                      fileType, compression);
+                  fileType, compression);
             } catch (UnsupportedOperationException uoe) {
               System.out.println(fileType + "." + compression + ":\tunsupported");
               continue;
@@ -72,9 +72,9 @@ public class SDSRecordReaderWriterTest {
               records.add(record);
             }
             recordWriter.seal();
-            System.out
-                .println(fileType + "." + compression + " file size:\t" + outputStream.size());
-            outputStream.close();
+            System.out.println(fileType + "." + compression + " file size:\t"
+                + outputStream.size());
+            recordWriter.close();
 
             InputStream inputStream = new ByteArrayInputStream(outputStream.toByteArray());
             RecordReader<Map<String, Datum>> recordReader =
@@ -83,7 +83,7 @@ public class SDSRecordReaderWriterTest {
             while (recordReader.hasNext()) {
               actual.add(recordReader.next());
             }
-            inputStream.close();
+            recordReader.close();
 
             assertEquals(records, actual);
           }
