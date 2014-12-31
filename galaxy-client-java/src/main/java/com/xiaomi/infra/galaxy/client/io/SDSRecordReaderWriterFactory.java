@@ -1,5 +1,13 @@
 package com.xiaomi.infra.galaxy.client.io;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import com.xiaomi.infra.galaxy.api.io.ByteArrayRecordReader;
 import com.xiaomi.infra.galaxy.api.io.ByteArrayRecordWriter;
 import com.xiaomi.infra.galaxy.api.io.RecordReader;
@@ -17,22 +25,19 @@ import libthrift091.TException;
 import libthrift091.TSerializer;
 import libthrift091.protocol.TCompactProtocol;
 
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 public class SDSRecordReaderWriterFactory {
   public static RecordReader<Map<String, Datum>> getRecordReader(InputStream inputStream)
-      throws Exception {
+      throws IOException {
     ByteArrayRecordReader recordReader = new ByteArrayRecordReader(inputStream);
     RSFileHeader header = recordReader.readHeader();
     if (header.getMetadata() != null) {
       SLFileMeta metadata = new SLFileMeta();
       TDeserializer deserializer = new TDeserializer(new TCompactProtocol.Factory());
-      deserializer.deserialize(metadata, header.getMetadata());
+      try {
+        deserializer.deserialize(metadata, header.getMetadata());
+      } catch (TException te) {
+        throw new IOException("Failed to serialize header metadata", te);
+      }
       switch (metadata.getType()) {
       case DATUM_MAP:
         return new SDSDatumMapRecordReader(recordReader, metadata.getDatumMapMeta());
@@ -47,7 +52,9 @@ public class SDSRecordReaderWriterFactory {
   }
 
   public static RecordWriter<Map<String, Datum>> getDatumMapRecordWriter(OutputStream outputStream,
-      Map<String, DataType> dataTypes, Compression compression) throws TException {
+                                                                         Map<String, DataType> dataTypes,
+                                                                         Compression compression)
+      throws IOException {
     TSerializer serializer = new TSerializer(new TCompactProtocol.Factory());
     Map<Short, String> keyIdMap = new HashMap<Short, String>();
     short i = 0;
@@ -60,7 +67,12 @@ public class SDSRecordReaderWriterFactory {
     SLFileMeta metadata = new SLFileMeta()
         .setType(SLFileType.DATUM_MAP)
         .setDatumMapMeta(new DatumMapMeta().setKeyIdMap(keyIdMap));
-    byte[] metaBytes = serializer.serialize(metadata);
+    byte[] metaBytes;
+    try {
+      metaBytes = serializer.serialize(metadata);
+    } catch (TException te) {
+      throw new IOException("Failed to serialize metadata", te);
+    }
     RSFileHeader header = new RSFileHeader()
         .setCompression(compression)
         .setMetadata(metaBytes);
@@ -70,7 +82,10 @@ public class SDSRecordReaderWriterFactory {
   }
 
   public static RecordWriter<Map<String, Datum>> getRCBasicRecordWriter(OutputStream outputStream,
-      Map<String, DataType> dataTypes, int rowGroupSize, Compression compression) throws TException {
+                                                                        Map<String, DataType> dataTypes,
+                                                                        int rowGroupSize,
+                                                                        Compression compression)
+      throws IOException {
     TSerializer serializer = new TSerializer(new TCompactProtocol.Factory());
     List<String> keys = null;
     if (dataTypes != null) {
@@ -83,7 +98,12 @@ public class SDSRecordReaderWriterFactory {
     SLFileMeta metadata = new SLFileMeta()
         .setType(SLFileType.RC_BASIC)
         .setRcBasicMeta(new RCBasicMeta().setKeys(keys).setTypes(dataTypes));
-    byte[] metaBytes = serializer.serialize(metadata);
+    byte[] metaBytes;
+    try {
+      metaBytes = serializer.serialize(metadata);
+    } catch (TException te) {
+      throw new IOException("Failed to serialize metadata", te);
+    }
     RSFileHeader header = new RSFileHeader()
         .setCompression(compression)
         .setMetadata(metaBytes);
@@ -92,8 +112,10 @@ public class SDSRecordReaderWriterFactory {
   }
 
   public static RecordWriter<Map<String, Datum>> getRecordWriter(OutputStream outputStream,
-      Map<String, DataType> dataTypes, SLFileType fileType, Compression compression)
-      throws TException {
+                                                                 Map<String, DataType> dataTypes,
+                                                                 SLFileType fileType,
+                                                                 Compression compression)
+      throws IOException {
     switch (fileType) {
     case DATUM_MAP:
       return getDatumMapRecordWriter(outputStream, dataTypes, compression);

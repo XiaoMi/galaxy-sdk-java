@@ -2,6 +2,8 @@ package com.xiaomi.infra.galaxy.sds.client;
 
 import com.xiaomi.infra.galaxy.sds.shared.clock.AdjustableClock;
 import com.xiaomi.infra.galaxy.sds.thrift.Credential;
+import com.xiaomi.infra.galaxy.sds.thrift.ThriftProtocol;
+import libthrift091.protocol.TCompactProtocol;
 import libthrift091.protocol.TJSONProtocol;
 import libthrift091.protocol.TProtocol;
 import org.apache.http.client.HttpClient;
@@ -55,9 +57,10 @@ public class ThreadSafeClient<IFace, Impl> {
       try {
         SdsTHttpClient sdsHttpClient = new SdsTHttpClient(url, client, this.credential, clock);
         sdsHttpClient.setSocketTimeout(socketTimeout)
-            .setConnectTimeout(connTimeout);
+            .setConnectTimeout(connTimeout)
+            .setProtocol(ThriftProtocol.TCOMPACT);
 
-        TProtocol proto = new TJSONProtocol(sdsHttpClient);
+        TProtocol proto = new TCompactProtocol(sdsHttpClient);
 
         if (customHeaders != null) {
           for (Map.Entry<String, String> header : customHeaders.entrySet()) {

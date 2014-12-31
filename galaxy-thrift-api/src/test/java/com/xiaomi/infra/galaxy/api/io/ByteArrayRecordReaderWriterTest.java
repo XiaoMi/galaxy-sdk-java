@@ -1,7 +1,5 @@
 package com.xiaomi.infra.galaxy.api.io;
 
-import static org.junit.Assert.assertEquals;
-
 import com.xiaomi.infra.galaxy.io.thrift.Compression;
 import com.xiaomi.infra.galaxy.io.thrift.RSFileHeader;
 import org.junit.Test;
@@ -12,11 +10,13 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
+import static org.junit.Assert.assertEquals;
+
 public class ByteArrayRecordReaderWriterTest {
   @Test
   public void testSerialization() throws Exception {
-    Compression[] compressions = {Compression.NONE, Compression.SNAPPY};
-    int[] counts = {0, 1, 10, 100, 1000};
+    Compression[] compressions = { Compression.NONE, Compression.SNAPPY };
+    int[] counts = { 0, 1, 10, 100, 1000 };
     for (Compression compression : compressions) {
       for (int count : counts) {
         List<String> expected = new ArrayList<String>();
@@ -31,7 +31,7 @@ public class ByteArrayRecordReaderWriterTest {
           recordWriter.append(item.getBytes("UTF-8"));
         }
         recordWriter.seal();
-        outputStream.close();
+        recordWriter.close();
 
         InputStream inputStream = new ByteArrayInputStream(outputStream.toByteArray());
         RecordReader<byte[]> recordReader = new ByteArrayRecordReader(inputStream);
@@ -39,7 +39,7 @@ public class ByteArrayRecordReaderWriterTest {
         while (recordReader.hasNext()) {
           actual.add(new String(recordReader.next(), "UTF-8"));
         }
-        inputStream.close();
+        recordReader.close();
         assertEquals(expected, actual);
       }
     }

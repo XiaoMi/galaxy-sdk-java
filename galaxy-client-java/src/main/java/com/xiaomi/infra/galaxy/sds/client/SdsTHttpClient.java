@@ -23,6 +23,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.xiaomi.infra.galaxy.sds.thrift.CommonConstants;
+import com.xiaomi.infra.galaxy.sds.thrift.ThriftProtocol;
 import libthrift091.TException;
 import libthrift091.TSerializer;
 import libthrift091.protocol.TJSONProtocol;
@@ -56,7 +58,6 @@ import com.xiaomi.infra.galaxy.sds.thrift.MacAlgorithm;
 /**
  * HTTP implementation of the TTransport interface. Used for working with a Thrift web services
  * implementation (using for example TServlet).
- * <P>
  * Code based on THttpClient
  */
 public class SdsTHttpClient extends TTransport {
@@ -71,6 +72,7 @@ public class SdsTHttpClient extends TTransport {
   private final HttpClient client;
   private Credential credential;
   private AdjustableClock clock;
+  private ThriftProtocol protocol_ = ThriftProtocol.TCOMPACT;
 
   public static class Factory extends TTransportFactory {
     private final String url;
@@ -126,6 +128,15 @@ public class SdsTHttpClient extends TTransport {
       return client.getParams().getIntParameter(CoreConnectionPNames.SO_TIMEOUT, 0);
     }
     return -1;
+  }
+
+  public SdsTHttpClient setProtocol(ThriftProtocol protocol) {
+    protocol_ = protocol;
+    return this;
+  }
+
+  public ThriftProtocol getProtocol() {
+    return protocol_;
   }
 
   public SdsTHttpClient setConnectTimeout(int timeout) {
@@ -235,7 +246,11 @@ public class SdsTHttpClient extends TTransport {
       // Headers are added to the HttpPost instance, not
       // to HttpClient.
       //
-      setHeaders(post, data);
+      post.setHeader("Content-Type", CommonConstants.THRIFT_HEADER_MAP.get(protocol_));
+      post.setHeader("Accept", CommonConstants.THRIFT_HEADER_MAP.get(protocol_));
+      post.setHeader("User-Agent", "Java/THttpClient/HC");
+      setCustomHeaders(post);
+      setAuthenticationHeaders(post, data);
 
       post.setEntity(new ByteArrayEntity(data));
 
@@ -307,19 +322,11 @@ public class SdsTHttpClient extends TTransport {
     flushUsingHttpClient();
   }
 
-  private SdsTHttpClient setHeaders(HttpPost post, byte[] data) {
-    if (this.client != null) {
-      post.setHeader("Content-Type", "application/x-thrift");
-      post.setHeader("Accept", "application/x-thrift");
-      post.setHeader("User-Agent", "Java/THttpClient/HC");
-
-      if (null != customHeaders_) {
-        for (Map.Entry<String, String> header : customHeaders_.entrySet()) {
-          post.setHeader(header.getKey(), header.getValue());
-        }
+  private SdsTHttpClient setCustomHeaders(HttpPost post) {
+    if (this.client != null && this.customHeaders_ != null) {
+      for (Map.Entry<String, String> header : customHeaders_.entrySet()) {
+        post.setHeader(header.getKey(), header.getValue());
       }
-
-      setAuthenticationHeaders(post, data);
     }
     return this;
   }
@@ -328,7 +335,7 @@ public class SdsTHttpClient extends TTransport {
    * Set signature related headers when credential is properly set
    */
   private SdsTHttpClient setAuthenticationHeaders(HttpPost post, byte[] data) {
-    if (credential != null) {
+    if (this.client != null && credential != null) {
       HttpAuthorizationHeader authHeader = null;
       if (credential.getType() != null && credential.getSecretKeyId() != null) {
         // signature is supported
@@ -350,7 +357,7 @@ public class SdsTHttpClient extends TTransport {
 
           // content md5
           String md5 = BytesUtil
-            .bytesToHex(DigestUtil.digest(DigestUtil.DigestAlgorithm.MD5, data));
+              .bytesToHex(DigestUtil.digest(DigestUtil.DigestAlgorithm.MD5, data));
           post.setHeader(AuthenticationConstants.HK_CONTENT_MD5, md5);
           signatureHeaders.add(AuthenticationConstants.HK_CONTENT_MD5);
           signatureParts.add(md5);
@@ -363,7 +370,7 @@ public class SdsTHttpClient extends TTransport {
       }
       if (authHeader != null) {
         post.setHeader(AuthenticationConstants.HK_AUTHORIZATION,
-          encodeAuthorizationHeader(authHeader));
+            encodeAuthorizationHeader(authHeader));
       }
     }
     return this;
@@ -389,7 +396,7 @@ public class SdsTHttpClient extends TTransport {
     auth.setAlgorithm(MacAlgorithm.HmacSHA1);
 
     byte[] signature = SignatureUtil.sign(SignatureUtil.MacAlgorithm.HmacSHA1,
-      credential.getSecretKey(), signatureParts);
+        credential.getSecretKey(), signatureParts);
     auth.setSignature(BytesUtil.bytesToHex(signature));
 
     return auth;
@@ -412,7 +419,8 @@ public class SdsTHttpClient extends TTransport {
    * Adjust local clock when clock skew error received from server. The client clock need to be
    * roughly synchronized with server clock to make signature secure and reduce the chance of replay
    * attacks.
-   * @param response server response
+   *
+   * @param response       server response
    * @param httpStatusCode status code
    * @return if clock is adjusted
    */
@@ -426,7 +434,7 @@ public class SdsTHttpClient extends TTransport {
         long max = 60 * 60 * 24 * 365 * (2030 - 1970);
         if (serverTime > min && serverTime < max) {
           LOG.debug("Adjusting client time from {} to {}",
-            new Date(clock.getCurrentEpoch() * 1000), new Date(serverTime * 1000));
+              new Date(clock.getCurrentEpoch() * 1000), new Date(serverTime * 1000));
           clock.adjust(serverTime);
           return true;
         }
