@@ -87,7 +87,11 @@ public enum ErrorCode implements libthrift091.TEnum {
   /**
    * HTTP传输层错误
    */
-  TTRANSPORT_ERROR(35);
+  TTRANSPORT_ERROR(35),
+  /**
+   * 不支持的thrift协议类型
+   */
+  UNSUPPORTED_TPROTOCOL(36);
 
   private final int value;
 
@@ -146,6 +150,8 @@ public enum ErrorCode implements libthrift091.TEnum {
         return BAD_REQUEST;
       case 35:
         return TTRANSPORT_ERROR;
+      case 36:
+        return UNSUPPORTED_TPROTOCOL;
       default:
         return null;
     }

@@ -81,4 +81,30 @@ public class CommonConstants {
    */
   public static final String TABLE_SERVICE_PATH = "/v1/api/table";
 
+  /**
+   * 兼容其它SDK，等同于application/x-thrift-json
+   */
+  public static final String DEFAULT_THRIFT_HEADER = "application/x-thrift";
+
+  public static final String THRIFT_JSON_HEADER = "application/x-thrift-json";
+
+  public static final String THRIFT_COMPACT_HEADER = "application/x-thrift-compact";
+
+  public static final String THRIFT_BINARY_HEADER = "application/x-thrift-binary";
+
+  public static final Map<ThriftProtocol,String> THRIFT_HEADER_MAP = new HashMap<ThriftProtocol,String>();
+  static {
+    THRIFT_HEADER_MAP.put(com.xiaomi.infra.galaxy.sds.thrift.ThriftProtocol.TCOMPACT, "application/x-thrift-compact");
+    THRIFT_HEADER_MAP.put(com.xiaomi.infra.galaxy.sds.thrift.ThriftProtocol.TJSON, "application/x-thrift-json");
+    THRIFT_HEADER_MAP.put(com.xiaomi.infra.galaxy.sds.thrift.ThriftProtocol.TBINARY, "application/x-thrift-binary");
+  }
+
+  public static final Map<String,ThriftProtocol> HEADER_THRIFT_MAP = new HashMap<String,ThriftProtocol>();
+  static {
+    HEADER_THRIFT_MAP.put("application/x-thrift-compact", com.xiaomi.infra.galaxy.sds.thrift.ThriftProtocol.TCOMPACT);
+    HEADER_THRIFT_MAP.put("application/x-thrift-json", com.xiaomi.infra.galaxy.sds.thrift.ThriftProtocol.TJSON);
+    HEADER_THRIFT_MAP.put("application/x-thrift-binary", com.xiaomi.infra.galaxy.sds.thrift.ThriftProtocol.TBINARY);
+    HEADER_THRIFT_MAP.put("application/x-thrift", com.xiaomi.infra.galaxy.sds.thrift.ThriftProtocol.TJSON);
+  }
+
 }

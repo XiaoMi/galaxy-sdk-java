@@ -40,7 +40,7 @@ public class SdsDemo {
   private static String secretKeyId = ""; // Your AppKey
   private static String secretKey = ""; // Your AppSecret
   private static UserType userType = UserType.APP_SECRET;
-  private static String endpoint = "https://cnbj-s0.sds.api.xiaomi.com";
+  private static String endpoint = "http://cnbj-s0.sds.api.xiaomi.com";
   private static boolean isInit = false;
   private static String tableName = "java-test-note";
   private static String[] categories = { "work", "travel", "food" };
@@ -57,17 +57,20 @@ public class SdsDemo {
   }
 
   private static TableSpec tableSpec() {
-    EntityGroupSpec entityGroupSpec = new EntityGroupSpec(Arrays.asList(
-        new KeySpec[] { new KeySpec("userId").setAsc(false) })).setEnableHash(true);
-    List<KeySpec> primaryKey = Arrays.asList(new KeySpec[] { new KeySpec("noteId").setAsc(false) });
+    EntityGroupSpec entityGroupSpec = new EntityGroupSpec().setAttributes(Arrays.asList(
+        new KeySpec[] { new KeySpec().setAttribute("userId").setAsc(false) })).setEnableHash(true);
+    List<KeySpec> primaryKey = Arrays.asList(new KeySpec[] { new KeySpec().setAttribute(
+        "noteId").setAsc(false) });
     Map<String, LocalSecondaryIndexSpec> secondaryIndexSpecMap = new HashMap<String, LocalSecondaryIndexSpec>();
     LocalSecondaryIndexSpec mtimeIndex = new LocalSecondaryIndexSpec();
-    mtimeIndex.setIndexSchema(Arrays.asList(new KeySpec[] { new KeySpec("mtime").setAsc(false) }));
+    mtimeIndex.setIndexSchema(Arrays.asList(new KeySpec[] { new KeySpec().setAttribute(
+        "mtime").setAsc(false) }));
     mtimeIndex.setProjections(Arrays.asList("title", "noteId"));
     mtimeIndex.setConsistencyMode(SecondaryIndexConsistencyMode.EAGER);
     secondaryIndexSpecMap.put("mtime", mtimeIndex);
     LocalSecondaryIndexSpec catIndex = new LocalSecondaryIndexSpec();
-    catIndex.setIndexSchema(Arrays.asList(new KeySpec[] { new KeySpec("category") }));
+    catIndex
+        .setIndexSchema(Arrays.asList(new KeySpec[] { new KeySpec().setAttribute("category") }));
     catIndex.setConsistencyMode(SecondaryIndexConsistencyMode.LAZY);
     secondaryIndexSpecMap.put("cat", catIndex);
     Map<String, DataType> attributes = new HashMap<String, DataType>();
