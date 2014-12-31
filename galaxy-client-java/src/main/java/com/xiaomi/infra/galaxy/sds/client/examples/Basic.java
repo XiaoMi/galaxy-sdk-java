@@ -37,7 +37,7 @@ public class Basic {
   private static String secretKeyId = ""; // Your AppKey
   private static String secretKey = ""; // Your AppSecret
   private static UserType userType = UserType.APP_SECRET;
-  private static String endpoint = "https://sds.api.xiaomi.com";
+  private static String endpoint = "http://cnbj-s0.sds.api.xiaomi.com";
   private static boolean isInit = false;
   private static String tableName = "java-test-weather";
   private static String[] cities = { "北京", "Beihai", "Dalian", "Dandong", "Fuzhou", "Guangzhou",
