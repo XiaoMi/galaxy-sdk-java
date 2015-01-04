@@ -37,6 +37,7 @@ public class ClientFactory {
   @SuppressWarnings("unused")
   private static final Logger LOG = LoggerFactory.getLogger(ClientFactory.class);
   private static final String USER_AGENT_HEADER = "User-Agent";
+  private static final String REQUEST_TIMEOUT = "Request-Timeout";
   private static final Version VERSION = new Version();
 
   private Credential credential;
@@ -198,6 +199,7 @@ public class ClientFactory {
       String url, int socketTimeout, int connTimeout, boolean isRetry, int maxRetry) {
     Map<String, String> headers = new HashMap<String, String>();
     headers.put(USER_AGENT_HEADER, createUserAgentHeader());
+    headers.put(REQUEST_TIMEOUT, String.valueOf(socketTimeout));
     if (customHeaders != null) {
       headers.putAll(customHeaders);
     }

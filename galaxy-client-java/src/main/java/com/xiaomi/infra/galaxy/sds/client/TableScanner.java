@@ -59,7 +59,7 @@ public class TableScanner implements Iterable<Map<String, Datum>> {
             try {
               result = tableClient.scan(scan);
             } catch (Throwable e) {
-              throw new RuntimeException("failed to scan table", e);
+              throw new RuntimeException("Scan request " + scan + " failed to scan table", e);
             }
             break;
           }
