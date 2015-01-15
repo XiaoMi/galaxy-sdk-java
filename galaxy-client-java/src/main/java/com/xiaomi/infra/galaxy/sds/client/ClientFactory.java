@@ -37,7 +37,6 @@ public class ClientFactory {
   @SuppressWarnings("unused")
   private static final Logger LOG = LoggerFactory.getLogger(ClientFactory.class);
   private static final String USER_AGENT_HEADER = "User-Agent";
-  private static final String REQUEST_TIMEOUT = "Request-Timeout";
   private static final Version VERSION = new Version();
 
   private Credential credential;
@@ -119,6 +118,10 @@ public class ClientFactory {
   }
 
   public AuthService.Iface newAuthClient(String url, int socketTimeout, int connTimeout) {
+    socketTimeout = Math.min(socketTimeout, (int) CommonConstants.MAX_CLIENT_TIMEOUT);
+    socketTimeout = Math.max(socketTimeout, (int) CommonConstants.MIN_CLIENT_TIMEOUT);
+    connTimeout = Math.min(connTimeout, (int) CommonConstants.MAX_CLIENT_CONN_TIMEOUT);
+    connTimeout = Math.max(connTimeout, (int) CommonConstants.MIN_CLIENT_CONN_TIMEOUT);
     return createClient(AuthService.Iface.class, AuthService.Client.class, url, socketTimeout,
         connTimeout, false, ErrorsConstants.MAX_RETRY);
   }
@@ -131,6 +134,10 @@ public class ClientFactory {
 
   public AuthService.Iface newAuthClient(String url, int socketTimeout, int connTimeout,
       boolean isRetry, int maxRetry) {
+    socketTimeout = Math.min(socketTimeout, (int) CommonConstants.MAX_CLIENT_TIMEOUT);
+    socketTimeout = Math.max(socketTimeout, (int) CommonConstants.MIN_CLIENT_TIMEOUT);
+    connTimeout = Math.min(connTimeout, (int) CommonConstants.MAX_CLIENT_CONN_TIMEOUT);
+    connTimeout = Math.max(connTimeout, (int) CommonConstants.MIN_CLIENT_CONN_TIMEOUT);
     return createClient(AuthService.Iface.class, AuthService.Client.class, url, socketTimeout,
         connTimeout, isRetry, maxRetry);
   }
@@ -149,6 +156,10 @@ public class ClientFactory {
   }
 
   public AdminService.Iface newAdminClient(String url, int socketTimeout, int connTimeout) {
+    socketTimeout = Math.min(socketTimeout, (int) CommonConstants.MAX_ADMIN_CLIENT_TIMEOUT);
+    socketTimeout = Math.max(socketTimeout, (int) CommonConstants.MIN_ADMIN_CLIENT_TIMEOUT);
+    connTimeout = Math.min(connTimeout, (int) CommonConstants.MAX_CLIENT_CONN_TIMEOUT);
+    connTimeout = Math.max(connTimeout, (int) CommonConstants.MIN_CLIENT_CONN_TIMEOUT);
     return createClient(AdminService.Iface.class, AdminService.Client.class, url, socketTimeout,
         connTimeout, false, ErrorsConstants.MAX_RETRY);
   }
@@ -161,6 +172,10 @@ public class ClientFactory {
 
   public AdminService.Iface newAdminClient(String url, int socketTimeout, int connTimeout,
       boolean isRetry, int maxRetry) {
+    socketTimeout = Math.min(socketTimeout, (int) CommonConstants.MAX_ADMIN_CLIENT_TIMEOUT);
+    socketTimeout = Math.max(socketTimeout, (int) CommonConstants.MIN_ADMIN_CLIENT_TIMEOUT);
+    connTimeout = Math.min(connTimeout, (int) CommonConstants.MAX_CLIENT_CONN_TIMEOUT);
+    connTimeout = Math.max(connTimeout, (int) CommonConstants.MIN_CLIENT_CONN_TIMEOUT);
     return createClient(AdminService.Iface.class, AdminService.Client.class, url, socketTimeout,
         connTimeout, isRetry, maxRetry);
   }
@@ -179,6 +194,10 @@ public class ClientFactory {
   }
 
   public TableService.Iface newTableClient(String url, int socketTimeout, int connTimeout) {
+    socketTimeout = Math.min(socketTimeout, (int) CommonConstants.MAX_CLIENT_TIMEOUT);
+    socketTimeout = Math.max(socketTimeout, (int) CommonConstants.MIN_CLIENT_TIMEOUT);
+    connTimeout = Math.min(connTimeout, (int) CommonConstants.MAX_CLIENT_CONN_TIMEOUT);
+    connTimeout = Math.max(connTimeout, (int) CommonConstants.MIN_CLIENT_CONN_TIMEOUT);
     return createClient(TableService.Iface.class, TableService.Client.class, url, socketTimeout,
         connTimeout, false, ErrorsConstants.MAX_RETRY);
   }
@@ -191,6 +210,10 @@ public class ClientFactory {
 
   public TableService.Iface newTableClient(String url, int socketTimeout, int connTimeout,
       boolean isRetry, int maxRetry) {
+    socketTimeout = Math.min(socketTimeout, (int) CommonConstants.MAX_CLIENT_TIMEOUT);
+    socketTimeout = Math.max(socketTimeout, (int) CommonConstants.MIN_CLIENT_TIMEOUT);
+    connTimeout = Math.min(connTimeout, (int) CommonConstants.MAX_CLIENT_CONN_TIMEOUT);
+    connTimeout = Math.max(connTimeout, (int) CommonConstants.MIN_CLIENT_CONN_TIMEOUT);
     return createClient(TableService.Iface.class, TableService.Client.class, url, socketTimeout,
         connTimeout, isRetry, maxRetry);
   }
@@ -199,7 +222,7 @@ public class ClientFactory {
       String url, int socketTimeout, int connTimeout, boolean isRetry, int maxRetry) {
     Map<String, String> headers = new HashMap<String, String>();
     headers.put(USER_AGENT_HEADER, createUserAgentHeader());
-    headers.put(REQUEST_TIMEOUT, String.valueOf(socketTimeout));
+    headers.put(CommonConstants.REQUEST_TIMEOUT, String.valueOf(socketTimeout));
     if (customHeaders != null) {
       headers.putAll(customHeaders);
     }

@@ -83,4 +83,15 @@ public class ThrottleUtils {
       }
     }
   }
+
+  public static int getAdaptiveScanLimit(int lastScannedRecords, int lastLimit) {
+    int limit;
+    double scanRatio = lastScannedRecords / lastLimit;
+    if (scanRatio >= 1) {
+      limit = Math.min(lastLimit + Math.max((int) (lastLimit * 0.2), 20), 1000);
+    } else {
+      limit = Math.max(lastLimit / 4, 1);
+    }
+    return limit;
+  }
 }

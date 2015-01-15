@@ -6,7 +6,7 @@ public class ExtAppExampleMain {
   private static String appId = ""; // Your xiaomi AppId
   private static String secretKeyId = ""; // Your AppKey
   private static String secretKey = ""; // Your AppSecret
-  private static String endpoint = "https://cnbj-s0.sds.api.xiaomi.com";
+  private static String endpoint = "http://cnbj-s0.sds.api.xiaomi.com";
   private static String tableName = "java-test-weather";
   private static String sinaAppId = ""; // Your sina AppId
   private static String sinaAccessToken = ""; //Your sina accessToken, the external app guide the user to get the token for OAuth
