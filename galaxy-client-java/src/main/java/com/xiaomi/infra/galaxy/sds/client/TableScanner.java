@@ -30,11 +30,8 @@ public class TableScanner implements Iterable<Map<String, Datum>> {
     private final TableService.Iface tableClient;
     private final ScanRequest scan;
     private boolean finished = false;
-    private int maxSmallestLimitRetry = 5;
-    private int maxScanRetry = 1000;
-    private int scanRetry = 0;
-    private int smallestLimitRetry = 0;
-    private final static int SMALLEST_LIMIT = 1;
+    private int retry = 0;
+    private final static int MAX_RETRY = 100;
     private Iterator<Map<String, Datum>> bufferIterator = null;
     private ScanResult lastResult = null;
     private ThreadLocal<Long> lastPauseTime = new ThreadLocal<Long>() {
@@ -56,41 +53,20 @@ public class TableScanner implements Iterable<Map<String, Datum>> {
         if (finished) {
           return false;
         } else {
-          if (scanRetry > 0) {
-            // continue last unfinished scan request
-            if (lastResult != null && lastResult.isThrottle()) {
+          if (retry > 0) {
+            // continue the last unfinished scan request
+            if (lastResult != null && lastResult.isThrottled()) {
               // throttle scan qps quota
-              long pauseTime = ThrottleUtils.getPauseTime(ErrorCode.THROUGHPUT_EXCEED, scanRetry);
+              long pauseTime = ThrottleUtils.getPauseTime(ErrorCode.THROUGHPUT_EXCEED, retry);
               ThrottleUtils.sleepPauseTime(pauseTime);
               lastPauseTime.set(pauseTime < 0 ? 0 : pauseTime);
             }
           } else {
             // start a new scan request
-            scanRetry = 0;
+            assert retry == 0;
             long pauseTime = ThrottleUtils.getPauseTime(lastPauseTime.get());
             ThrottleUtils.sleepPauseTime(pauseTime);
             lastPauseTime.set(pauseTime < 0 ? 0 : pauseTime);
-          }
-
-          // adjust scan limit
-          if (lastResult != null) {
-            int lastScannedRecords = Math
-                .max(lastResult.getRecordsSize(), lastResult.getScannedRecords());
-            int limit = ThrottleUtils
-                .getAdaptiveScanLimit(lastScannedRecords, scan.getLimit());
-            if (limit == SMALLEST_LIMIT) {
-              if (scan.getLimit() == SMALLEST_LIMIT) {
-                smallestLimitRetry++;
-              } else {
-                // init
-                smallestLimitRetry = 1;
-              }
-            }
-            if (smallestLimitRetry > maxSmallestLimitRetry) {
-              throw new RuntimeException("Scan request " + scan + " with limit 1 failed at "
-                  + smallestLimitRetry + " times");
-            }
-            scan.setLimit(limit);
           }
 
           ScanResult result = null;
@@ -105,21 +81,19 @@ public class TableScanner implements Iterable<Map<String, Datum>> {
             bufferIterator = buffer.iterator();
           }
 
-          if ((result.getNextStartKey() == null || result.getNextStartKey().isEmpty())
-              && result.isSuccess()) {
+          if ((result.getNextStartKey() == null || result.getNextStartKey().isEmpty())) {
             // finish the whole scan request
             finished = true;
           } else {
             if (scan.getLimit() == result.getRecordsSize()) {
               // finish the current sub scan request
-              scanRetry = 0;
-              smallestLimitRetry = 0;
+              retry = 0;
             } else {
               // two possible cases: qps quota exceeds or scan limit is too large
-              scanRetry++;
-              if (scanRetry > maxScanRetry) {
+              retry++;
+              if (retry > MAX_RETRY) {
                 throw new RuntimeException("Scan request " + scan + " failed with "
-                    + scanRetry + " retries");
+                    + retry + " retries");
               }
             }
             lastResult = result;

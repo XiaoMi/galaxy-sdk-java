@@ -345,21 +345,21 @@ public class SdsTHttpClient extends TTransport {
 
           // host
           String host = this.host.toHostString();
-          post.setHeader(CommonConstants.HK_HOST, host);
-          signatureHeaders.add(CommonConstants.HK_HOST);
+          post.setHeader(AuthenticationConstants.HK_HOST, host);
+          signatureHeaders.add(AuthenticationConstants.HK_HOST);
           signatureParts.add(host);
 
           // timestamp
           String timestamp = Long.toString(clock.getCurrentEpoch());
-          post.setHeader(CommonConstants.HK_TIMESTAMP, timestamp);
-          signatureHeaders.add(CommonConstants.HK_TIMESTAMP);
+          post.setHeader(AuthenticationConstants.HK_TIMESTAMP, timestamp);
+          signatureHeaders.add(AuthenticationConstants.HK_TIMESTAMP);
           signatureParts.add(timestamp);
 
           // content md5
           String md5 = BytesUtil
               .bytesToHex(DigestUtil.digest(DigestUtil.DigestAlgorithm.MD5, data));
-          post.setHeader(CommonConstants.HK_CONTENT_MD5, md5);
-          signatureHeaders.add(CommonConstants.HK_CONTENT_MD5);
+          post.setHeader(AuthenticationConstants.HK_CONTENT_MD5, md5);
+          signatureHeaders.add(AuthenticationConstants.HK_CONTENT_MD5);
           signatureParts.add(md5);
 
           // signature
@@ -369,7 +369,7 @@ public class SdsTHttpClient extends TTransport {
         }
       }
       if (authHeader != null) {
-        post.setHeader(CommonConstants.HK_AUTHORIZATION,
+        post.setHeader(AuthenticationConstants.HK_AUTHORIZATION,
             encodeAuthorizationHeader(authHeader));
       }
     }
@@ -387,7 +387,7 @@ public class SdsTHttpClient extends TTransport {
   private HttpAuthorizationHeader createSignatureHeader(List<String> signatureHeaders,
       List<String> signatureParts) {
     assert credential != null;
-    assert signatureHeaders.equals(CommonConstants.SUGGESTED_SIGNATURE_HEADERS);
+    assert signatureHeaders.equals(AuthenticationConstants.SUGGESTED_SIGNATURE_HEADERS);
 
     HttpAuthorizationHeader auth = new HttpAuthorizationHeader();
     auth.setSignedHeaders(signatureHeaders);
@@ -426,7 +426,7 @@ public class SdsTHttpClient extends TTransport {
    */
   private boolean adjustClock(HttpResponse response, int httpStatusCode) {
     if (httpStatusCode == HttpStatusCode.CLOCK_TOO_SKEWED.getValue()) {
-      Header[] headers = response.getHeaders(CommonConstants.HK_TIMESTAMP);
+      Header[] headers = response.getHeaders(AuthenticationConstants.HK_TIMESTAMP);
       for (Header h : headers) {
         String hv = h.getValue();
         long serverTime = Long.parseLong(hv);

@@ -42,6 +42,11 @@ public class CommonConstants {
   public static final double DEFAULT_CLIENT_TIMEOUT = (double)10000;
 
   /**
+   * client端最大读写超时时间（ms）
+   */
+  public static final double DEFAULT_MAX_CLIENT_TIMEOUT = (double)10000;
+
+  /**
    * client端DDL操作超时时间（ms）
    */
   public static final double DEFAULT_ADMIN_CLIENT_TIMEOUT = (double)30000;
@@ -50,36 +55,6 @@ public class CommonConstants {
    * client端连接超时时间（ms）
    */
   public static final double DEFAULT_CLIENT_CONN_TIMEOUT = (double)3000;
-
-  /**
-   * client端读写最大超时时间（ms）
-   */
-  public static final double MAX_CLIENT_TIMEOUT = (double)15000;
-
-  /**
-   * client端DDL操作最大超时时间（ms）
-   */
-  public static final double MAX_ADMIN_CLIENT_TIMEOUT = (double)40000;
-
-  /**
-   * client端连接最大超时时间（ms）
-   */
-  public static final double MAX_CLIENT_CONN_TIMEOUT = (double)5000;
-
-  /**
-   * client端读写最小超时时间（ms）
-   */
-  public static final double MIN_CLIENT_TIMEOUT = (double)8000;
-
-  /**
-   * client端DDL操作最小超时时间（ms）
-   */
-  public static final double MIN_ADMIN_CLIENT_TIMEOUT = (double)30000;
-
-  /**
-   * client端连接最小超时时间（ms）
-   */
-  public static final double MIN_CLIENT_CONN_TIMEOUT = (double)3000;
 
   /**
    * HTTP RPC服务地址
@@ -138,44 +113,18 @@ public class CommonConstants {
   }
 
   /**
-   * 签名相关的HTTP头，
-   * 根据分层防御的设计，使用HTTPS也建议进行签名:
-   * http://bitcoin.stackexchange.com/questions/21732/why-api-of-bitcoin-exchanges-use-hmac-over-https-ssl
+   * HTTP请求的超时时限
    */
-  public static final String HK_HOST = "Host";
+  public static final String HK_REQUEST_TIMEOUT = "X-Xiaomi-Request-Timeout";
 
   /**
-   * 签名时间，1970/0/0开始的秒数，如客户端与服务器时钟相差较大，会返回CLOCK_TOO_SKEWED错误
+   * HTTP头的错误码
    */
-  public static final String HK_TIMESTAMP = "X-Xiaomi-Timestamp";
-
-  public static final String HK_CONTENT_MD5 = "X-Xiaomi-Content-MD5";
-
-  /**
-   * 内容为TJSONTransport.encode(HttpAuthorizationHeader)
-   */
-  public static final String HK_AUTHORIZATION = "Authorization";
-
-  public static final List<String> SUGGESTED_SIGNATURE_HEADERS = new ArrayList<String>();
-  static {
-    SUGGESTED_SIGNATURE_HEADERS.add("Host");
-    SUGGESTED_SIGNATURE_HEADERS.add("X-Xiaomi-Timestamp");
-    SUGGESTED_SIGNATURE_HEADERS.add("X-Xiaomi-Content-MD5");
-  }
+  public static final String HK_ERROR_CODE_HEADER = "X-Xiaomi-Error-Code";
 
   /**
    * HTTP Body最大字节数
    */
   public static final int MAX_CONTENT_SIZE = 524288;
-
-  /**
-   * 请求的超时时限
-   */
-  public static final String REQUEST_TIMEOUT = "X-Xiaomi-Request-Timeout";
-
-  /**
-   * HTTP头的错误码
-   */
-  public static final String ERROR_CODE_HEADER = "X-Xiaomi-Error-Code";
 
 }

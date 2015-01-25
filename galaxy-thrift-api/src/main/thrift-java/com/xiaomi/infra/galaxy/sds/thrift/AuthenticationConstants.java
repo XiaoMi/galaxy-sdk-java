@@ -49,4 +49,33 @@ public class AuthenticationConstants {
     SIGNATURE_SUPPORT.put(com.xiaomi.infra.galaxy.sds.thrift.UserType.APP_ANONYMOUS, false);
   }
 
+  /**
+   * 签名相关的HTTP头，
+   * 根据分层防御的设计，使用HTTPS也建议进行签名:
+   * http://bitcoin.stackexchange.com/questions/21732/why-api-of-bitcoin-exchanges-use-hmac-over-https-ssl
+   */
+  public static final String HK_HOST = "Host";
+
+  /**
+   * 签名时间，1970/0/0开始的秒数，如客户端与服务器时钟相差较大，会返回CLOCK_TOO_SKEWED错误
+   */
+  public static final String HK_TIMESTAMP = "X-Xiaomi-Timestamp";
+
+  public static final String HK_CONTENT_MD5 = "X-Xiaomi-Content-MD5";
+
+  /**
+   * 内容为TJSONTransport.encode(HttpAuthorizationHeader)
+   */
+  public static final String HK_AUTHORIZATION = "Authorization";
+
+  /**
+   * 建议签名应包含的HTTP头
+   */
+  public static final List<String> SUGGESTED_SIGNATURE_HEADERS = new ArrayList<String>();
+  static {
+    SUGGESTED_SIGNATURE_HEADERS.add("Host");
+    SUGGESTED_SIGNATURE_HEADERS.add("X-Xiaomi-Timestamp");
+    SUGGESTED_SIGNATURE_HEADERS.add("X-Xiaomi-Content-MD5");
+  }
+
 }
