@@ -42,6 +42,11 @@ public class CommonConstants {
   public static final double DEFAULT_CLIENT_TIMEOUT = (double)10000;
 
   /**
+   * client端最大读写超时时间（ms）
+   */
+  public static final double DEFAULT_MAX_CLIENT_TIMEOUT = (double)10000;
+
+  /**
    * client端DDL操作超时时间（ms）
    */
   public static final double DEFAULT_ADMIN_CLIENT_TIMEOUT = (double)30000;
@@ -106,5 +111,20 @@ public class CommonConstants {
     HEADER_THRIFT_MAP.put("application/x-thrift-binary", com.xiaomi.infra.galaxy.sds.thrift.ThriftProtocol.TBINARY);
     HEADER_THRIFT_MAP.put("application/x-thrift", com.xiaomi.infra.galaxy.sds.thrift.ThriftProtocol.TJSON);
   }
+
+  /**
+   * HTTP请求的超时时限
+   */
+  public static final String HK_REQUEST_TIMEOUT = "X-Xiaomi-Request-Timeout";
+
+  /**
+   * HTTP头的错误码
+   */
+  public static final String HK_ERROR_CODE_HEADER = "X-Xiaomi-Error-Code";
+
+  /**
+   * HTTP Body最大字节数
+   */
+  public static final int MAX_CONTENT_SIZE = 524288;
 
 }

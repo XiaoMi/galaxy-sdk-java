@@ -44,6 +44,7 @@ public class ErrorsConstants {
   static {
     ERROR_BACKOFF.put(com.xiaomi.infra.galaxy.sds.thrift.ErrorCode.SERVICE_UNAVAILABLE, 1000L);
     ERROR_BACKOFF.put(com.xiaomi.infra.galaxy.sds.thrift.ErrorCode.THROUGHPUT_EXCEED, 1000L);
+    ERROR_BACKOFF.put(com.xiaomi.infra.galaxy.sds.thrift.ErrorCode.REQUEST_TIMEOUT, 0L);
     ERROR_BACKOFF.put(com.xiaomi.infra.galaxy.sds.thrift.ErrorCode.CLOCK_TOO_SKEWED, 0L);
     ERROR_BACKOFF.put(com.xiaomi.infra.galaxy.sds.thrift.ErrorCode.INTERNAL_ERROR, 1000L);
     ERROR_BACKOFF.put(com.xiaomi.infra.galaxy.sds.thrift.ErrorCode.TTRANSPORT_ERROR, 1000L);
@@ -56,6 +57,7 @@ public class ErrorsConstants {
   static {
     ERROR_RETRY_TYPE.put(com.xiaomi.infra.galaxy.sds.thrift.ErrorCode.SERVICE_UNAVAILABLE, com.xiaomi.infra.galaxy.sds.thrift.RetryType.SAFE);
     ERROR_RETRY_TYPE.put(com.xiaomi.infra.galaxy.sds.thrift.ErrorCode.THROUGHPUT_EXCEED, com.xiaomi.infra.galaxy.sds.thrift.RetryType.SAFE);
+    ERROR_RETRY_TYPE.put(com.xiaomi.infra.galaxy.sds.thrift.ErrorCode.REQUEST_TIMEOUT, com.xiaomi.infra.galaxy.sds.thrift.RetryType.SAFE);
     ERROR_RETRY_TYPE.put(com.xiaomi.infra.galaxy.sds.thrift.ErrorCode.CLOCK_TOO_SKEWED, com.xiaomi.infra.galaxy.sds.thrift.RetryType.SAFE);
     ERROR_RETRY_TYPE.put(com.xiaomi.infra.galaxy.sds.thrift.ErrorCode.INTERNAL_ERROR, com.xiaomi.infra.galaxy.sds.thrift.RetryType.UNSAFE);
     ERROR_RETRY_TYPE.put(com.xiaomi.infra.galaxy.sds.thrift.ErrorCode.TTRANSPORT_ERROR, com.xiaomi.infra.galaxy.sds.thrift.RetryType.UNSAFE);

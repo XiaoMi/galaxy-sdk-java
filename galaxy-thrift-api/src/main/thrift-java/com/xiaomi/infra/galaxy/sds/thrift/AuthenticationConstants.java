@@ -78,9 +78,4 @@ public class AuthenticationConstants {
     SUGGESTED_SIGNATURE_HEADERS.add("X-Xiaomi-Content-MD5");
   }
 
-  /**
-   * HTTP Body最大字节数
-   */
-  public static final int MAX_CONTENT_SIZE = 524288;
-
 }

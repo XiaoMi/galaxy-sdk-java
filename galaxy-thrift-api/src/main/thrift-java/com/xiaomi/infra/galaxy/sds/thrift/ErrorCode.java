@@ -91,7 +91,12 @@ public enum ErrorCode implements libthrift091.TEnum {
   /**
    * 不支持的thrift协议类型
    */
-  UNSUPPORTED_TPROTOCOL(36);
+  UNSUPPORTED_TPROTOCOL(36),
+  /**
+   * 请求超时
+   * 
+   */
+  REQUEST_TIMEOUT(37);
 
   private final int value;
 
@@ -152,6 +157,8 @@ public enum ErrorCode implements libthrift091.TEnum {
         return TTRANSPORT_ERROR;
       case 36:
         return UNSUPPORTED_TPROTOCOL;
+      case 37:
+        return REQUEST_TIMEOUT;
       default:
         return null;
     }

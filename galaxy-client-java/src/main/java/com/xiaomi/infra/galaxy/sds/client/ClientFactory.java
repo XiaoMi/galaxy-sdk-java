@@ -198,6 +198,7 @@ public class ClientFactory {
       String url, int socketTimeout, int connTimeout, boolean isRetry, int maxRetry) {
     Map<String, String> headers = new HashMap<String, String>();
     headers.put(USER_AGENT_HEADER, createUserAgentHeader());
+    headers.put(CommonConstants.HK_REQUEST_TIMEOUT, String.valueOf(socketTimeout));
     if (customHeaders != null) {
       headers.putAll(customHeaders);
     }
