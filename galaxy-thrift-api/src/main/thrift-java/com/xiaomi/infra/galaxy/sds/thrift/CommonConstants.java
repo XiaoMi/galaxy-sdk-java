@@ -87,6 +87,11 @@ public class CommonConstants {
   public static final String TABLE_SERVICE_PATH = "/v1/api/table";
 
   /**
+   * 开启ScanAction时， 获取操作数据的数目的key值
+   */
+  public static final String SCAN_COUNT = "count";
+
+  /**
    * 兼容其它SDK，等同于application/x-thrift-json
    */
   public static final String DEFAULT_THRIFT_HEADER = "application/x-thrift";
