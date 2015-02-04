@@ -345,6 +345,7 @@ public class SdsTHttpClient extends TTransport {
 
           // host
           String host = this.host.toHostString();
+          host = host.split(":")[0];
           post.setHeader(AuthenticationConstants.HK_HOST, host);
           signatureHeaders.add(AuthenticationConstants.HK_HOST);
           signatureParts.add(host);

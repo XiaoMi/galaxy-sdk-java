@@ -52,7 +52,9 @@ public class ClientFactory {
     SchemeRegistry schemeRegistry = new SchemeRegistry();
     schemeRegistry.register(
         new Scheme("http", PlainSocketFactory.getSocketFactory(), 80));
-    schemeRegistry.register(new Scheme("https", SSLSocketFactory.getSocketFactory(), 443));
+    SSLSocketFactory sslSocketFactory = SSLSocketFactory.getSocketFactory();
+    sslSocketFactory.setHostnameVerifier(SSLSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER);
+    schemeRegistry.register(new Scheme("https", sslSocketFactory, 443));
     ClientConnectionManager conMgr = new ThreadSafeClientConnManager(params, schemeRegistry);
     return new DefaultHttpClient(conMgr, params);
   }
