@@ -97,6 +97,7 @@ public class ThreadSafeClient<IFace, Impl> {
     return (IFace) Proxy.newProxyInstance(ThreadSafeClient.class.getClassLoader(),
         new Class[] { ifaceClass },
         new ThreadSafeInvocationHandler<IFace, Impl>(client, customHeaders, credential, clock,
-            ifaceClass, implClass, url, socketTimeout, connTimeout));
+            ifaceClass, implClass, url, socketTimeout, connTimeout)
+    );
   }
 }

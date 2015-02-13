@@ -22,6 +22,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 import com.xiaomi.infra.galaxy.sds.thrift.CommonConstants;
 import com.xiaomi.infra.galaxy.sds.thrift.ThriftProtocol;
@@ -62,6 +63,7 @@ import com.xiaomi.infra.galaxy.sds.thrift.MacAlgorithm;
  */
 public class SdsTHttpClient extends TTransport {
   private static final Logger LOG = LoggerFactory.getLogger(SdsTHttpClient.class);
+  private static final int REQUEST_ID_LENGTH = 8;
   private URL url_ = null;
   private final ByteArrayOutputStream requestBuffer_ = new ByteArrayOutputStream();
   private InputStream inputStream_ = null;
@@ -105,7 +107,10 @@ public class SdsTHttpClient extends TTransport {
   public SdsTHttpClient(String url, HttpClient client, Credential credential, AdjustableClock clock)
       throws TTransportException {
     try {
-      url_ = new URL(url);
+      String requestId = generateRandomId(REQUEST_ID_LENGTH);
+      String uri = new StringBuilder(url.length() + "?requestId=".length() + requestId.length())
+          .append(url).append("?requestId=").append(requestId).toString();
+      url_ = new URL(uri);
       this.client = client;
       this.host = new HttpHost(url_.getHost(), -1 == url_.getPort() ? url_.getDefaultPort()
           : url_.getPort(), url_.getProtocol());
@@ -442,5 +447,8 @@ public class SdsTHttpClient extends TTransport {
       }
     }
     return false;
+  }
+  private static String generateRandomId(int length) {
+    return UUID.randomUUID().toString().substring(0, length);
   }
 }
