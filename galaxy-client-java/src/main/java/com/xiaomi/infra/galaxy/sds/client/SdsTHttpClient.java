@@ -75,6 +75,7 @@ public class SdsTHttpClient extends TTransport {
   private Credential credential;
   private AdjustableClock clock;
   private ThriftProtocol protocol_ = ThriftProtocol.TCOMPACT;
+  private String queryString = null;
 
   public static class Factory extends TTransportFactory {
     private final String url;
@@ -107,10 +108,7 @@ public class SdsTHttpClient extends TTransport {
   public SdsTHttpClient(String url, HttpClient client, Credential credential, AdjustableClock clock)
       throws TTransportException {
     try {
-      String requestId = generateRandomId(REQUEST_ID_LENGTH);
-      String uri = new StringBuilder(url.length() + "?requestId=".length() + requestId.length())
-          .append(url).append("?requestId=").append(requestId).toString();
-      url_ = new URL(uri);
+      url_ = new URL(url);
       this.client = client;
       this.host = new HttpHost(url_.getHost(), -1 == url_.getPort() ? url_.getDefaultPort()
           : url_.getPort(), url_.getProtocol());
@@ -174,6 +172,11 @@ public class SdsTHttpClient extends TTransport {
       customHeaders_ = new HashMap<String, String>();
     }
     customHeaders_.put(key, value);
+    return this;
+  }
+
+  public SdsTHttpClient setQueryString(String queryString) {
+    this.queryString = queryString;
     return this;
   }
 
@@ -245,7 +248,14 @@ public class SdsTHttpClient extends TTransport {
 
     try {
       // Set request to path + query string
-      post = new HttpPost(this.url_.getFile());
+      String requestId = generateRandomId(REQUEST_ID_LENGTH);
+      StringBuilder sb = new StringBuilder();
+      sb.append(this.url_.getFile()).append("?id=").append(requestId);
+      if (queryString != null) {
+        sb.append("&").append(queryString);
+      }
+      String uri = sb.toString();
+      post = new HttpPost(uri);
 
       //
       // Headers are added to the HttpPost instance, not

@@ -58,7 +58,8 @@ public class ThreadSafeClient<IFace, Impl> {
         SdsTHttpClient sdsHttpClient = new SdsTHttpClient(url, client, this.credential, clock);
         sdsHttpClient.setSocketTimeout(socketTimeout)
             .setConnectTimeout(connTimeout)
-            .setProtocol(ThriftProtocol.TCOMPACT);
+            .setProtocol(ThriftProtocol.TCOMPACT)
+            .setQueryString("type=" + method.getName());
 
         TProtocol proto = new TCompactProtocol(sdsHttpClient);
 
