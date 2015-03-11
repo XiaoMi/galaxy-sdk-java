@@ -114,26 +114,50 @@ public class ClientFactory {
     return newAuthClient(url);
   }
 
+  public AuthService.Iface newAuthClient(boolean supportAccountKey) {
+    String url = CommonConstants.DEFAULT_SERVICE_ENDPOINT + CommonConstants.AUTH_SERVICE_PATH;
+    return newAuthClient(url, supportAccountKey);
+  }
+
   public AuthService.Iface newAuthClient(String url) {
+    return newAuthClient(url, false);
+  }
+
+  public AuthService.Iface newAuthClient(String url, boolean supportAccountKey) {
     return newAuthClient(url, (int) CommonConstants.DEFAULT_CLIENT_TIMEOUT,
-        (int) CommonConstants.DEFAULT_CLIENT_CONN_TIMEOUT);
+        (int) CommonConstants.DEFAULT_CLIENT_CONN_TIMEOUT, supportAccountKey);
   }
 
   public AuthService.Iface newAuthClient(String url, int socketTimeout, int connTimeout) {
+    return newAuthClient(url, socketTimeout, connTimeout, false);
+  }
+
+  public AuthService.Iface newAuthClient(String url, int socketTimeout, int connTimeout,
+      boolean supportAccountKey) {
     return createClient(AuthService.Iface.class, AuthService.Client.class, url, socketTimeout,
-        connTimeout, false, ErrorsConstants.MAX_RETRY);
+        connTimeout, false, ErrorsConstants.MAX_RETRY, supportAccountKey);
   }
 
   public AuthService.Iface newAuthClient(String url, boolean isRetry, int maxRetry) {
+    return newAuthClient(url, isRetry, maxRetry, false);
+  }
+
+  public AuthService.Iface newAuthClient(String url, boolean isRetry, int maxRetry,
+      boolean supportAccountKey) {
     return createClient(AuthService.Iface.class, AuthService.Client.class, url,
         (int) CommonConstants.DEFAULT_CLIENT_TIMEOUT,
-        (int) CommonConstants.DEFAULT_CLIENT_CONN_TIMEOUT, isRetry, maxRetry);
+        (int) CommonConstants.DEFAULT_CLIENT_CONN_TIMEOUT, isRetry, maxRetry, supportAccountKey);
   }
 
   public AuthService.Iface newAuthClient(String url, int socketTimeout, int connTimeout,
       boolean isRetry, int maxRetry) {
+    return newAuthClient(url, socketTimeout, connTimeout, isRetry, maxRetry, false);
+  }
+
+  public AuthService.Iface newAuthClient(String url, int socketTimeout, int connTimeout,
+      boolean isRetry, int maxRetry, boolean supportAccountKey) {
     return createClient(AuthService.Iface.class, AuthService.Client.class, url, socketTimeout,
-        connTimeout, isRetry, maxRetry);
+        connTimeout, isRetry, maxRetry, supportAccountKey);
   }
 
   public AdminService.Iface newAdminClient() {
@@ -144,26 +168,53 @@ public class ClientFactory {
     return newAdminClient(url);
   }
 
+  public AdminService.Iface newAdminClient(boolean supportAccountKey) {
+    if (credential == null) {
+      throw new IllegalArgumentException("Credential is not set");
+    }
+    String url = CommonConstants.DEFAULT_SERVICE_ENDPOINT + CommonConstants.ADMIN_SERVICE_PATH;
+    return newAdminClient(url, supportAccountKey);
+  }
+
   public AdminService.Iface newAdminClient(String url) {
+    return newAdminClient(url, false);
+  }
+
+  public AdminService.Iface newAdminClient(String url, boolean supportAccountKey) {
     return newAdminClient(url, (int) CommonConstants.DEFAULT_ADMIN_CLIENT_TIMEOUT,
-        (int) CommonConstants.DEFAULT_CLIENT_CONN_TIMEOUT);
+        (int) CommonConstants.DEFAULT_CLIENT_CONN_TIMEOUT, supportAccountKey);
   }
 
   public AdminService.Iface newAdminClient(String url, int socketTimeout, int connTimeout) {
+    return newAdminClient(url, socketTimeout, connTimeout, false);
+  }
+
+  public AdminService.Iface newAdminClient(String url, int socketTimeout, int connTimeout,
+      boolean supportAccountKey) {
     return createClient(AdminService.Iface.class, AdminService.Client.class, url, socketTimeout,
-        connTimeout, false, ErrorsConstants.MAX_RETRY);
+        connTimeout, false, ErrorsConstants.MAX_RETRY, supportAccountKey);
   }
 
   public AdminService.Iface newAdminClient(String url, boolean isRetry, int maxRetry) {
+    return newAdminClient(url, isRetry, maxRetry, false);
+  }
+
+  public AdminService.Iface newAdminClient(String url, boolean isRetry, int maxRetry,
+      boolean supportAccountKey) {
     return createClient(AdminService.Iface.class, AdminService.Client.class, url,
         (int) CommonConstants.DEFAULT_ADMIN_CLIENT_TIMEOUT,
-        (int) CommonConstants.DEFAULT_CLIENT_CONN_TIMEOUT, isRetry, maxRetry);
+        (int) CommonConstants.DEFAULT_CLIENT_CONN_TIMEOUT, isRetry, maxRetry, supportAccountKey);
   }
 
   public AdminService.Iface newAdminClient(String url, int socketTimeout, int connTimeout,
       boolean isRetry, int maxRetry) {
+    return newAdminClient(url, socketTimeout, connTimeout, isRetry, maxRetry, false);
+  }
+
+  public AdminService.Iface newAdminClient(String url, int socketTimeout, int connTimeout,
+      boolean isRetry, int maxRetry, boolean supportAccountKey) {
     return createClient(AdminService.Iface.class, AdminService.Client.class, url, socketTimeout,
-        connTimeout, isRetry, maxRetry);
+        connTimeout, isRetry, maxRetry, supportAccountKey);
   }
 
   public TableService.Iface newTableClient() {
@@ -174,30 +225,58 @@ public class ClientFactory {
     return newTableClient(url);
   }
 
+  public TableService.Iface newTableClient(boolean supportAccountKey) {
+    if (credential == null) {
+      throw new IllegalArgumentException("Credential is not set");
+    }
+    String url = CommonConstants.DEFAULT_SERVICE_ENDPOINT + CommonConstants.TABLE_SERVICE_PATH;
+    return newTableClient(url, supportAccountKey);
+  }
+
   public TableService.Iface newTableClient(String url) {
+    return newTableClient(url, false);
+  }
+
+  public TableService.Iface newTableClient(String url, boolean supportAccountKey) {
     return newTableClient(url, (int) CommonConstants.DEFAULT_CLIENT_TIMEOUT,
-        (int) CommonConstants.DEFAULT_CLIENT_CONN_TIMEOUT);
+        (int) CommonConstants.DEFAULT_CLIENT_CONN_TIMEOUT, supportAccountKey);
   }
 
   public TableService.Iface newTableClient(String url, int socketTimeout, int connTimeout) {
+    return newTableClient(url, socketTimeout, connTimeout, false);
+  }
+
+  public TableService.Iface newTableClient(String url, int socketTimeout, int connTimeout,
+      boolean supportAccountKey) {
     return createClient(TableService.Iface.class, TableService.Client.class, url, socketTimeout,
-        connTimeout, false, ErrorsConstants.MAX_RETRY);
+        connTimeout, false, ErrorsConstants.MAX_RETRY, supportAccountKey);
   }
 
   public TableService.Iface newTableClient(String url, boolean isRetry, int maxRetry) {
+    return newTableClient(url, isRetry, maxRetry, false);
+  }
+
+  public TableService.Iface newTableClient(String url, boolean isRetry, int maxRetry,
+      boolean supportAccountKey) {
     return createClient(TableService.Iface.class, TableService.Client.class, url,
         (int) CommonConstants.DEFAULT_CLIENT_TIMEOUT,
-        (int) CommonConstants.DEFAULT_CLIENT_CONN_TIMEOUT, isRetry, maxRetry);
+        (int) CommonConstants.DEFAULT_CLIENT_CONN_TIMEOUT, isRetry, maxRetry, supportAccountKey);
   }
 
   public TableService.Iface newTableClient(String url, int socketTimeout, int connTimeout,
       boolean isRetry, int maxRetry) {
+    return newTableClient(url, socketTimeout, connTimeout, isRetry, maxRetry, false);
+  }
+
+  public TableService.Iface newTableClient(String url, int socketTimeout, int connTimeout,
+      boolean isRetry, int maxRetry, boolean supportAccountKey) {
     return createClient(TableService.Iface.class, TableService.Client.class, url, socketTimeout,
-        connTimeout, isRetry, maxRetry);
+        connTimeout, isRetry, maxRetry, supportAccountKey);
   }
 
   private <IFace, Impl> IFace createClient(Class<IFace> ifaceClass, Class<Impl> implClass,
-      String url, int socketTimeout, int connTimeout, boolean isRetry, int maxRetry) {
+      String url, int socketTimeout, int connTimeout, boolean isRetry, int maxRetry,
+      boolean supportAccountKey) {
     Map<String, String> headers = new HashMap<String, String>();
     headers.put(USER_AGENT_HEADER, createUserAgentHeader());
     headers.put(CommonConstants.HK_REQUEST_TIMEOUT, String.valueOf(socketTimeout));
@@ -206,7 +285,7 @@ public class ClientFactory {
     }
 
     IFace client = ThreadSafeClient.getClient(httpClient, headers, credential, clock,
-        ifaceClass, implClass, url, socketTimeout, connTimeout);
+        ifaceClass, implClass, url, socketTimeout, connTimeout, supportAccountKey);
     return AutoRetryClient.getAutoRetryClient(ifaceClass, client, isRetry, maxRetry);
   }
 

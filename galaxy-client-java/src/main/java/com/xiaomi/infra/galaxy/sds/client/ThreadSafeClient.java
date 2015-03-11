@@ -37,10 +37,11 @@ public class ThreadSafeClient<IFace, Impl> {
     final String url;
     private int socketTimeout = 0;
     private int connTimeout = 0;
+    private boolean supportAccountKey = false;
 
     private ThreadSafeInvocationHandler(HttpClient client, Map<String, String> customHeaders,
         Credential credential, AdjustableClock clock, Class<IFace> ifaceClass,
-        Class<Impl> implClass, String url, int socketTimeout, int connTimeout) {
+        Class<Impl> implClass, String url, int socketTimeout, int connTimeout, boolean supportAccountKey) {
       this.client = client;
       this.customHeaders = customHeaders;
       this.credential = credential;
@@ -50,6 +51,7 @@ public class ThreadSafeClient<IFace, Impl> {
       this.url = url;
       this.socketTimeout = socketTimeout;
       this.connTimeout = connTimeout;
+      this.supportAccountKey = supportAccountKey;
     }
 
     @Override
@@ -59,7 +61,8 @@ public class ThreadSafeClient<IFace, Impl> {
         sdsHttpClient.setSocketTimeout(socketTimeout)
             .setConnectTimeout(connTimeout)
             .setProtocol(ThriftProtocol.TCOMPACT)
-            .setQueryString("type=" + method.getName());
+            .setQueryString("type=" + method.getName())
+            .setSupportAccountKey(supportAccountKey);
 
         TProtocol proto = new TCompactProtocol(sdsHttpClient);
 
@@ -94,11 +97,11 @@ public class ThreadSafeClient<IFace, Impl> {
   @SuppressWarnings("unchecked")
   public static <IFace, Impl> IFace getClient(HttpClient client, Map<String, String> customHeaders,
       Credential credential, AdjustableClock clock, Class<IFace> ifaceClass, Class<Impl> implClass,
-      String url, int socketTimeout, int connTimeout) {
+      String url, int socketTimeout, int connTimeout, boolean supportAccountKey) {
     return (IFace) Proxy.newProxyInstance(ThreadSafeClient.class.getClassLoader(),
         new Class[] { ifaceClass },
         new ThreadSafeInvocationHandler<IFace, Impl>(client, customHeaders, credential, clock,
-            ifaceClass, implClass, url, socketTimeout, connTimeout)
+            ifaceClass, implClass, url, socketTimeout, connTimeout, supportAccountKey)
     );
   }
 }

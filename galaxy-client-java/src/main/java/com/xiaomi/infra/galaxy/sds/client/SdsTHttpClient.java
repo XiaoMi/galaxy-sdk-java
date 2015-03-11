@@ -76,6 +76,7 @@ public class SdsTHttpClient extends TTransport {
   private AdjustableClock clock;
   private ThriftProtocol protocol_ = ThriftProtocol.TCOMPACT;
   private String queryString = null;
+  private boolean supportAccountKey = false;
 
   public static class Factory extends TTransportFactory {
     private final String url;
@@ -180,6 +181,11 @@ public class SdsTHttpClient extends TTransport {
     return this;
   }
 
+  public SdsTHttpClient setSupportAccountKey(boolean supportAccountKey) {
+    this.supportAccountKey = supportAccountKey;
+    return this;
+  }
+
   public void open() {
   }
 
@@ -265,7 +271,7 @@ public class SdsTHttpClient extends TTransport {
       post.setHeader("Accept", CommonConstants.THRIFT_HEADER_MAP.get(protocol_));
       post.setHeader("User-Agent", "Java/THttpClient/HC");
       setCustomHeaders(post);
-      setAuthenticationHeaders(post, data);
+      setAuthenticationHeaders(post, data, supportAccountKey);
 
       post.setEntity(new ByteArrayEntity(data));
 
@@ -349,7 +355,7 @@ public class SdsTHttpClient extends TTransport {
   /**
    * Set signature related headers when credential is properly set
    */
-  private SdsTHttpClient setAuthenticationHeaders(HttpPost post, byte[] data) {
+  private SdsTHttpClient setAuthenticationHeaders(HttpPost post, byte[] data, boolean supportAccountKey) {
     if (this.client != null && credential != null) {
       HttpAuthorizationHeader authHeader = null;
       if (credential.getType() != null && credential.getSecretKeyId() != null) {
@@ -385,6 +391,7 @@ public class SdsTHttpClient extends TTransport {
         }
       }
       if (authHeader != null) {
+        authHeader.setSupportAccountKey(supportAccountKey);
         post.setHeader(AuthenticationConstants.HK_AUTHORIZATION,
             encodeAuthorizationHeader(authHeader));
       }
