@@ -44,6 +44,25 @@ public class ClientFactory {
   private HttpClient httpClient;
   private AdjustableClock clock;
 
+  public static HttpClient generateHttpClient(int maxTotalConnections) {
+    return generateHttpClient(maxTotalConnections, (int) CommonConstants.DEFAULT_CLIENT_CONN_TIMEOUT);
+  }
+
+  public static HttpClient generateHttpClient(int maxTotalConnections, int connTimeout) {
+    HttpParams params = new BasicHttpParams();
+    ConnManagerParams.setMaxTotalConnections(params, maxTotalConnections);
+    HttpConnectionParams
+        .setConnectionTimeout(params, connTimeout);
+    SchemeRegistry schemeRegistry = new SchemeRegistry();
+    schemeRegistry.register(
+        new Scheme("http", PlainSocketFactory.getSocketFactory(), 80));
+    SSLSocketFactory sslSocketFactory = SSLSocketFactory.getSocketFactory();
+    sslSocketFactory.setHostnameVerifier(SSLSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER);
+    schemeRegistry.register(new Scheme("https", sslSocketFactory, 443));
+    ClientConnectionManager conMgr = new ThreadSafeClientConnManager(params, schemeRegistry);
+    return new DefaultHttpClient(conMgr, params);
+  }
+
   private static HttpClient generateHttpClient() {
     HttpParams params = new BasicHttpParams();
     ConnManagerParams.setMaxTotalConnections(params, 1);
