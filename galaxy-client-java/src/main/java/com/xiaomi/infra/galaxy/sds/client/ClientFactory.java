@@ -12,6 +12,8 @@ import com.xiaomi.infra.galaxy.sds.thrift.VersionUtil;
 import org.apache.http.client.HttpClient;
 import org.apache.http.conn.ClientConnectionManager;
 import org.apache.http.conn.params.ConnManagerParams;
+import org.apache.http.conn.params.ConnPerRoute;
+import org.apache.http.conn.routing.HttpRoute;
 import org.apache.http.conn.scheme.PlainSocketFactory;
 import org.apache.http.conn.scheme.Scheme;
 import org.apache.http.conn.scheme.SchemeRegistry;
@@ -48,9 +50,14 @@ public class ClientFactory {
     return generateHttpClient(maxTotalConnections, (int) CommonConstants.DEFAULT_CLIENT_CONN_TIMEOUT);
   }
 
-  public static HttpClient generateHttpClient(int maxTotalConnections, int connTimeout) {
+  public static HttpClient generateHttpClient(final int maxTotalConnections, int connTimeout) {
     HttpParams params = new BasicHttpParams();
-    ConnManagerParams.setMaxTotalConnections(params, maxTotalConnections);
+    ConnManagerParams.setMaxTotalConnections(params, maxTotalConnections * 2);
+    ConnManagerParams.setMaxConnectionsPerRoute(params, new ConnPerRoute() {
+      @Override public int getMaxForRoute(HttpRoute route) {
+        return maxTotalConnections;
+      }
+    });
     HttpConnectionParams
         .setConnectionTimeout(params, connTimeout);
     SchemeRegistry schemeRegistry = new SchemeRegistry();
