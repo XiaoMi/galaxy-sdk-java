@@ -46,16 +46,16 @@ public class ClientFactory {
   private HttpClient httpClient;
   private AdjustableClock clock;
 
-  public static HttpClient generateHttpClient(int maxTotalConnections) {
-    return generateHttpClient(maxTotalConnections, (int) CommonConstants.DEFAULT_CLIENT_CONN_TIMEOUT);
+  public static HttpClient generateHttpClient(final int maxTotalConnections, final int maxTotalConnectionsPerRoute) {
+    return generateHttpClient(maxTotalConnections, maxTotalConnectionsPerRoute, (int) CommonConstants.DEFAULT_CLIENT_CONN_TIMEOUT);
   }
 
-  public static HttpClient generateHttpClient(final int maxTotalConnections, int connTimeout) {
+  public static HttpClient generateHttpClient(final int maxTotalConnections, final int maxTotalConnectionsPerRoute, int connTimeout) {
     HttpParams params = new BasicHttpParams();
-    ConnManagerParams.setMaxTotalConnections(params, maxTotalConnections * 2);
+    ConnManagerParams.setMaxTotalConnections(params, maxTotalConnections);
     ConnManagerParams.setMaxConnectionsPerRoute(params, new ConnPerRoute() {
       @Override public int getMaxForRoute(HttpRoute route) {
-        return maxTotalConnections;
+        return maxTotalConnectionsPerRoute;
       }
     });
     HttpConnectionParams
