@@ -52,7 +52,7 @@ public class ExtAppTableCreator {
   private void init() throws TException {
     Credential credential = new Credential().setSecretKeyId(secretKeyId).setSecretKey(secretKey)
         .setType(userType);
-    ClientFactory clientFactory = new ClientFactory(credential);
+    ClientFactory clientFactory = new ClientFactory().setCredential(credential);
     adminClient = clientFactory
         .newAdminClient(endpoint + CommonConstants.ADMIN_SERVICE_PATH, 50000, 3000);
     // save the mapping from appUserAuthProvider to extAppId

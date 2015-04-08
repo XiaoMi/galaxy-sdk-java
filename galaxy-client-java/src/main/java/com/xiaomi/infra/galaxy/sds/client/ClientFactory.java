@@ -7,8 +7,10 @@ import com.xiaomi.infra.galaxy.sds.thrift.CommonConstants;
 import com.xiaomi.infra.galaxy.sds.thrift.Credential;
 import com.xiaomi.infra.galaxy.sds.thrift.ErrorsConstants;
 import com.xiaomi.infra.galaxy.sds.thrift.TableService;
+import com.xiaomi.infra.galaxy.sds.thrift.ThriftProtocol;
 import com.xiaomi.infra.galaxy.sds.thrift.Version;
 import com.xiaomi.infra.galaxy.sds.thrift.VersionUtil;
+import libthrift091.protocol.TProtocol;
 import org.apache.http.client.HttpClient;
 import org.apache.http.conn.ClientConnectionManager;
 import org.apache.http.conn.params.ConnManagerParams;
@@ -45,12 +47,20 @@ public class ClientFactory {
   private Map<String, String> customHeaders;
   private HttpClient httpClient;
   private AdjustableClock clock;
+  private ThriftProtocol protocol;
 
-  public static HttpClient generateHttpClient(final int maxTotalConnections, final int maxTotalConnectionsPerRoute) {
-    return generateHttpClient(maxTotalConnections, maxTotalConnectionsPerRoute, (int) CommonConstants.DEFAULT_CLIENT_CONN_TIMEOUT);
+  private static HttpClient generateHttpClient() {
+    return generateHttpClient(1, 1, (int) CommonConstants.DEFAULT_CLIENT_CONN_TIMEOUT);
   }
 
-  public static HttpClient generateHttpClient(final int maxTotalConnections, final int maxTotalConnectionsPerRoute, int connTimeout) {
+  public static HttpClient generateHttpClient(final int maxTotalConnections,
+      final int maxTotalConnectionsPerRoute) {
+    return generateHttpClient(maxTotalConnections, maxTotalConnectionsPerRoute,
+        (int) CommonConstants.DEFAULT_CLIENT_CONN_TIMEOUT);
+  }
+
+  public static HttpClient generateHttpClient(final int maxTotalConnections,
+      final int maxTotalConnectionsPerRoute, int connTimeout) {
     HttpParams params = new BasicHttpParams();
     ConnManagerParams.setMaxTotalConnections(params, maxTotalConnections);
     ConnManagerParams.setMaxConnectionsPerRoute(params, new ConnPerRoute() {
@@ -70,19 +80,48 @@ public class ClientFactory {
     return new DefaultHttpClient(conMgr, params);
   }
 
-  private static HttpClient generateHttpClient() {
-    HttpParams params = new BasicHttpParams();
-    ConnManagerParams.setMaxTotalConnections(params, 1);
-    HttpConnectionParams
-        .setConnectionTimeout(params, (int) CommonConstants.DEFAULT_CLIENT_CONN_TIMEOUT);
-    SchemeRegistry schemeRegistry = new SchemeRegistry();
-    schemeRegistry.register(
-        new Scheme("http", PlainSocketFactory.getSocketFactory(), 80));
-    SSLSocketFactory sslSocketFactory = SSLSocketFactory.getSocketFactory();
-    sslSocketFactory.setHostnameVerifier(SSLSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER);
-    schemeRegistry.register(new Scheme("https", sslSocketFactory, 443));
-    ClientConnectionManager conMgr = new ThreadSafeClientConnManager(params, schemeRegistry);
-    return new DefaultHttpClient(conMgr, params);
+  public ClientFactory() {
+    this.credential = null;
+    this.customHeaders = null;
+    this.clock = new AdjustableClock();
+    this.httpClient = generateHttpClient();
+    this.protocol = ThriftProtocol.TBINARY;
+  }
+
+  public ClientFactory setCredential(Credential credential) {
+    this.credential = credential;
+    return this;
+  }
+
+  public Credential getCredential() {
+    return credential;
+  }
+
+  public ClientFactory setClock(AdjustableClock clock) {
+    this.clock = clock;
+    return this;
+  }
+
+  public AdjustableClock getClock() {
+    return clock;
+  }
+
+  public ClientFactory setHttpClient(HttpClient httpClient) {
+    this.httpClient = httpClient;
+    return this;
+  }
+
+  public HttpClient getHttpClient() {
+    return httpClient;
+  }
+
+  public ClientFactory setProtocol(ThriftProtocol protocol) {
+    this.protocol = protocol;
+    return this;
+  }
+
+  public ThriftProtocol getProtocol() {
+    return protocol;
   }
 
   public ClientFactory setCustomHeaders(Map<String, String> customHeaders) {
@@ -90,45 +129,8 @@ public class ClientFactory {
     return this;
   }
 
-  public ClientFactory() {
-    this(new AdjustableClock());
-  }
-
-  public ClientFactory(Credential credential) {
-    this(credential, new AdjustableClock());
-  }
-
-  public ClientFactory(AdjustableClock clock) {
-    this(null, clock);
-  }
-
-  public ClientFactory(Credential credential, AdjustableClock clock) {
-    this(credential, clock, generateHttpClient());
-  }
-
-  /**
-   * Create client factory
-   *
-   * @param credential sds credential
-   * @param httpClient http client, must be thread safe when used in multiple threads,
-   *                   if the default client is no satisfied, the client can be set here.
-   */
-  public ClientFactory(Credential credential, HttpClient httpClient) {
-    this(credential, new AdjustableClock(), httpClient);
-  }
-
-  /**
-   * Create client factory
-   *
-   * @param credential sds credential
-   * @param clock      adjustable clock, used for test
-   * @param httpClient http client, must be thread safe when used in multiple threads,
-   *                   if the default client is no satisfied, the client can be set here.
-   */
-  public ClientFactory(Credential credential, AdjustableClock clock, HttpClient httpClient) {
-    this.credential = credential;
-    this.clock = clock;
-    this.httpClient = httpClient;
+  public Map<String, String> getCustomHeaders() {
+    return customHeaders;
   }
 
   public Version getSDKVersion() {
@@ -310,7 +312,7 @@ public class ClientFactory {
       headers.putAll(customHeaders);
     }
 
-    IFace client = ThreadSafeClient.getClient(httpClient, headers, credential, clock,
+    IFace client = ThreadSafeClient.getClient(httpClient, headers, credential, clock, protocol,
         ifaceClass, implClass, url, socketTimeout, connTimeout, supportAccountKey);
     return AutoRetryClient.getAutoRetryClient(ifaceClass, client, isRetry, maxRetry);
   }
