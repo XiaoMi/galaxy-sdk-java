@@ -26,6 +26,7 @@ import com.xiaomi.infra.galaxy.sds.shared.clock.AdjustableClock;
 import com.xiaomi.infra.galaxy.sds.thrift.CommonConstants;
 import com.xiaomi.infra.galaxy.sds.thrift.Credential;
 import com.xiaomi.infra.galaxy.sds.thrift.ErrorsConstants;
+import com.xiaomi.infra.galaxy.sds.thrift.ThriftProtocol;
 import com.xiaomi.infra.galaxy.sds.thrift.Version;
 import com.xiaomi.infra.galaxy.sds.thrift.VersionUtil;
 
@@ -174,7 +175,7 @@ public class ClientFactory {
     }
 
     IFace client = ThreadSafeClient.getClient(httpClient, headers, credential, clock,
-        ifaceClass, implClass, url, socketTimeout, connTimeout);
+        ThriftProtocol.TCOMPACT, ifaceClass, implClass, url, socketTimeout, connTimeout, false);
     return AutoRetryClient.getAutoRetryClient(ifaceClass, client, isRetry, maxRetry);
   }
 
