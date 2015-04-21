@@ -173,6 +173,13 @@ public class AdminService {
      */
     public List<AppInfo> findAllAppInfo() throws com.xiaomi.infra.galaxy.sds.thrift.ServiceException, libthrift091.TException;
 
+    /**
+     * 获取表空间大小
+     * 
+     * @param tableName
+     */
+    public long getTableSize(String tableName) throws com.xiaomi.infra.galaxy.sds.thrift.ServiceException, libthrift091.TException;
+
   }
 
   public interface AsyncIface extends com.xiaomi.infra.galaxy.sds.thrift.BaseService .AsyncIface {
@@ -214,6 +221,8 @@ public class AdminService {
     public void queryMetrics(List<MetricQueryRequest> queries, libthrift091.async.AsyncMethodCallback resultHandler) throws libthrift091.TException;
 
     public void findAllAppInfo(libthrift091.async.AsyncMethodCallback resultHandler) throws libthrift091.TException;
+
+    public void getTableSize(String tableName, libthrift091.async.AsyncMethodCallback resultHandler) throws libthrift091.TException;
 
   }
 
@@ -710,6 +719,32 @@ public class AdminService {
         throw result.se;
       }
       throw new libthrift091.TApplicationException(libthrift091.TApplicationException.MISSING_RESULT, "findAllAppInfo failed: unknown result");
+    }
+
+    public long getTableSize(String tableName) throws com.xiaomi.infra.galaxy.sds.thrift.ServiceException, libthrift091.TException
+    {
+      send_getTableSize(tableName);
+      return recv_getTableSize();
+    }
+
+    public void send_getTableSize(String tableName) throws libthrift091.TException
+    {
+      getTableSize_args args = new getTableSize_args();
+      args.setTableName(tableName);
+      sendBase("getTableSize", args);
+    }
+
+    public long recv_getTableSize() throws com.xiaomi.infra.galaxy.sds.thrift.ServiceException, libthrift091.TException
+    {
+      getTableSize_result result = new getTableSize_result();
+      receiveBase(result, "getTableSize");
+      if (result.isSetSuccess()) {
+        return result.success;
+      }
+      if (result.se != null) {
+        throw result.se;
+      }
+      throw new libthrift091.TApplicationException(libthrift091.TApplicationException.MISSING_RESULT, "getTableSize failed: unknown result");
     }
 
   }
@@ -1344,6 +1379,38 @@ public class AdminService {
       }
     }
 
+    public void getTableSize(String tableName, libthrift091.async.AsyncMethodCallback resultHandler) throws libthrift091.TException {
+      checkReady();
+      getTableSize_call method_call = new getTableSize_call(tableName, resultHandler, this, ___protocolFactory, ___transport);
+      this.___currentMethod = method_call;
+      ___manager.call(method_call);
+    }
+
+    public static class getTableSize_call extends libthrift091.async.TAsyncMethodCall {
+      private String tableName;
+      public getTableSize_call(String tableName, libthrift091.async.AsyncMethodCallback resultHandler, libthrift091.async.TAsyncClient client, libthrift091.protocol.TProtocolFactory protocolFactory, libthrift091.transport.TNonblockingTransport transport) throws libthrift091.TException {
+        super(client, protocolFactory, transport, resultHandler, false);
+        this.tableName = tableName;
+      }
+
+      public void write_args(libthrift091.protocol.TProtocol prot) throws libthrift091.TException {
+        prot.writeMessageBegin(new libthrift091.protocol.TMessage("getTableSize", libthrift091.protocol.TMessageType.CALL, 0));
+        getTableSize_args args = new getTableSize_args();
+        args.setTableName(tableName);
+        args.write(prot);
+        prot.writeMessageEnd();
+      }
+
+      public long getResult() throws com.xiaomi.infra.galaxy.sds.thrift.ServiceException, libthrift091.TException {
+        if (getState() != libthrift091.async.TAsyncMethodCall.State.RESPONSE_READ) {
+          throw new IllegalStateException("Method call not finished!");
+        }
+        libthrift091.transport.TMemoryInputTransport memoryTransport = new libthrift091.transport.TMemoryInputTransport(getFrameBuffer().array());
+        libthrift091.protocol.TProtocol prot = client.getProtocolFactory().getProtocol(memoryTransport);
+        return (new Client(prot)).recv_getTableSize();
+      }
+    }
+
   }
 
   public static class Processor<I extends Iface> extends com.xiaomi.infra.galaxy.sds.thrift.BaseService.Processor<I> implements libthrift091.TProcessor {
@@ -1376,6 +1443,7 @@ public class AdminService {
       processMap.put("queryMetric", new queryMetric());
       processMap.put("queryMetrics", new queryMetrics());
       processMap.put("findAllAppInfo", new findAllAppInfo());
+      processMap.put("getTableSize", new getTableSize());
       return processMap;
     }
 
@@ -1835,6 +1903,31 @@ public class AdminService {
       }
     }
 
+    public static class getTableSize<I extends Iface> extends libthrift091.ProcessFunction<I, getTableSize_args> {
+      public getTableSize() {
+        super("getTableSize");
+      }
+
+      public getTableSize_args getEmptyArgsInstance() {
+        return new getTableSize_args();
+      }
+
+      protected boolean isOneway() {
+        return false;
+      }
+
+      public getTableSize_result getResult(I iface, getTableSize_args args) throws libthrift091.TException {
+        getTableSize_result result = new getTableSize_result();
+        try {
+          result.success = iface.getTableSize(args.tableName);
+          result.setSuccessIsSet(true);
+        } catch (com.xiaomi.infra.galaxy.sds.thrift.ServiceException se) {
+          result.se = se;
+        }
+        return result;
+      }
+    }
+
   }
 
   public static class AsyncProcessor<I extends AsyncIface> extends com.xiaomi.infra.galaxy.sds.thrift.BaseService.AsyncProcessor<I> {
@@ -1867,6 +1960,7 @@ public class AdminService {
       processMap.put("queryMetric", new queryMetric());
       processMap.put("queryMetrics", new queryMetrics());
       processMap.put("findAllAppInfo", new findAllAppInfo());
+      processMap.put("getTableSize", new getTableSize());
       return processMap;
     }
 
@@ -2943,6 +3037,64 @@ public class AdminService {
 
       public void start(I iface, findAllAppInfo_args args, libthrift091.async.AsyncMethodCallback<List<AppInfo>> resultHandler) throws TException {
         iface.findAllAppInfo(resultHandler);
+      }
+    }
+
+    public static class getTableSize<I extends AsyncIface> extends libthrift091.AsyncProcessFunction<I, getTableSize_args, Long> {
+      public getTableSize() {
+        super("getTableSize");
+      }
+
+      public getTableSize_args getEmptyArgsInstance() {
+        return new getTableSize_args();
+      }
+
+      public AsyncMethodCallback<Long> getResultHandler(final AsyncFrameBuffer fb, final int seqid) {
+        final libthrift091.AsyncProcessFunction fcall = this;
+        return new AsyncMethodCallback<Long>() { 
+          public void onComplete(Long o) {
+            getTableSize_result result = new getTableSize_result();
+            result.success = o;
+            result.setSuccessIsSet(true);
+            try {
+              fcall.sendResponse(fb,result, libthrift091.protocol.TMessageType.REPLY,seqid);
+              return;
+            } catch (Exception e) {
+              LOGGER.error("Exception writing to internal frame buffer", e);
+            }
+            fb.close();
+          }
+          public void onError(Exception e) {
+            byte msgType = libthrift091.protocol.TMessageType.REPLY;
+            libthrift091.TBase msg;
+            getTableSize_result result = new getTableSize_result();
+            if (e instanceof com.xiaomi.infra.galaxy.sds.thrift.ServiceException) {
+                        result.se = (com.xiaomi.infra.galaxy.sds.thrift.ServiceException) e;
+                        result.setSeIsSet(true);
+                        msg = result;
+            }
+             else 
+            {
+              msgType = libthrift091.protocol.TMessageType.EXCEPTION;
+              msg = (libthrift091.TBase)new libthrift091.TApplicationException(libthrift091.TApplicationException.INTERNAL_ERROR, e.getMessage());
+            }
+            try {
+              fcall.sendResponse(fb,msg,msgType,seqid);
+              return;
+            } catch (Exception ex) {
+              LOGGER.error("Exception writing to internal frame buffer", ex);
+            }
+            fb.close();
+          }
+        };
+      }
+
+      protected boolean isOneway() {
+        return false;
+      }
+
+      public void start(I iface, getTableSize_args args, libthrift091.async.AsyncMethodCallback<Long> resultHandler) throws TException {
+        iface.getTableSize(args.tableName,resultHandler);
       }
     }
 
@@ -18664,6 +18816,835 @@ public class AdminService {
               struct.success.add(_elem104);
             }
           }
+          struct.setSuccessIsSet(true);
+        }
+        if (incoming.get(1)) {
+          struct.se = new com.xiaomi.infra.galaxy.sds.thrift.ServiceException();
+          struct.se.read(iprot);
+          struct.setSeIsSet(true);
+        }
+      }
+    }
+
+  }
+
+  public static class getTableSize_args implements libthrift091.TBase<getTableSize_args, getTableSize_args._Fields>, java.io.Serializable, Cloneable, Comparable<getTableSize_args>   {
+    private static final libthrift091.protocol.TStruct STRUCT_DESC = new libthrift091.protocol.TStruct("getTableSize_args");
+
+    private static final libthrift091.protocol.TField TABLE_NAME_FIELD_DESC = new libthrift091.protocol.TField("tableName", libthrift091.protocol.TType.STRING, (short)1);
+
+    private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
+    static {
+      schemes.put(StandardScheme.class, new getTableSize_argsStandardSchemeFactory());
+      schemes.put(TupleScheme.class, new getTableSize_argsTupleSchemeFactory());
+    }
+
+    public String tableName; // required
+
+    /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
+    public enum _Fields implements libthrift091.TFieldIdEnum {
+      TABLE_NAME((short)1, "tableName");
+
+      private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
+
+      static {
+        for (_Fields field : EnumSet.allOf(_Fields.class)) {
+          byName.put(field.getFieldName(), field);
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, or null if its not found.
+       */
+      public static _Fields findByThriftId(int fieldId) {
+        switch(fieldId) {
+          case 1: // TABLE_NAME
+            return TABLE_NAME;
+          default:
+            return null;
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, throwing an exception
+       * if it is not found.
+       */
+      public static _Fields findByThriftIdOrThrow(int fieldId) {
+        _Fields fields = findByThriftId(fieldId);
+        if (fields == null) throw new IllegalArgumentException("Field " + fieldId + " doesn't exist!");
+        return fields;
+      }
+
+      /**
+       * Find the _Fields constant that matches name, or null if its not found.
+       */
+      public static _Fields findByName(String name) {
+        return byName.get(name);
+      }
+
+      private final short _thriftId;
+      private final String _fieldName;
+
+      _Fields(short thriftId, String fieldName) {
+        _thriftId = thriftId;
+        _fieldName = fieldName;
+      }
+
+      public short getThriftFieldId() {
+        return _thriftId;
+      }
+
+      public String getFieldName() {
+        return _fieldName;
+      }
+    }
+
+    // isset id assignments
+    public static final Map<_Fields, libthrift091.meta_data.FieldMetaData> metaDataMap;
+    static {
+      Map<_Fields, libthrift091.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, libthrift091.meta_data.FieldMetaData>(_Fields.class);
+      tmpMap.put(_Fields.TABLE_NAME, new libthrift091.meta_data.FieldMetaData("tableName", libthrift091.TFieldRequirementType.DEFAULT, 
+          new libthrift091.meta_data.FieldValueMetaData(libthrift091.protocol.TType.STRING)));
+      metaDataMap = Collections.unmodifiableMap(tmpMap);
+      libthrift091.meta_data.FieldMetaData.addStructMetaDataMap(getTableSize_args.class, metaDataMap);
+    }
+
+    public getTableSize_args() {
+    }
+
+    public getTableSize_args(
+      String tableName)
+    {
+      this();
+      this.tableName = tableName;
+    }
+
+    /**
+     * Performs a deep copy on <i>other</i>.
+     */
+    public getTableSize_args(getTableSize_args other) {
+      if (other.isSetTableName()) {
+        this.tableName = other.tableName;
+      }
+    }
+
+    public getTableSize_args deepCopy() {
+      return new getTableSize_args(this);
+    }
+
+    @Override
+    public void clear() {
+      this.tableName = null;
+    }
+
+    public String getTableName() {
+      return this.tableName;
+    }
+
+    public getTableSize_args setTableName(String tableName) {
+      this.tableName = tableName;
+      return this;
+    }
+
+    public void unsetTableName() {
+      this.tableName = null;
+    }
+
+    /** Returns true if field tableName is set (has been assigned a value) and false otherwise */
+    public boolean isSetTableName() {
+      return this.tableName != null;
+    }
+
+    public void setTableNameIsSet(boolean value) {
+      if (!value) {
+        this.tableName = null;
+      }
+    }
+
+    public void setFieldValue(_Fields field, Object value) {
+      switch (field) {
+      case TABLE_NAME:
+        if (value == null) {
+          unsetTableName();
+        } else {
+          setTableName((String)value);
+        }
+        break;
+
+      }
+    }
+
+    public Object getFieldValue(_Fields field) {
+      switch (field) {
+      case TABLE_NAME:
+        return getTableName();
+
+      }
+      throw new IllegalStateException();
+    }
+
+    /** Returns true if field corresponding to fieldID is set (has been assigned a value) and false otherwise */
+    public boolean isSet(_Fields field) {
+      if (field == null) {
+        throw new IllegalArgumentException();
+      }
+
+      switch (field) {
+      case TABLE_NAME:
+        return isSetTableName();
+      }
+      throw new IllegalStateException();
+    }
+
+    @Override
+    public boolean equals(Object that) {
+      if (that == null)
+        return false;
+      if (that instanceof getTableSize_args)
+        return this.equals((getTableSize_args)that);
+      return false;
+    }
+
+    public boolean equals(getTableSize_args that) {
+      if (that == null)
+        return false;
+
+      boolean this_present_tableName = true && this.isSetTableName();
+      boolean that_present_tableName = true && that.isSetTableName();
+      if (this_present_tableName || that_present_tableName) {
+        if (!(this_present_tableName && that_present_tableName))
+          return false;
+        if (!this.tableName.equals(that.tableName))
+          return false;
+      }
+
+      return true;
+    }
+
+    @Override
+    public int hashCode() {
+      List<Object> list = new ArrayList<Object>();
+
+      boolean present_tableName = true && (isSetTableName());
+      list.add(present_tableName);
+      if (present_tableName)
+        list.add(tableName);
+
+      return list.hashCode();
+    }
+
+    @Override
+    public int compareTo(getTableSize_args other) {
+      if (!getClass().equals(other.getClass())) {
+        return getClass().getName().compareTo(other.getClass().getName());
+      }
+
+      int lastComparison = 0;
+
+      lastComparison = Boolean.valueOf(isSetTableName()).compareTo(other.isSetTableName());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetTableName()) {
+        lastComparison = libthrift091.TBaseHelper.compareTo(this.tableName, other.tableName);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      return 0;
+    }
+
+    public _Fields fieldForId(int fieldId) {
+      return _Fields.findByThriftId(fieldId);
+    }
+
+    public void read(libthrift091.protocol.TProtocol iprot) throws libthrift091.TException {
+      schemes.get(iprot.getScheme()).getScheme().read(iprot, this);
+    }
+
+    public void write(libthrift091.protocol.TProtocol oprot) throws libthrift091.TException {
+      schemes.get(oprot.getScheme()).getScheme().write(oprot, this);
+    }
+
+    @Override
+    public String toString() {
+      StringBuilder sb = new StringBuilder("getTableSize_args(");
+      boolean first = true;
+
+      sb.append("tableName:");
+      if (this.tableName == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.tableName);
+      }
+      first = false;
+      sb.append(")");
+      return sb.toString();
+    }
+
+    public void validate() throws libthrift091.TException {
+      // check for required fields
+      // check for sub-struct validity
+    }
+
+    private void writeObject(java.io.ObjectOutputStream out) throws java.io.IOException {
+      try {
+        write(new libthrift091.protocol.TCompactProtocol(new libthrift091.transport.TIOStreamTransport(out)));
+      } catch (libthrift091.TException te) {
+        throw new java.io.IOException(te);
+      }
+    }
+
+    private void readObject(java.io.ObjectInputStream in) throws java.io.IOException, ClassNotFoundException {
+      try {
+        read(new libthrift091.protocol.TCompactProtocol(new libthrift091.transport.TIOStreamTransport(in)));
+      } catch (libthrift091.TException te) {
+        throw new java.io.IOException(te);
+      }
+    }
+
+    private static class getTableSize_argsStandardSchemeFactory implements SchemeFactory {
+      public getTableSize_argsStandardScheme getScheme() {
+        return new getTableSize_argsStandardScheme();
+      }
+    }
+
+    private static class getTableSize_argsStandardScheme extends StandardScheme<getTableSize_args> {
+
+      public void read(libthrift091.protocol.TProtocol iprot, getTableSize_args struct) throws libthrift091.TException {
+        libthrift091.protocol.TField schemeField;
+        iprot.readStructBegin();
+        while (true)
+        {
+          schemeField = iprot.readFieldBegin();
+          if (schemeField.type == libthrift091.protocol.TType.STOP) { 
+            break;
+          }
+          switch (schemeField.id) {
+            case 1: // TABLE_NAME
+              if (schemeField.type == libthrift091.protocol.TType.STRING) {
+                struct.tableName = iprot.readString();
+                struct.setTableNameIsSet(true);
+              } else { 
+                libthrift091.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+              }
+              break;
+            default:
+              libthrift091.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+          }
+          iprot.readFieldEnd();
+        }
+        iprot.readStructEnd();
+
+        // check for required fields of primitive type, which can't be checked in the validate method
+        struct.validate();
+      }
+
+      public void write(libthrift091.protocol.TProtocol oprot, getTableSize_args struct) throws libthrift091.TException {
+        struct.validate();
+
+        oprot.writeStructBegin(STRUCT_DESC);
+        if (struct.tableName != null) {
+          oprot.writeFieldBegin(TABLE_NAME_FIELD_DESC);
+          oprot.writeString(struct.tableName);
+          oprot.writeFieldEnd();
+        }
+        oprot.writeFieldStop();
+        oprot.writeStructEnd();
+      }
+
+    }
+
+    private static class getTableSize_argsTupleSchemeFactory implements SchemeFactory {
+      public getTableSize_argsTupleScheme getScheme() {
+        return new getTableSize_argsTupleScheme();
+      }
+    }
+
+    private static class getTableSize_argsTupleScheme extends TupleScheme<getTableSize_args> {
+
+      @Override
+      public void write(libthrift091.protocol.TProtocol prot, getTableSize_args struct) throws libthrift091.TException {
+        TTupleProtocol oprot = (TTupleProtocol) prot;
+        BitSet optionals = new BitSet();
+        if (struct.isSetTableName()) {
+          optionals.set(0);
+        }
+        oprot.writeBitSet(optionals, 1);
+        if (struct.isSetTableName()) {
+          oprot.writeString(struct.tableName);
+        }
+      }
+
+      @Override
+      public void read(libthrift091.protocol.TProtocol prot, getTableSize_args struct) throws libthrift091.TException {
+        TTupleProtocol iprot = (TTupleProtocol) prot;
+        BitSet incoming = iprot.readBitSet(1);
+        if (incoming.get(0)) {
+          struct.tableName = iprot.readString();
+          struct.setTableNameIsSet(true);
+        }
+      }
+    }
+
+  }
+
+  public static class getTableSize_result implements libthrift091.TBase<getTableSize_result, getTableSize_result._Fields>, java.io.Serializable, Cloneable, Comparable<getTableSize_result>   {
+    private static final libthrift091.protocol.TStruct STRUCT_DESC = new libthrift091.protocol.TStruct("getTableSize_result");
+
+    private static final libthrift091.protocol.TField SUCCESS_FIELD_DESC = new libthrift091.protocol.TField("success", libthrift091.protocol.TType.I64, (short)0);
+    private static final libthrift091.protocol.TField SE_FIELD_DESC = new libthrift091.protocol.TField("se", libthrift091.protocol.TType.STRUCT, (short)1);
+
+    private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
+    static {
+      schemes.put(StandardScheme.class, new getTableSize_resultStandardSchemeFactory());
+      schemes.put(TupleScheme.class, new getTableSize_resultTupleSchemeFactory());
+    }
+
+    public long success; // required
+    public com.xiaomi.infra.galaxy.sds.thrift.ServiceException se; // required
+
+    /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
+    public enum _Fields implements libthrift091.TFieldIdEnum {
+      SUCCESS((short)0, "success"),
+      SE((short)1, "se");
+
+      private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
+
+      static {
+        for (_Fields field : EnumSet.allOf(_Fields.class)) {
+          byName.put(field.getFieldName(), field);
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, or null if its not found.
+       */
+      public static _Fields findByThriftId(int fieldId) {
+        switch(fieldId) {
+          case 0: // SUCCESS
+            return SUCCESS;
+          case 1: // SE
+            return SE;
+          default:
+            return null;
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, throwing an exception
+       * if it is not found.
+       */
+      public static _Fields findByThriftIdOrThrow(int fieldId) {
+        _Fields fields = findByThriftId(fieldId);
+        if (fields == null) throw new IllegalArgumentException("Field " + fieldId + " doesn't exist!");
+        return fields;
+      }
+
+      /**
+       * Find the _Fields constant that matches name, or null if its not found.
+       */
+      public static _Fields findByName(String name) {
+        return byName.get(name);
+      }
+
+      private final short _thriftId;
+      private final String _fieldName;
+
+      _Fields(short thriftId, String fieldName) {
+        _thriftId = thriftId;
+        _fieldName = fieldName;
+      }
+
+      public short getThriftFieldId() {
+        return _thriftId;
+      }
+
+      public String getFieldName() {
+        return _fieldName;
+      }
+    }
+
+    // isset id assignments
+    private static final int __SUCCESS_ISSET_ID = 0;
+    private byte __isset_bitfield = 0;
+    public static final Map<_Fields, libthrift091.meta_data.FieldMetaData> metaDataMap;
+    static {
+      Map<_Fields, libthrift091.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, libthrift091.meta_data.FieldMetaData>(_Fields.class);
+      tmpMap.put(_Fields.SUCCESS, new libthrift091.meta_data.FieldMetaData("success", libthrift091.TFieldRequirementType.DEFAULT, 
+          new libthrift091.meta_data.FieldValueMetaData(libthrift091.protocol.TType.I64)));
+      tmpMap.put(_Fields.SE, new libthrift091.meta_data.FieldMetaData("se", libthrift091.TFieldRequirementType.DEFAULT, 
+          new libthrift091.meta_data.FieldValueMetaData(libthrift091.protocol.TType.STRUCT)));
+      metaDataMap = Collections.unmodifiableMap(tmpMap);
+      libthrift091.meta_data.FieldMetaData.addStructMetaDataMap(getTableSize_result.class, metaDataMap);
+    }
+
+    public getTableSize_result() {
+    }
+
+    public getTableSize_result(
+      long success,
+      com.xiaomi.infra.galaxy.sds.thrift.ServiceException se)
+    {
+      this();
+      this.success = success;
+      setSuccessIsSet(true);
+      this.se = se;
+    }
+
+    /**
+     * Performs a deep copy on <i>other</i>.
+     */
+    public getTableSize_result(getTableSize_result other) {
+      __isset_bitfield = other.__isset_bitfield;
+      this.success = other.success;
+      if (other.isSetSe()) {
+        this.se = new com.xiaomi.infra.galaxy.sds.thrift.ServiceException(other.se);
+      }
+    }
+
+    public getTableSize_result deepCopy() {
+      return new getTableSize_result(this);
+    }
+
+    @Override
+    public void clear() {
+      setSuccessIsSet(false);
+      this.success = 0;
+      this.se = null;
+    }
+
+    public long getSuccess() {
+      return this.success;
+    }
+
+    public getTableSize_result setSuccess(long success) {
+      this.success = success;
+      setSuccessIsSet(true);
+      return this;
+    }
+
+    public void unsetSuccess() {
+      __isset_bitfield = EncodingUtils.clearBit(__isset_bitfield, __SUCCESS_ISSET_ID);
+    }
+
+    /** Returns true if field success is set (has been assigned a value) and false otherwise */
+    public boolean isSetSuccess() {
+      return EncodingUtils.testBit(__isset_bitfield, __SUCCESS_ISSET_ID);
+    }
+
+    public void setSuccessIsSet(boolean value) {
+      __isset_bitfield = EncodingUtils.setBit(__isset_bitfield, __SUCCESS_ISSET_ID, value);
+    }
+
+    public com.xiaomi.infra.galaxy.sds.thrift.ServiceException getSe() {
+      return this.se;
+    }
+
+    public getTableSize_result setSe(com.xiaomi.infra.galaxy.sds.thrift.ServiceException se) {
+      this.se = se;
+      return this;
+    }
+
+    public void unsetSe() {
+      this.se = null;
+    }
+
+    /** Returns true if field se is set (has been assigned a value) and false otherwise */
+    public boolean isSetSe() {
+      return this.se != null;
+    }
+
+    public void setSeIsSet(boolean value) {
+      if (!value) {
+        this.se = null;
+      }
+    }
+
+    public void setFieldValue(_Fields field, Object value) {
+      switch (field) {
+      case SUCCESS:
+        if (value == null) {
+          unsetSuccess();
+        } else {
+          setSuccess((Long)value);
+        }
+        break;
+
+      case SE:
+        if (value == null) {
+          unsetSe();
+        } else {
+          setSe((com.xiaomi.infra.galaxy.sds.thrift.ServiceException)value);
+        }
+        break;
+
+      }
+    }
+
+    public Object getFieldValue(_Fields field) {
+      switch (field) {
+      case SUCCESS:
+        return Long.valueOf(getSuccess());
+
+      case SE:
+        return getSe();
+
+      }
+      throw new IllegalStateException();
+    }
+
+    /** Returns true if field corresponding to fieldID is set (has been assigned a value) and false otherwise */
+    public boolean isSet(_Fields field) {
+      if (field == null) {
+        throw new IllegalArgumentException();
+      }
+
+      switch (field) {
+      case SUCCESS:
+        return isSetSuccess();
+      case SE:
+        return isSetSe();
+      }
+      throw new IllegalStateException();
+    }
+
+    @Override
+    public boolean equals(Object that) {
+      if (that == null)
+        return false;
+      if (that instanceof getTableSize_result)
+        return this.equals((getTableSize_result)that);
+      return false;
+    }
+
+    public boolean equals(getTableSize_result that) {
+      if (that == null)
+        return false;
+
+      boolean this_present_success = true;
+      boolean that_present_success = true;
+      if (this_present_success || that_present_success) {
+        if (!(this_present_success && that_present_success))
+          return false;
+        if (this.success != that.success)
+          return false;
+      }
+
+      boolean this_present_se = true && this.isSetSe();
+      boolean that_present_se = true && that.isSetSe();
+      if (this_present_se || that_present_se) {
+        if (!(this_present_se && that_present_se))
+          return false;
+        if (!this.se.equals(that.se))
+          return false;
+      }
+
+      return true;
+    }
+
+    @Override
+    public int hashCode() {
+      List<Object> list = new ArrayList<Object>();
+
+      boolean present_success = true;
+      list.add(present_success);
+      if (present_success)
+        list.add(success);
+
+      boolean present_se = true && (isSetSe());
+      list.add(present_se);
+      if (present_se)
+        list.add(se);
+
+      return list.hashCode();
+    }
+
+    @Override
+    public int compareTo(getTableSize_result other) {
+      if (!getClass().equals(other.getClass())) {
+        return getClass().getName().compareTo(other.getClass().getName());
+      }
+
+      int lastComparison = 0;
+
+      lastComparison = Boolean.valueOf(isSetSuccess()).compareTo(other.isSetSuccess());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetSuccess()) {
+        lastComparison = libthrift091.TBaseHelper.compareTo(this.success, other.success);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      lastComparison = Boolean.valueOf(isSetSe()).compareTo(other.isSetSe());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetSe()) {
+        lastComparison = libthrift091.TBaseHelper.compareTo(this.se, other.se);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      return 0;
+    }
+
+    public _Fields fieldForId(int fieldId) {
+      return _Fields.findByThriftId(fieldId);
+    }
+
+    public void read(libthrift091.protocol.TProtocol iprot) throws libthrift091.TException {
+      schemes.get(iprot.getScheme()).getScheme().read(iprot, this);
+    }
+
+    public void write(libthrift091.protocol.TProtocol oprot) throws libthrift091.TException {
+      schemes.get(oprot.getScheme()).getScheme().write(oprot, this);
+      }
+
+    @Override
+    public String toString() {
+      StringBuilder sb = new StringBuilder("getTableSize_result(");
+      boolean first = true;
+
+      sb.append("success:");
+      sb.append(this.success);
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("se:");
+      if (this.se == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.se);
+      }
+      first = false;
+      sb.append(")");
+      return sb.toString();
+    }
+
+    public void validate() throws libthrift091.TException {
+      // check for required fields
+      // check for sub-struct validity
+    }
+
+    private void writeObject(java.io.ObjectOutputStream out) throws java.io.IOException {
+      try {
+        write(new libthrift091.protocol.TCompactProtocol(new libthrift091.transport.TIOStreamTransport(out)));
+      } catch (libthrift091.TException te) {
+        throw new java.io.IOException(te);
+      }
+    }
+
+    private void readObject(java.io.ObjectInputStream in) throws java.io.IOException, ClassNotFoundException {
+      try {
+        // it doesn't seem like you should have to do this, but java serialization is wacky, and doesn't call the default constructor.
+        __isset_bitfield = 0;
+        read(new libthrift091.protocol.TCompactProtocol(new libthrift091.transport.TIOStreamTransport(in)));
+      } catch (libthrift091.TException te) {
+        throw new java.io.IOException(te);
+      }
+    }
+
+    private static class getTableSize_resultStandardSchemeFactory implements SchemeFactory {
+      public getTableSize_resultStandardScheme getScheme() {
+        return new getTableSize_resultStandardScheme();
+      }
+    }
+
+    private static class getTableSize_resultStandardScheme extends StandardScheme<getTableSize_result> {
+
+      public void read(libthrift091.protocol.TProtocol iprot, getTableSize_result struct) throws libthrift091.TException {
+        libthrift091.protocol.TField schemeField;
+        iprot.readStructBegin();
+        while (true)
+        {
+          schemeField = iprot.readFieldBegin();
+          if (schemeField.type == libthrift091.protocol.TType.STOP) { 
+            break;
+          }
+          switch (schemeField.id) {
+            case 0: // SUCCESS
+              if (schemeField.type == libthrift091.protocol.TType.I64) {
+                struct.success = iprot.readI64();
+                struct.setSuccessIsSet(true);
+              } else { 
+                libthrift091.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+              }
+              break;
+            case 1: // SE
+              if (schemeField.type == libthrift091.protocol.TType.STRUCT) {
+                struct.se = new com.xiaomi.infra.galaxy.sds.thrift.ServiceException();
+                struct.se.read(iprot);
+                struct.setSeIsSet(true);
+              } else { 
+                libthrift091.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+              }
+              break;
+            default:
+              libthrift091.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+          }
+          iprot.readFieldEnd();
+        }
+        iprot.readStructEnd();
+
+        // check for required fields of primitive type, which can't be checked in the validate method
+        struct.validate();
+      }
+
+      public void write(libthrift091.protocol.TProtocol oprot, getTableSize_result struct) throws libthrift091.TException {
+        struct.validate();
+
+        oprot.writeStructBegin(STRUCT_DESC);
+        if (struct.isSetSuccess()) {
+          oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
+          oprot.writeI64(struct.success);
+          oprot.writeFieldEnd();
+        }
+        if (struct.se != null) {
+          oprot.writeFieldBegin(SE_FIELD_DESC);
+          struct.se.write(oprot);
+          oprot.writeFieldEnd();
+        }
+        oprot.writeFieldStop();
+        oprot.writeStructEnd();
+      }
+
+    }
+
+    private static class getTableSize_resultTupleSchemeFactory implements SchemeFactory {
+      public getTableSize_resultTupleScheme getScheme() {
+        return new getTableSize_resultTupleScheme();
+      }
+    }
+
+    private static class getTableSize_resultTupleScheme extends TupleScheme<getTableSize_result> {
+
+      @Override
+      public void write(libthrift091.protocol.TProtocol prot, getTableSize_result struct) throws libthrift091.TException {
+        TTupleProtocol oprot = (TTupleProtocol) prot;
+        BitSet optionals = new BitSet();
+        if (struct.isSetSuccess()) {
+          optionals.set(0);
+        }
+        if (struct.isSetSe()) {
+          optionals.set(1);
+        }
+        oprot.writeBitSet(optionals, 2);
+        if (struct.isSetSuccess()) {
+          oprot.writeI64(struct.success);
+        }
+        if (struct.isSetSe()) {
+          struct.se.write(oprot);
+        }
+      }
+
+      @Override
+      public void read(libthrift091.protocol.TProtocol prot, getTableSize_result struct) throws libthrift091.TException {
+        TTupleProtocol iprot = (TTupleProtocol) prot;
+        BitSet incoming = iprot.readBitSet(2);
+        if (incoming.get(0)) {
+          struct.success = iprot.readI64();
           struct.setSuccessIsSet(true);
         }
         if (incoming.get(1)) {
