@@ -51,7 +51,7 @@ public class ScanWithActionExample {
   private static void init() {
     Credential credential = new Credential().setSecretKey(secretKey).setSecretKeyId(secretKeyId)
         .setType(userType);
-    clientFactory = new ClientFactory(credential);
+    clientFactory = new ClientFactory().setCredential(credential);
     // socket timeout 10000 ms and connection timeout 3000
     adminClient = clientFactory
         .newAdminClient(endpoint + CommonConstants.ADMIN_SERVICE_PATH, 50000, 3000);

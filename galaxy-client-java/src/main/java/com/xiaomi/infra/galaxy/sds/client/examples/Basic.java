@@ -20,6 +20,7 @@ import com.xiaomi.infra.galaxy.sds.thrift.TableQuota;
 import com.xiaomi.infra.galaxy.sds.thrift.TableSchema;
 import com.xiaomi.infra.galaxy.sds.thrift.TableService;
 import com.xiaomi.infra.galaxy.sds.thrift.TableSpec;
+import com.xiaomi.infra.galaxy.sds.thrift.ThriftProtocol;
 import com.xiaomi.infra.galaxy.sds.thrift.UserType;
 
 import java.util.Arrays;
@@ -48,10 +49,20 @@ public class Basic {
   private static void init() {
     Credential credential = new Credential().setSecretKey(secretKey).setSecretKeyId(secretKeyId)
         .setType(userType);
-    clientFactory = new ClientFactory(credential);
-    // socket timeout 10000 ms and connection timeout 3000
+
+    // based on Binary transport protocol as default
+    clientFactory = new ClientFactory().setCredential(credential);
+
+    // based on JSON transport protocol
+    // clientFactory = new ClientFactory().setCredential(credential).setProtocol(ThriftProtocol.TJSON);
+
+    // based on Compact Binary transport protocol
+    // clientFactory = new ClientFactory().setCredential(credential).setProtocol(ThriftProtocol.TCOMPACT);
+
+    // socket timeout 10000ms and connection timeout 3000ms
     adminClient = clientFactory
         .newAdminClient(endpoint + CommonConstants.ADMIN_SERVICE_PATH, 50000, 3000);
+
     // 5 retries at most
     tableClient = clientFactory
         .newTableClient(endpoint + CommonConstants.TABLE_SERVICE_PATH, 10000, 3000, true, 5);

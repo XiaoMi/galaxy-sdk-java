@@ -48,7 +48,7 @@ public class ExtAppTableAccessor {
         .newAuthClient(endpoint + CommonConstants.AUTH_SERVICE_PATH);
     Credential credential = authClient
         .createCredential(appId, appUserAuthProvider, accessToken);
-    clientFactory = new ClientFactory(credential);
+    clientFactory = new ClientFactory().setCredential(credential);
     tableClient = clientFactory
         .newTableClient(endpoint + CommonConstants.TABLE_SERVICE_PATH, 10000, 3000, true, 3);
   }
