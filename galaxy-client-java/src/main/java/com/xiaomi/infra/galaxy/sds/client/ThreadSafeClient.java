@@ -1,9 +1,9 @@
 package com.xiaomi.infra.galaxy.sds.client;
 
+import com.xiaomi.infra.galaxy.sds.client.metrics.MetricsCollector;
+import com.xiaomi.infra.galaxy.sds.client.metrics.RequestMetrics;
 import com.xiaomi.infra.galaxy.sds.shared.clock.AdjustableClock;
-import com.xiaomi.infra.galaxy.sds.thrift.CommonConstants;
-import com.xiaomi.infra.galaxy.sds.thrift.Credential;
-import com.xiaomi.infra.galaxy.sds.thrift.ThriftProtocol;
+import com.xiaomi.infra.galaxy.sds.thrift.*;
 import libthrift091.protocol.TBinaryProtocol;
 import libthrift091.protocol.TCompactProtocol;
 import libthrift091.protocol.TJSONProtocol;
@@ -43,11 +43,14 @@ public class ThreadSafeClient<IFace, Impl> {
     private int socketTimeout = 0;
     private int connTimeout = 0;
     private boolean supportAccountKey = false;
+    private boolean isMetricsEnabled = false;
+    private MetricsCollector metricsCollector;
+
 
     private ThreadSafeInvocationHandler(HttpClient client, Map<String, String> customHeaders,
-        Credential credential, AdjustableClock clock, ThriftProtocol protocol,
-        Class<IFace> ifaceClass, Class<Impl> implClass, String url, int socketTimeout,
-        int connTimeout, boolean supportAccountKey) {
+                                        Credential credential, AdjustableClock clock, ThriftProtocol protocol,
+                                        Class<IFace> ifaceClass, Class<Impl> implClass, String url, int socketTimeout,
+                                        int connTimeout, boolean supportAccountKey, MetricsCollector metricsCollector) {
       this.client = client;
       this.customHeaders = customHeaders;
       this.credential = credential;
@@ -59,24 +62,33 @@ public class ThreadSafeClient<IFace, Impl> {
       this.socketTimeout = socketTimeout;
       this.connTimeout = connTimeout;
       this.supportAccountKey = supportAccountKey;
+      this.metricsCollector = metricsCollector;
+      if (metricsCollector != null) {
+        isMetricsEnabled = true;
+      }
     }
 
     @Override
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+      RequestMetrics requestMetrics = null;
       try {
+        if (isMetricsEnabled) {
+          requestMetrics = new RequestMetrics();
+          requestMetrics.startEvent(LatencyMetricType.ExecutionTime);
+          requestMetrics.setRequestTypeName(method.getName());
+        }
+
         SdsTHttpClient sdsHttpClient = new SdsTHttpClient(url, client, this.credential, clock);
         sdsHttpClient.setSocketTimeout(socketTimeout)
             .setConnectTimeout(connTimeout)
             .setProtocol(protocol)
             .setQueryString("type=" + method.getName())
             .setSupportAccountKey(supportAccountKey);
-
         if (customHeaders != null) {
           for (Map.Entry<String, String> header : customHeaders.entrySet()) {
             sdsHttpClient.setCustomHeader(header.getKey(), header.getValue());
           }
         }
-
         String protocolClassName = "libthrift091.protocol." + CommonConstants.THRIFT_PROTOCOL_MAP.get(protocol);
         Class<?> protocolClass = Class.forName(protocolClassName);
         Constructor ctor = protocolClass.getDeclaredConstructor(TTransport.class);
@@ -84,6 +96,11 @@ public class ThreadSafeClient<IFace, Impl> {
         return method.invoke(client, args);
       } catch (InvocationTargetException e) {
         throw e.getCause();
+      } finally {
+        if (isMetricsEnabled) {
+          requestMetrics.endEvent(LatencyMetricType.ExecutionTime);
+          metricsCollector.collect(requestMetrics);
+        }
       }
     }
 
@@ -104,13 +121,26 @@ public class ThreadSafeClient<IFace, Impl> {
    */
   @SuppressWarnings("unchecked")
   public static <IFace, Impl> IFace getClient(HttpClient client, Map<String, String> customHeaders,
-      Credential credential, AdjustableClock clock, ThriftProtocol protocol,
-      Class<IFace> ifaceClass, Class<Impl> implClass, String url, int socketTimeout,
-      int connTimeout, boolean supportAccountKey) {
+                                              Credential credential, AdjustableClock clock, ThriftProtocol protocol,
+                                              Class<IFace> ifaceClass, Class<Impl> implClass, String url, int socketTimeout,
+                                              int connTimeout, boolean supportAccountKey) {
     return (IFace) Proxy.newProxyInstance(ThreadSafeClient.class.getClassLoader(),
-        new Class[] { ifaceClass },
+        new Class[]{ifaceClass},
         new ThreadSafeInvocationHandler<IFace, Impl>(client, customHeaders, credential, clock, protocol,
-            ifaceClass, implClass, url, socketTimeout, connTimeout, supportAccountKey)
+            ifaceClass, implClass, url, socketTimeout, connTimeout, supportAccountKey, null)
     );
   }
+
+  @SuppressWarnings("unchecked")
+  public static <IFace, Impl> IFace getClient(HttpClient client, Map<String, String> customHeaders,
+                                              Credential credential, AdjustableClock clock, ThriftProtocol protocol,
+                                              Class<IFace> ifaceClass, Class<Impl> implClass, String url, int socketTimeout,
+                                              int connTimeout, boolean supportAccountKey, MetricsCollector metricsCollector) {
+    return (IFace) Proxy.newProxyInstance(ThreadSafeClient.class.getClassLoader(),
+        new Class[]{ifaceClass},
+        new ThreadSafeInvocationHandler<IFace, Impl>(client, customHeaders, credential, clock, protocol,
+            ifaceClass, implClass, url, socketTimeout, connTimeout, supportAccountKey, metricsCollector)
+    );
+  }
+
 }
