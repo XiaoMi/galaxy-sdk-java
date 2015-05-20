@@ -327,14 +327,18 @@ public class ClientFactory {
       headers.putAll(customHeaders);
     }
     if (isMetricsEnabled) {
-      if(metricsCollector == null){
-        AdminService.Iface adminClient = ThreadSafeClient.getClient(httpClient, headers, credential, clock, protocol,
-            AdminService.Iface.class, AdminService.Client.class, url, (int) CommonConstants.DEFAULT_CLIENT_TIMEOUT,
-            (int) CommonConstants.DEFAULT_CLIENT_CONN_TIMEOUT, false);
-        AdminService.Iface metricAdminServiceClient =
-            AutoRetryClient.getAutoRetryClient(AdminService.Iface.class, adminClient, true, 3);
-        metricsCollector = new MetricsCollector();
-        metricsCollector.setAdminService(metricAdminServiceClient);
+      synchronized (this) {
+        if (metricsCollector == null) {
+          AdminService.Iface adminClient = ThreadSafeClient
+              .getClient(httpClient, headers, credential, clock, protocol,
+                  AdminService.Iface.class, AdminService.Client.class, url,
+                  (int) CommonConstants.DEFAULT_CLIENT_TIMEOUT,
+                  (int) CommonConstants.DEFAULT_CLIENT_CONN_TIMEOUT, false);
+          AdminService.Iface metricAdminServiceClient =
+              AutoRetryClient.getAutoRetryClient(AdminService.Iface.class, adminClient, true, 3);
+          metricsCollector = new MetricsCollector();
+          metricsCollector.setAdminService(metricAdminServiceClient);
+        }
       }
     }
     IFace client = ThreadSafeClient.getClient(httpClient, headers, credential, clock, protocol,

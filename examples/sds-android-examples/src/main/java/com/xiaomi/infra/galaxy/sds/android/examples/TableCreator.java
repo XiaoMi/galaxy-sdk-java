@@ -44,7 +44,7 @@ public class TableCreator {
     Credential credential = new Credential().setSecretKey(secretKey).setSecretKeyId(secretKeyId)
         .setType(userType);
     //Here use the default HttpClient, a more suitable HttpClient can be set here
-    clientFactory = new ClientFactory(credential);
+    clientFactory = new ClientFactory().setCredential(credential);
     adminClient = clientFactory
         .newAdminClient(endpoint + CommonConstants.ADMIN_SERVICE_PATH, 50000, 3000);
   }
