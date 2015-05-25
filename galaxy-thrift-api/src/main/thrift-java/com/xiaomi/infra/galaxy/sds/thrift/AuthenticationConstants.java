@@ -50,6 +50,11 @@ public class AuthenticationConstants {
   }
 
   /**
+   * 内容为TJSONTransport.encode(HttpAuthorizationHeader)
+   */
+  public static final String HK_AUTHORIZATION = "Authorization";
+
+  /**
    * 签名相关的HTTP头，
    * 根据分层防御的设计，使用HTTPS也建议进行签名:
    * http://bitcoin.stackexchange.com/questions/21732/why-api-of-bitcoin-exchanges-use-hmac-over-https-ssl
@@ -64,12 +69,41 @@ public class AuthenticationConstants {
   public static final String HK_CONTENT_MD5 = "X-Xiaomi-Content-MD5";
 
   /**
-   * 内容为TJSONTransport.encode(HttpAuthorizationHeader)
+   * 认证相关的HTTP头
    */
-  public static final String HK_AUTHORIZATION = "Authorization";
+  public static final String HK_VERSION = "X-Xiaomi-Version";
+
+  public static final String HK_USER_TYPE = "X-Xiaomi-User-Type";
+
+  public static final String HK_SECRET_KEY_ID = "X-Xiaomi-Secret-Key-Id";
 
   /**
-   * 建议签名应包含的HTTP头
+   * 直接使用secretKey，此项被设置时，signature将被忽略，
+   * 非安全传输应使用签名
+   */
+  public static final String HK_SECRET_KEY = "X-Xiaomi-Secret-Key";
+
+  /**
+   * 如secretKey未设置，则认为使用签名，此时必须设置，
+   * 被签名的正文格式：header1[\nheader2[\nheader3[...]]]，
+   * 如使用默认SUGGESTED_SIGNATURE_HEADERS时为：$host\n$timestamp\n$md5
+   */
+  public static final String HK_SIGNATURE = "X-Xiaomi-Signature";
+
+  /**
+   * 签名HMAC算法，客户端可定制，
+   * 使用签名时必须设置
+   */
+  public static final String HK_MAC_ALGORITHM = "X-Xiaomi-Mac-Algorithm";
+
+  /**
+   * 向后兼容，在APP_SECRET的用户身份下成为DevelopUser
+   */
+  public static final String HK_SUPPORT_ACCOUNT_KEY = "X-Xiaomi-Support-Account-Key";
+
+  /**
+   * 建议签名应包含的HTTP头，包含所有签名涉及到的部分，服务端未强制必须使用所列headers，
+   * 定制的client自己负责签名的安全强度，使用签名时必须设置
    */
   public static final List<String> SUGGESTED_SIGNATURE_HEADERS = new ArrayList<String>();
   static {

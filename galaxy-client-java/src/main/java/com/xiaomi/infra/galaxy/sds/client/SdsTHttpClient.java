@@ -27,8 +27,6 @@ import java.util.UUID;
 import com.xiaomi.infra.galaxy.sds.thrift.CommonConstants;
 import com.xiaomi.infra.galaxy.sds.thrift.ThriftProtocol;
 import libthrift091.TException;
-import libthrift091.TSerializer;
-import libthrift091.protocol.TJSONProtocol;
 import libthrift091.transport.TTransport;
 import libthrift091.transport.TTransportException;
 import libthrift091.transport.TTransportFactory;
@@ -52,7 +50,6 @@ import com.xiaomi.infra.galaxy.sds.shared.SignatureUtil;
 import com.xiaomi.infra.galaxy.sds.shared.clock.AdjustableClock;
 import com.xiaomi.infra.galaxy.sds.thrift.AuthenticationConstants;
 import com.xiaomi.infra.galaxy.sds.thrift.Credential;
-import com.xiaomi.infra.galaxy.sds.thrift.HttpAuthorizationHeader;
 import com.xiaomi.infra.galaxy.sds.thrift.HttpStatusCode;
 import com.xiaomi.infra.galaxy.sds.thrift.MacAlgorithm;
 
@@ -357,85 +354,46 @@ public class SdsTHttpClient extends TTransport {
    */
   private SdsTHttpClient setAuthenticationHeaders(HttpPost post, byte[] data, boolean supportAccountKey) {
     if (this.client != null && credential != null) {
-      HttpAuthorizationHeader authHeader = null;
       if (credential.getType() != null && credential.getSecretKeyId() != null) {
+        post.setHeader(AuthenticationConstants.HK_VERSION, "SDS_V1");
+        post.setHeader(AuthenticationConstants.HK_USER_TYPE, credential.getType().name());
+        post.setHeader(AuthenticationConstants.HK_SECRET_KEY_ID, credential.getSecretKeyId());
+        if (supportAccountKey) {
+          post.setHeader(AuthenticationConstants.HK_SUPPORT_ACCOUNT_KEY, "1");
+        }
         // signature is supported
         if (AuthenticationConstants.SIGNATURE_SUPPORT.get(credential.getType())) {
-          List<String> signatureHeaders = new ArrayList<String>();
           List<String> signatureParts = new ArrayList<String>();
 
           // host
           String host = this.host.toHostString();
           host = host.split(":")[0];
           post.setHeader(AuthenticationConstants.HK_HOST, host);
-          signatureHeaders.add(AuthenticationConstants.HK_HOST);
           signatureParts.add(host);
 
           // timestamp
           String timestamp = Long.toString(clock.getCurrentEpoch());
           post.setHeader(AuthenticationConstants.HK_TIMESTAMP, timestamp);
-          signatureHeaders.add(AuthenticationConstants.HK_TIMESTAMP);
           signatureParts.add(timestamp);
 
           // content md5
           String md5 = BytesUtil
               .bytesToHex(DigestUtil.digest(DigestUtil.DigestAlgorithm.MD5, data));
           post.setHeader(AuthenticationConstants.HK_CONTENT_MD5, md5);
-          signatureHeaders.add(AuthenticationConstants.HK_CONTENT_MD5);
           signatureParts.add(md5);
 
           // signature
-          authHeader = createSignatureHeader(signatureHeaders, signatureParts);
+          byte[] signature = SignatureUtil.sign(SignatureUtil.MacAlgorithm.HmacMD5,
+              credential.getSecretKey(), signatureParts);
+
+          post.setHeader(AuthenticationConstants.HK_MAC_ALGORITHM, SignatureUtil.MacAlgorithm.HmacMD5.name());
+          post.setHeader(AuthenticationConstants.HK_SIGNATURE, BytesUtil.bytesToHex(signature));
         } else {
-          authHeader = createSecretKeyHeader();
+          post.setHeader(AuthenticationConstants.HK_SECRET_KEY, credential.getSecretKey());
         }
-      }
-      if (authHeader != null) {
-        authHeader.setSupportAccountKey(supportAccountKey);
-        post.setHeader(AuthenticationConstants.HK_AUTHORIZATION,
-            encodeAuthorizationHeader(authHeader));
       }
     }
     return this;
-  }
-
-  private HttpAuthorizationHeader createSecretKeyHeader() {
-    HttpAuthorizationHeader auth = new HttpAuthorizationHeader();
-    auth.setUserType(credential.getType());
-    auth.setSecretKeyId(credential.getSecretKeyId());
-    auth.setSecretKey(credential.getSecretKey());
-    return auth;
-  }
-
-  private HttpAuthorizationHeader createSignatureHeader(List<String> signatureHeaders,
-      List<String> signatureParts) {
-    assert credential != null;
-    assert signatureHeaders.equals(AuthenticationConstants.SUGGESTED_SIGNATURE_HEADERS);
-
-    HttpAuthorizationHeader auth = new HttpAuthorizationHeader();
-    auth.setSignedHeaders(signatureHeaders);
-    auth.setSecretKeyId(credential.getSecretKeyId());
-    auth.setUserType(credential.getType());
-    auth.setAlgorithm(MacAlgorithm.HmacSHA1);
-
-    byte[] signature = SignatureUtil.sign(SignatureUtil.MacAlgorithm.HmacSHA1,
-        credential.getSecretKey(), signatureParts);
-    auth.setSignature(BytesUtil.bytesToHex(signature));
-
-    return auth;
-  }
-
-  /**
-   * Encode authorization header, using Thrift JSON format for simplicity
-   */
-  private String encodeAuthorizationHeader(HttpAuthorizationHeader auth) {
-    TSerializer serializer = new TSerializer(new TJSONProtocol.Factory());
-    try {
-      byte[] bytes = serializer.serialize(auth);
-      return new String(bytes);
-    } catch (TException e) {
-      throw new RuntimeException("Failed to serialize authentication header: " + auth, e);
-    }
   }
 
   /**
