@@ -20,15 +20,14 @@ import org.slf4j.LoggerFactory;
 
 import com.xiaomi.infra.galaxy.emq.thrift.MessageService;
 import com.xiaomi.infra.galaxy.emq.thrift.QueueService;
-import com.xiaomi.infra.galaxy.sds.client.AutoRetryClient;
-import com.xiaomi.infra.galaxy.sds.client.ThreadSafeClient;
-import com.xiaomi.infra.galaxy.sds.shared.clock.AdjustableClock;
-import com.xiaomi.infra.galaxy.sds.thrift.CommonConstants;
-import com.xiaomi.infra.galaxy.sds.thrift.Credential;
-import com.xiaomi.infra.galaxy.sds.thrift.ErrorsConstants;
-import com.xiaomi.infra.galaxy.sds.thrift.ThriftProtocol;
-import com.xiaomi.infra.galaxy.sds.thrift.Version;
-import com.xiaomi.infra.galaxy.sds.thrift.VersionUtil;
+import com.xiaomi.infra.galaxy.rpc.client.AutoRetryClient;
+import com.xiaomi.infra.galaxy.rpc.client.ThreadSafeClient;
+import com.xiaomi.infra.galaxy.rpc.util.clock.AdjustableClock;
+import com.xiaomi.infra.galaxy.rpc.thrift.CommonConstants;
+import com.xiaomi.infra.galaxy.rpc.thrift.Credential;
+import com.xiaomi.infra.galaxy.rpc.thrift.ErrorsConstants;
+import com.xiaomi.infra.galaxy.rpc.thrift.Version;
+import com.xiaomi.infra.galaxy.rpc.util.VersionUtil;
 
 /**
  * Factory to create Auth, Admin or Table clients.
@@ -175,7 +174,7 @@ public class ClientFactory {
     }
 
     IFace client = ThreadSafeClient.getClient(httpClient, headers, credential, clock,
-        ThriftProtocol.TCOMPACT, ifaceClass, implClass, url, socketTimeout, connTimeout, false);
+        ifaceClass, implClass, url, socketTimeout, connTimeout, false);
     return AutoRetryClient.getAutoRetryClient(ifaceClass, client, isRetry, maxRetry);
   }
 
