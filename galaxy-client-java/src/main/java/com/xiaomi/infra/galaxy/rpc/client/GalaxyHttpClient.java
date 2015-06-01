@@ -287,8 +287,12 @@ public class GalaxyHttpClient extends TTransport {
       is = response.getEntity().getContent();
 
       if (responseCode != HttpStatus.SC_OK) {
-        adjustClock(response, responseCode);
-        throw new HttpTTransportException(responseCode, reasonPhrase);
+        Header[] typeHeader = response.getHeaders("Content-Type");
+        if (typeHeader.length == 0 ||
+            !typeHeader[0].getValue().startsWith("application/x-thrift")) {
+          adjustClock(response, responseCode);
+          throw new HttpTTransportException(responseCode, reasonPhrase);
+        }
       }
 
       // Read the responses into a byte array so we can release the connection
@@ -456,3 +460,4 @@ public class GalaxyHttpClient extends TTransport {
     return UUID.randomUUID().toString().substring(0, length);
   }
 }
+
