@@ -17,7 +17,9 @@
       <groupId>com.xiaomi.infra.galaxy</groupId>
       <artifactId>galaxy-authentication</artifactId>
       <version>${galaxy.version}</version>
-    </dependency>
+      <scope>system</scope>
+      <systemPath>${basedir}/src/main/resources/galaxy-authentication-1.2.10.jar</systemPath> 
+   </dependency>
     <dependency>
       <groupId>com.xiaomi.infra.galaxy</groupId>
       <artifactId>galaxy-thrift-api</artifactId>
