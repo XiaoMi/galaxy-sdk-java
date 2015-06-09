@@ -20,7 +20,8 @@ public enum AppUserAuthProvider implements libthrift091.TEnum {
   XIAOMI_OAUTH(2),
   QQ_OAUTH(3),
   SINA_OAUTH(4),
-  RENREN_OAUTH(5);
+  RENREN_OAUTH(5),
+  WEIXIN_OAUTH(6);
 
   private final int value;
 
@@ -51,6 +52,8 @@ public enum AppUserAuthProvider implements libthrift091.TEnum {
         return SINA_OAUTH;
       case 5:
         return RENREN_OAUTH;
+      case 6:
+        return WEIXIN_OAUTH;
       default:
         return null;
     }

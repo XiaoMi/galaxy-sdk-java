@@ -9,6 +9,7 @@ import com.xiaomi.infra.galaxy.sds.thrift.Datum;
 import com.xiaomi.infra.galaxy.sds.thrift.DatumUtil;
 import com.xiaomi.infra.galaxy.sds.thrift.GetRequest;
 import com.xiaomi.infra.galaxy.sds.thrift.GetResult;
+import com.xiaomi.infra.galaxy.sds.thrift.OAuthInfo;
 import com.xiaomi.infra.galaxy.sds.thrift.PutRequest;
 import com.xiaomi.infra.galaxy.sds.thrift.ScanRequest;
 import com.xiaomi.infra.galaxy.sds.thrift.ScanResult;
@@ -46,8 +47,10 @@ public class ExtAppTableAccessor {
     ClientFactory clientFactory = new ClientFactory();
     AuthService.Iface authClient = clientFactory
         .newAuthClient(endpoint + CommonConstants.AUTH_SERVICE_PATH);
+    OAuthInfo oauthInfo = new OAuthInfo().setXiaomiAppId(appId).
+        setAccessToken(accessToken).setAppUserAuthProvider(appUserAuthProvider);
     Credential credential = authClient
-        .createCredential(appId, appUserAuthProvider, accessToken);
+        .createCredential(oauthInfo);
     clientFactory = new ClientFactory().setCredential(credential);
     tableClient = clientFactory
         .newTableClient(endpoint + CommonConstants.TABLE_SERVICE_PATH, 10000, 3000, true, 3);
