@@ -38,19 +38,19 @@ public enum TableState implements libthrift091.TEnum {
   /**
    * 正在删除，不可见
    */
-  DROPPING(6),
+  DELETING(6),
   /**
    * 已删除，不可见
    */
-  DROPPED(7),
+  DELETED(7),
   /**
    * 正在延迟删除，不可操作
    */
-  LAZY_DROPPING(8),
+  LAZY_DELETING(8),
   /**
    * 延迟删除, 可见
    */
-  LAZY_DROP(9),
+  LAZY_DELETE(9),
   /**
    * 正在恢复, 不可操作
    */
@@ -86,13 +86,13 @@ public enum TableState implements libthrift091.TEnum {
       case 5:
         return DISABLED;
       case 6:
-        return DROPPING;
+        return DELETING;
       case 7:
-        return DROPPED;
+        return DELETED;
       case 8:
-        return LAZY_DROPPING;
+        return LAZY_DELETING;
       case 9:
-        return LAZY_DROP;
+        return LAZY_DELETE;
       case 10:
         return RESTORING;
       default:
