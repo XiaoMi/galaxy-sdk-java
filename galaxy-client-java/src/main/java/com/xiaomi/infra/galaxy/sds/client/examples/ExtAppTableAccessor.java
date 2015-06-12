@@ -25,21 +25,17 @@ import java.util.Random;
 
 public class ExtAppTableAccessor {
   private static TableService.Iface tableClient;
-  private String appId;
   private static String[] categories = { "work", "travel", "food" };
   private static int M = 10;
   private String endpoint;
   private String tableName;
-  private AppUserAuthProvider appUserAuthProvider;
-  private String accessToken;
+  private OAuthInfo oauthInfo;
 
-  public ExtAppTableAccessor(String appId, String tableName, String endpoint,
-      AppUserAuthProvider appUserAuthProvider, String accessToken) throws TException {
-    this.appId = appId;
+  public ExtAppTableAccessor(String tableName, String endpoint, OAuthInfo oauthInfo
+  ) throws TException {
     this.tableName = tableName;
     this.endpoint = endpoint;
-    this.appUserAuthProvider = appUserAuthProvider;
-    this.accessToken = accessToken;
+    this.oauthInfo = oauthInfo;
     init();
   }
 
@@ -47,8 +43,6 @@ public class ExtAppTableAccessor {
     ClientFactory clientFactory = new ClientFactory();
     AuthService.Iface authClient = clientFactory
         .newAuthClient(endpoint + CommonConstants.AUTH_SERVICE_PATH);
-    OAuthInfo oauthInfo = new OAuthInfo().setXiaomiAppId(appId).
-        setAccessToken(accessToken).setAppUserAuthProvider(appUserAuthProvider);
     Credential credential = authClient
         .createCredential(oauthInfo);
     clientFactory = new ClientFactory().setCredential(credential);
