@@ -386,8 +386,7 @@ public class GalaxyHttpClient extends TTransport {
             headers.put(header.getName().toLowerCase(), header.getValue());
           }
           try {
-            String authString = Authenticator.Mechanism.GALAXY_V2.getName() +
-                " " + credential.getSecretKeyId() + ":" +
+            String authString = "Galaxy-V2 " + credential.getSecretKeyId() + ":" +
                 Signer.signToBase64(HttpMethod.POST, post.getURI(), headers,
                     credential.getSecretKey(), SignAlgorithm.HmacSHA1);
             post.setHeader(AuthenticationConstants.HK_AUTHORIZATION, authString);
