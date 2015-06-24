@@ -84,7 +84,6 @@ public class EMQRequestCheckUtils {
     }
   }
 
-
   public static void check(CreateQueueRequest request)
       throws GalaxyEmqServiceException {
     checkNotEmpty(request.getQueueName(), "queue name");
@@ -105,24 +104,24 @@ public class EMQRequestCheckUtils {
   }
 
   public static void check(PurgeQueueRequest request)
-    throws GalaxyEmqServiceException {
+      throws GalaxyEmqServiceException {
     validateQueueName(request.getQueueName());
   }
 
   public static void check(SetQueueAttributesRequest request)
-    throws GalaxyEmqServiceException {
+      throws GalaxyEmqServiceException {
     validateQueueName(request.getQueueName());
     validateQueueAttribute(request.getQueueAttribute());
   }
 
   public static void check(GetQueueInfoRequest request)
-    throws GalaxyEmqServiceException {
+      throws GalaxyEmqServiceException {
     validateQueueName(request.getQueueName());
   }
 
   public static void check(ListQueueRequest request)
       throws GalaxyEmqServiceException {
-    validateQueueName(request.getQueueNamePrefix());
+    validateQueueNamePrefix(request.getQueueNamePrefix());
   }
 
   public static void check(SetPermissionRequest request)
@@ -138,18 +137,18 @@ public class EMQRequestCheckUtils {
   }
 
   public static void check(QueryPermissionForIdRequest request)
-    throws GalaxyEmqServiceException {
+      throws GalaxyEmqServiceException {
     validateQueueName(request.getQueueName());
     checkNotEmpty(request.getDeveloperId(), "developerId");
   }
 
   public static void check(QueryPermissionRequest request)
-    throws GalaxyEmqServiceException {
+      throws GalaxyEmqServiceException {
     validateQueueName(request.getQueueName());
   }
 
   public static void check(ListPermissionsRequest request)
-    throws GalaxyEmqServiceException {
+      throws GalaxyEmqServiceException {
     validateQueueName(request.getQueueName());
   }
 
@@ -324,9 +323,25 @@ public class EMQRequestCheckUtils {
             setDetails("invalid characters in queue name");
       }
     }
-    if (queueName.split("/").length != 2){
+    if (queueName.split("/").length != 2) {
       throw new GalaxyEmqServiceException().setErrMsg("Invalid Queue Name").
-          setDetails("two or more '/' in queue name " + queueName);
+          setDetails("allowed exactly one '/' in queue name " + queueName);
+    }
+  }
+
+  public static void validateQueueNamePrefix(String queueNamePrefix)
+      throws GalaxyEmqServiceException {
+    checkNotEmpty(queueNamePrefix, "queue name prefix");
+    for (char c : queueNamePrefix.toCharArray()) {
+      if (!Character.isJavaIdentifierPart(c) && c != '/') {
+        throw new GalaxyEmqServiceException().setErrMsg("Invalid queue name prefix")
+            .setDetails("invalid characters in queueNamePrefix" + queueNamePrefix);
+      }
+    }
+    int slashNum = queueNamePrefix.split("/").length;
+    if (slashNum != 1 && slashNum != 2) {
+      throw new GalaxyEmqServiceException().setErrMsg("Invalid queue name prefix")
+          .setDetails("allowed at most one '/' in queueNamePrefix " + queueNamePrefix);
     }
   }
 
