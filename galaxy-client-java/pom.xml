@@ -68,6 +68,7 @@
                       -Dversion=1.2.10 \
                       -Dpackaging=jar \
                       -DpomFile=${project.basedir}/src/main/resources/pom.xml
+                  rm ${project.basedir}/install-jar.sh
                 </echo>
                 <exec executable="sh" dir="${project.basedir}" failonerror="yes">
                   <arg line="./install-jar.sh"/>
