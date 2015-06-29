@@ -1,0 +1,48 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <artifactId>galaxy-sdk-common</artifactId>
+  <name>Galaxy SDK Common</name>
+
+  <parent>
+    <artifactId>galaxy-sdk-java-pom</artifactId>
+    <groupId>com.xiaomi.infra.galaxy</groupId>
+    <version>1.3-SNAPSHOT</version>
+  </parent>
+
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-antrun-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>jar</id>
+            <phase>generate-sources</phase>
+            <goals>
+              <goal>run</goal>
+            </goals>
+            <configuration>
+              <tasks>
+                <echo file="${project.basedir}/install-jar.sh">
+                  mvn install:install-file \
+                      -Dfile=${project.basedir}/src/main/resources/galaxy-authentication-1.2.10.jar \
+                      -DgroupId=com.xiaomi.infra.galaxy \
+                      -DartifactId=galaxy-authentication \
+                      -Dversion=1.2.10 \
+                      -Dpackaging=jar \
+                      -DpomFile=${project.basedir}/src/main/resources/pom.xml
+                  rm ${project.basedir}/install-jar.sh
+                </echo>
+                <exec executable="sh" dir="${project.basedir}" failonerror="yes">
+                  <arg line="./install-jar.sh"/>
+                </exec>
+              </tasks>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
+</project>

@@ -161,6 +161,7 @@
   </profiles>
 
   <modules>
+    <module>galaxy-sdk-common</module>
     <module>galaxy-thrift-api</module>
     <module>galaxy-client-java</module>
     <module>galaxy-emq-client</module>
