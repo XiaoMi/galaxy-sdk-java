@@ -285,16 +285,6 @@ public class GalaxyHttpClient extends TTransport {
       //
 
       is = response.getEntity().getContent();
-
-      if (responseCode != HttpStatus.SC_OK) {
-        Header[] typeHeader = response.getHeaders("Content-Type");
-        if (typeHeader.length == 0 ||
-            !typeHeader[0].getValue().startsWith("application/x-thrift")) {
-          adjustClock(response, responseCode);
-          throw new HttpTTransportException(responseCode, reasonPhrase);
-        }
-      }
-
       // Read the responses into a byte array so we can release the connection
       // early. This implies that the whole content will have to be read in
       // memory, and that momentarily we might use up twice the memory (while the
@@ -320,8 +310,18 @@ public class GalaxyHttpClient extends TTransport {
         // We ignore this exception, it might only mean the server has no
         // keep-alive capability.
       }
+ 
+      if (responseCode != HttpStatus.SC_OK) {
+        Header[] typeHeader = response.getHeaders("Content-Type");
+        if (typeHeader.length == 0 ||
+            !typeHeader[0].getValue().startsWith("application/x-thrift")) {
+          adjustClock(response, responseCode);
+          throw new HttpTTransportException(responseCode, reasonPhrase + ":" +
+              new String(baos.toByteArray(), "UTF-8"));
+        }
+      }
 
-      inputStream_ = new ByteArrayInputStream(baos.toByteArray());
+     inputStream_ = new ByteArrayInputStream(baos.toByteArray());
     } catch (IOException ioe) {
       // Abort method so the connection gets released back to the connection manager
       if (null != post) {
