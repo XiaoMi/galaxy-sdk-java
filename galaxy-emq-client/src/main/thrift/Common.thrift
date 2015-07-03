@@ -15,6 +15,8 @@ exception GalaxyEmqServiceException {
   2: optional string errMsg;
 
   3: optional string details;
+
+  4: optional string requestId;
 }
 
 struct Version {
