@@ -11,14 +11,13 @@ import java.util.Map;
 import java.util.HashMap;
 import libthrift091.TEnum;
 
-public enum ErrorCode implements libthrift091.TEnum {
-  TopicExist(0),
-  TopicNotExist(1),
-  InvalidTopicTalosResourceName(2);
+public enum MessageOffset implements libthrift091.TEnum {
+  START_OFFSET(-1),
+  LATEST_OFFSET(-2);
 
   private final int value;
 
-  private ErrorCode(int value) {
+  private MessageOffset(int value) {
     this.value = value;
   }
 
@@ -33,14 +32,12 @@ public enum ErrorCode implements libthrift091.TEnum {
    * Find a the enum type by its integer value, as defined in the Thrift IDL.
    * @return null if the value is not found.
    */
-  public static ErrorCode findByValue(int value) { 
+  public static MessageOffset findByValue(int value) { 
     switch (value) {
-      case 0:
-        return TopicExist;
-      case 1:
-        return TopicNotExist;
-      case 2:
-        return InvalidTopicTalosResourceName;
+      case -1:
+        return START_OFFSET;
+      case -2:
+        return LATEST_OFFSET;
       default:
         return null;
     }
