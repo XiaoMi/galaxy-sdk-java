@@ -12,9 +12,10 @@ import java.util.HashMap;
 import libthrift091.TEnum;
 
 public enum ErrorCode implements libthrift091.TEnum {
-  TopicExist(0),
-  TopicNotExist(1),
-  InvalidTopicTalosResourceName(2);
+  TOPIC_EXIST(0),
+  TOPIC_NOT_EXIST(1),
+  INVALID_TOPIC_TALOS_RESOURCE_NAME(2),
+  HDFS_OPERATION_FAILED(3);
 
   private final int value;
 
@@ -36,11 +37,13 @@ public enum ErrorCode implements libthrift091.TEnum {
   public static ErrorCode findByValue(int value) { 
     switch (value) {
       case 0:
-        return TopicExist;
+        return TOPIC_EXIST;
       case 1:
-        return TopicNotExist;
+        return TOPIC_NOT_EXIST;
       case 2:
-        return InvalidTopicTalosResourceName;
+        return INVALID_TOPIC_TALOS_RESOURCE_NAME;
+      case 3:
+        return HDFS_OPERATION_FAILED;
       default:
         return null;
     }
