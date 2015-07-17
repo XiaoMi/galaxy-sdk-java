@@ -331,7 +331,9 @@ public class EMQRequestCheckUtils {
 
   public static void validateQueueNamePrefix(String queueNamePrefix)
       throws GalaxyEmqServiceException {
-    checkNotEmpty(queueNamePrefix, "queue name prefix");
+    if (queueNamePrefix == null) {
+      throw new GalaxyEmqServiceException().setErrMsg("null prefix");
+    }
     for (char c : queueNamePrefix.toCharArray()) {
       if (!Character.isJavaIdentifierPart(c) && c != '/') {
         throw new GalaxyEmqServiceException().setErrMsg("Invalid queue name prefix")
