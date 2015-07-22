@@ -59,6 +59,14 @@ public class QuotaService {
      */
     public QueryQuotaResponse queryQuota() throws com.xiaomi.infra.galaxy.talos.thrift.GalaxyTalosException, libthrift091.TException;
 
+    /**
+     * deleteQuota, the caller must be talos admin;
+     * 
+     * 
+     * @param request
+     */
+    public void deleteQuota(DeleteQuotaRequest request) throws com.xiaomi.infra.galaxy.talos.thrift.GalaxyTalosException, libthrift091.TException;
+
   }
 
   public interface AsyncIface extends com.xiaomi.infra.galaxy.talos.thrift.TalosBaseService .AsyncIface {
@@ -68,6 +76,8 @@ public class QuotaService {
     public void listQuota(libthrift091.async.AsyncMethodCallback resultHandler) throws libthrift091.TException;
 
     public void queryQuota(libthrift091.async.AsyncMethodCallback resultHandler) throws libthrift091.TException;
+
+    public void deleteQuota(DeleteQuotaRequest request, libthrift091.async.AsyncMethodCallback resultHandler) throws libthrift091.TException;
 
   }
 
@@ -162,6 +172,29 @@ public class QuotaService {
         throw result.e;
       }
       throw new libthrift091.TApplicationException(libthrift091.TApplicationException.MISSING_RESULT, "queryQuota failed: unknown result");
+    }
+
+    public void deleteQuota(DeleteQuotaRequest request) throws com.xiaomi.infra.galaxy.talos.thrift.GalaxyTalosException, libthrift091.TException
+    {
+      send_deleteQuota(request);
+      recv_deleteQuota();
+    }
+
+    public void send_deleteQuota(DeleteQuotaRequest request) throws libthrift091.TException
+    {
+      deleteQuota_args args = new deleteQuota_args();
+      args.setRequest(request);
+      sendBase("deleteQuota", args);
+    }
+
+    public void recv_deleteQuota() throws com.xiaomi.infra.galaxy.talos.thrift.GalaxyTalosException, libthrift091.TException
+    {
+      deleteQuota_result result = new deleteQuota_result();
+      receiveBase(result, "deleteQuota");
+      if (result.e != null) {
+        throw result.e;
+      }
+      return;
     }
 
   }
@@ -272,6 +305,38 @@ public class QuotaService {
       }
     }
 
+    public void deleteQuota(DeleteQuotaRequest request, libthrift091.async.AsyncMethodCallback resultHandler) throws libthrift091.TException {
+      checkReady();
+      deleteQuota_call method_call = new deleteQuota_call(request, resultHandler, this, ___protocolFactory, ___transport);
+      this.___currentMethod = method_call;
+      ___manager.call(method_call);
+    }
+
+    public static class deleteQuota_call extends libthrift091.async.TAsyncMethodCall {
+      private DeleteQuotaRequest request;
+      public deleteQuota_call(DeleteQuotaRequest request, libthrift091.async.AsyncMethodCallback resultHandler, libthrift091.async.TAsyncClient client, libthrift091.protocol.TProtocolFactory protocolFactory, libthrift091.transport.TNonblockingTransport transport) throws libthrift091.TException {
+        super(client, protocolFactory, transport, resultHandler, false);
+        this.request = request;
+      }
+
+      public void write_args(libthrift091.protocol.TProtocol prot) throws libthrift091.TException {
+        prot.writeMessageBegin(new libthrift091.protocol.TMessage("deleteQuota", libthrift091.protocol.TMessageType.CALL, 0));
+        deleteQuota_args args = new deleteQuota_args();
+        args.setRequest(request);
+        args.write(prot);
+        prot.writeMessageEnd();
+      }
+
+      public void getResult() throws com.xiaomi.infra.galaxy.talos.thrift.GalaxyTalosException, libthrift091.TException {
+        if (getState() != libthrift091.async.TAsyncMethodCall.State.RESPONSE_READ) {
+          throw new IllegalStateException("Method call not finished!");
+        }
+        libthrift091.transport.TMemoryInputTransport memoryTransport = new libthrift091.transport.TMemoryInputTransport(getFrameBuffer().array());
+        libthrift091.protocol.TProtocol prot = client.getProtocolFactory().getProtocol(memoryTransport);
+        (new Client(prot)).recv_deleteQuota();
+      }
+    }
+
   }
 
   public static class Processor<I extends Iface> extends com.xiaomi.infra.galaxy.talos.thrift.TalosBaseService.Processor<I> implements libthrift091.TProcessor {
@@ -288,6 +353,7 @@ public class QuotaService {
       processMap.put("setQuota", new setQuota());
       processMap.put("listQuota", new listQuota());
       processMap.put("queryQuota", new queryQuota());
+      processMap.put("deleteQuota", new deleteQuota());
       return processMap;
     }
 
@@ -363,6 +429,30 @@ public class QuotaService {
       }
     }
 
+    public static class deleteQuota<I extends Iface> extends libthrift091.ProcessFunction<I, deleteQuota_args> {
+      public deleteQuota() {
+        super("deleteQuota");
+      }
+
+      public deleteQuota_args getEmptyArgsInstance() {
+        return new deleteQuota_args();
+      }
+
+      protected boolean isOneway() {
+        return false;
+      }
+
+      public deleteQuota_result getResult(I iface, deleteQuota_args args) throws libthrift091.TException {
+        deleteQuota_result result = new deleteQuota_result();
+        try {
+          iface.deleteQuota(args.request);
+        } catch (com.xiaomi.infra.galaxy.talos.thrift.GalaxyTalosException e) {
+          result.e = e;
+        }
+        return result;
+      }
+    }
+
   }
 
   public static class AsyncProcessor<I extends AsyncIface> extends com.xiaomi.infra.galaxy.talos.thrift.TalosBaseService.AsyncProcessor<I> {
@@ -379,6 +469,7 @@ public class QuotaService {
       processMap.put("setQuota", new setQuota());
       processMap.put("listQuota", new listQuota());
       processMap.put("queryQuota", new queryQuota());
+      processMap.put("deleteQuota", new deleteQuota());
       return processMap;
     }
 
@@ -549,6 +640,62 @@ public class QuotaService {
 
       public void start(I iface, queryQuota_args args, libthrift091.async.AsyncMethodCallback<QueryQuotaResponse> resultHandler) throws TException {
         iface.queryQuota(resultHandler);
+      }
+    }
+
+    public static class deleteQuota<I extends AsyncIface> extends libthrift091.AsyncProcessFunction<I, deleteQuota_args, Void> {
+      public deleteQuota() {
+        super("deleteQuota");
+      }
+
+      public deleteQuota_args getEmptyArgsInstance() {
+        return new deleteQuota_args();
+      }
+
+      public AsyncMethodCallback<Void> getResultHandler(final AsyncFrameBuffer fb, final int seqid) {
+        final libthrift091.AsyncProcessFunction fcall = this;
+        return new AsyncMethodCallback<Void>() { 
+          public void onComplete(Void o) {
+            deleteQuota_result result = new deleteQuota_result();
+            try {
+              fcall.sendResponse(fb,result, libthrift091.protocol.TMessageType.REPLY,seqid);
+              return;
+            } catch (Exception e) {
+              LOGGER.error("Exception writing to internal frame buffer", e);
+            }
+            fb.close();
+          }
+          public void onError(Exception e) {
+            byte msgType = libthrift091.protocol.TMessageType.REPLY;
+            libthrift091.TBase msg;
+            deleteQuota_result result = new deleteQuota_result();
+            if (e instanceof com.xiaomi.infra.galaxy.talos.thrift.GalaxyTalosException) {
+                        result.e = (com.xiaomi.infra.galaxy.talos.thrift.GalaxyTalosException) e;
+                        result.setEIsSet(true);
+                        msg = result;
+            }
+             else 
+            {
+              msgType = libthrift091.protocol.TMessageType.EXCEPTION;
+              msg = (libthrift091.TBase)new libthrift091.TApplicationException(libthrift091.TApplicationException.INTERNAL_ERROR, e.getMessage());
+            }
+            try {
+              fcall.sendResponse(fb,msg,msgType,seqid);
+              return;
+            } catch (Exception ex) {
+              LOGGER.error("Exception writing to internal frame buffer", ex);
+            }
+            fb.close();
+          }
+        };
+      }
+
+      protected boolean isOneway() {
+        return false;
+      }
+
+      public void start(I iface, deleteQuota_args args, libthrift091.async.AsyncMethodCallback<Void> resultHandler) throws TException {
+        iface.deleteQuota(args.request,resultHandler);
       }
     }
 
@@ -2716,6 +2863,735 @@ public class QuotaService {
           struct.setSuccessIsSet(true);
         }
         if (incoming.get(1)) {
+          struct.e = new com.xiaomi.infra.galaxy.talos.thrift.GalaxyTalosException();
+          struct.e.read(iprot);
+          struct.setEIsSet(true);
+        }
+      }
+    }
+
+  }
+
+  public static class deleteQuota_args implements libthrift091.TBase<deleteQuota_args, deleteQuota_args._Fields>, java.io.Serializable, Cloneable, Comparable<deleteQuota_args>   {
+    private static final libthrift091.protocol.TStruct STRUCT_DESC = new libthrift091.protocol.TStruct("deleteQuota_args");
+
+    private static final libthrift091.protocol.TField REQUEST_FIELD_DESC = new libthrift091.protocol.TField("request", libthrift091.protocol.TType.STRUCT, (short)1);
+
+    private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
+    static {
+      schemes.put(StandardScheme.class, new deleteQuota_argsStandardSchemeFactory());
+      schemes.put(TupleScheme.class, new deleteQuota_argsTupleSchemeFactory());
+    }
+
+    public DeleteQuotaRequest request; // required
+
+    /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
+    public enum _Fields implements libthrift091.TFieldIdEnum {
+      REQUEST((short)1, "request");
+
+      private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
+
+      static {
+        for (_Fields field : EnumSet.allOf(_Fields.class)) {
+          byName.put(field.getFieldName(), field);
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, or null if its not found.
+       */
+      public static _Fields findByThriftId(int fieldId) {
+        switch(fieldId) {
+          case 1: // REQUEST
+            return REQUEST;
+          default:
+            return null;
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, throwing an exception
+       * if it is not found.
+       */
+      public static _Fields findByThriftIdOrThrow(int fieldId) {
+        _Fields fields = findByThriftId(fieldId);
+        if (fields == null) throw new IllegalArgumentException("Field " + fieldId + " doesn't exist!");
+        return fields;
+      }
+
+      /**
+       * Find the _Fields constant that matches name, or null if its not found.
+       */
+      public static _Fields findByName(String name) {
+        return byName.get(name);
+      }
+
+      private final short _thriftId;
+      private final String _fieldName;
+
+      _Fields(short thriftId, String fieldName) {
+        _thriftId = thriftId;
+        _fieldName = fieldName;
+      }
+
+      public short getThriftFieldId() {
+        return _thriftId;
+      }
+
+      public String getFieldName() {
+        return _fieldName;
+      }
+    }
+
+    // isset id assignments
+    public static final Map<_Fields, libthrift091.meta_data.FieldMetaData> metaDataMap;
+    static {
+      Map<_Fields, libthrift091.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, libthrift091.meta_data.FieldMetaData>(_Fields.class);
+      tmpMap.put(_Fields.REQUEST, new libthrift091.meta_data.FieldMetaData("request", libthrift091.TFieldRequirementType.DEFAULT, 
+          new libthrift091.meta_data.StructMetaData(libthrift091.protocol.TType.STRUCT, DeleteQuotaRequest.class)));
+      metaDataMap = Collections.unmodifiableMap(tmpMap);
+      libthrift091.meta_data.FieldMetaData.addStructMetaDataMap(deleteQuota_args.class, metaDataMap);
+    }
+
+    public deleteQuota_args() {
+    }
+
+    public deleteQuota_args(
+      DeleteQuotaRequest request)
+    {
+      this();
+      this.request = request;
+    }
+
+    /**
+     * Performs a deep copy on <i>other</i>.
+     */
+    public deleteQuota_args(deleteQuota_args other) {
+      if (other.isSetRequest()) {
+        this.request = new DeleteQuotaRequest(other.request);
+      }
+    }
+
+    public deleteQuota_args deepCopy() {
+      return new deleteQuota_args(this);
+    }
+
+    @Override
+    public void clear() {
+      this.request = null;
+    }
+
+    public DeleteQuotaRequest getRequest() {
+      return this.request;
+    }
+
+    public deleteQuota_args setRequest(DeleteQuotaRequest request) {
+      this.request = request;
+      return this;
+    }
+
+    public void unsetRequest() {
+      this.request = null;
+    }
+
+    /** Returns true if field request is set (has been assigned a value) and false otherwise */
+    public boolean isSetRequest() {
+      return this.request != null;
+    }
+
+    public void setRequestIsSet(boolean value) {
+      if (!value) {
+        this.request = null;
+      }
+    }
+
+    public void setFieldValue(_Fields field, Object value) {
+      switch (field) {
+      case REQUEST:
+        if (value == null) {
+          unsetRequest();
+        } else {
+          setRequest((DeleteQuotaRequest)value);
+        }
+        break;
+
+      }
+    }
+
+    public Object getFieldValue(_Fields field) {
+      switch (field) {
+      case REQUEST:
+        return getRequest();
+
+      }
+      throw new IllegalStateException();
+    }
+
+    /** Returns true if field corresponding to fieldID is set (has been assigned a value) and false otherwise */
+    public boolean isSet(_Fields field) {
+      if (field == null) {
+        throw new IllegalArgumentException();
+      }
+
+      switch (field) {
+      case REQUEST:
+        return isSetRequest();
+      }
+      throw new IllegalStateException();
+    }
+
+    @Override
+    public boolean equals(Object that) {
+      if (that == null)
+        return false;
+      if (that instanceof deleteQuota_args)
+        return this.equals((deleteQuota_args)that);
+      return false;
+    }
+
+    public boolean equals(deleteQuota_args that) {
+      if (that == null)
+        return false;
+
+      boolean this_present_request = true && this.isSetRequest();
+      boolean that_present_request = true && that.isSetRequest();
+      if (this_present_request || that_present_request) {
+        if (!(this_present_request && that_present_request))
+          return false;
+        if (!this.request.equals(that.request))
+          return false;
+      }
+
+      return true;
+    }
+
+    @Override
+    public int hashCode() {
+      List<Object> list = new ArrayList<Object>();
+
+      boolean present_request = true && (isSetRequest());
+      list.add(present_request);
+      if (present_request)
+        list.add(request);
+
+      return list.hashCode();
+    }
+
+    @Override
+    public int compareTo(deleteQuota_args other) {
+      if (!getClass().equals(other.getClass())) {
+        return getClass().getName().compareTo(other.getClass().getName());
+      }
+
+      int lastComparison = 0;
+
+      lastComparison = Boolean.valueOf(isSetRequest()).compareTo(other.isSetRequest());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetRequest()) {
+        lastComparison = libthrift091.TBaseHelper.compareTo(this.request, other.request);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      return 0;
+    }
+
+    public _Fields fieldForId(int fieldId) {
+      return _Fields.findByThriftId(fieldId);
+    }
+
+    public void read(libthrift091.protocol.TProtocol iprot) throws libthrift091.TException {
+      schemes.get(iprot.getScheme()).getScheme().read(iprot, this);
+    }
+
+    public void write(libthrift091.protocol.TProtocol oprot) throws libthrift091.TException {
+      schemes.get(oprot.getScheme()).getScheme().write(oprot, this);
+    }
+
+    @Override
+    public String toString() {
+      StringBuilder sb = new StringBuilder("deleteQuota_args(");
+      boolean first = true;
+
+      sb.append("request:");
+      if (this.request == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.request);
+      }
+      first = false;
+      sb.append(")");
+      return sb.toString();
+    }
+
+    public void validate() throws libthrift091.TException {
+      // check for required fields
+      // check for sub-struct validity
+      if (request != null) {
+        request.validate();
+      }
+    }
+
+    private void writeObject(java.io.ObjectOutputStream out) throws java.io.IOException {
+      try {
+        write(new libthrift091.protocol.TCompactProtocol(new libthrift091.transport.TIOStreamTransport(out)));
+      } catch (libthrift091.TException te) {
+        throw new java.io.IOException(te);
+      }
+    }
+
+    private void readObject(java.io.ObjectInputStream in) throws java.io.IOException, ClassNotFoundException {
+      try {
+        read(new libthrift091.protocol.TCompactProtocol(new libthrift091.transport.TIOStreamTransport(in)));
+      } catch (libthrift091.TException te) {
+        throw new java.io.IOException(te);
+      }
+    }
+
+    private static class deleteQuota_argsStandardSchemeFactory implements SchemeFactory {
+      public deleteQuota_argsStandardScheme getScheme() {
+        return new deleteQuota_argsStandardScheme();
+      }
+    }
+
+    private static class deleteQuota_argsStandardScheme extends StandardScheme<deleteQuota_args> {
+
+      public void read(libthrift091.protocol.TProtocol iprot, deleteQuota_args struct) throws libthrift091.TException {
+        libthrift091.protocol.TField schemeField;
+        iprot.readStructBegin();
+        while (true)
+        {
+          schemeField = iprot.readFieldBegin();
+          if (schemeField.type == libthrift091.protocol.TType.STOP) { 
+            break;
+          }
+          switch (schemeField.id) {
+            case 1: // REQUEST
+              if (schemeField.type == libthrift091.protocol.TType.STRUCT) {
+                struct.request = new DeleteQuotaRequest();
+                struct.request.read(iprot);
+                struct.setRequestIsSet(true);
+              } else { 
+                libthrift091.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+              }
+              break;
+            default:
+              libthrift091.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+          }
+          iprot.readFieldEnd();
+        }
+        iprot.readStructEnd();
+
+        // check for required fields of primitive type, which can't be checked in the validate method
+        struct.validate();
+      }
+
+      public void write(libthrift091.protocol.TProtocol oprot, deleteQuota_args struct) throws libthrift091.TException {
+        struct.validate();
+
+        oprot.writeStructBegin(STRUCT_DESC);
+        if (struct.request != null) {
+          oprot.writeFieldBegin(REQUEST_FIELD_DESC);
+          struct.request.write(oprot);
+          oprot.writeFieldEnd();
+        }
+        oprot.writeFieldStop();
+        oprot.writeStructEnd();
+      }
+
+    }
+
+    private static class deleteQuota_argsTupleSchemeFactory implements SchemeFactory {
+      public deleteQuota_argsTupleScheme getScheme() {
+        return new deleteQuota_argsTupleScheme();
+      }
+    }
+
+    private static class deleteQuota_argsTupleScheme extends TupleScheme<deleteQuota_args> {
+
+      @Override
+      public void write(libthrift091.protocol.TProtocol prot, deleteQuota_args struct) throws libthrift091.TException {
+        TTupleProtocol oprot = (TTupleProtocol) prot;
+        BitSet optionals = new BitSet();
+        if (struct.isSetRequest()) {
+          optionals.set(0);
+        }
+        oprot.writeBitSet(optionals, 1);
+        if (struct.isSetRequest()) {
+          struct.request.write(oprot);
+        }
+      }
+
+      @Override
+      public void read(libthrift091.protocol.TProtocol prot, deleteQuota_args struct) throws libthrift091.TException {
+        TTupleProtocol iprot = (TTupleProtocol) prot;
+        BitSet incoming = iprot.readBitSet(1);
+        if (incoming.get(0)) {
+          struct.request = new DeleteQuotaRequest();
+          struct.request.read(iprot);
+          struct.setRequestIsSet(true);
+        }
+      }
+    }
+
+  }
+
+  public static class deleteQuota_result implements libthrift091.TBase<deleteQuota_result, deleteQuota_result._Fields>, java.io.Serializable, Cloneable, Comparable<deleteQuota_result>   {
+    private static final libthrift091.protocol.TStruct STRUCT_DESC = new libthrift091.protocol.TStruct("deleteQuota_result");
+
+    private static final libthrift091.protocol.TField E_FIELD_DESC = new libthrift091.protocol.TField("e", libthrift091.protocol.TType.STRUCT, (short)1);
+
+    private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
+    static {
+      schemes.put(StandardScheme.class, new deleteQuota_resultStandardSchemeFactory());
+      schemes.put(TupleScheme.class, new deleteQuota_resultTupleSchemeFactory());
+    }
+
+    public com.xiaomi.infra.galaxy.talos.thrift.GalaxyTalosException e; // required
+
+    /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
+    public enum _Fields implements libthrift091.TFieldIdEnum {
+      E((short)1, "e");
+
+      private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
+
+      static {
+        for (_Fields field : EnumSet.allOf(_Fields.class)) {
+          byName.put(field.getFieldName(), field);
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, or null if its not found.
+       */
+      public static _Fields findByThriftId(int fieldId) {
+        switch(fieldId) {
+          case 1: // E
+            return E;
+          default:
+            return null;
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, throwing an exception
+       * if it is not found.
+       */
+      public static _Fields findByThriftIdOrThrow(int fieldId) {
+        _Fields fields = findByThriftId(fieldId);
+        if (fields == null) throw new IllegalArgumentException("Field " + fieldId + " doesn't exist!");
+        return fields;
+      }
+
+      /**
+       * Find the _Fields constant that matches name, or null if its not found.
+       */
+      public static _Fields findByName(String name) {
+        return byName.get(name);
+      }
+
+      private final short _thriftId;
+      private final String _fieldName;
+
+      _Fields(short thriftId, String fieldName) {
+        _thriftId = thriftId;
+        _fieldName = fieldName;
+      }
+
+      public short getThriftFieldId() {
+        return _thriftId;
+      }
+
+      public String getFieldName() {
+        return _fieldName;
+      }
+    }
+
+    // isset id assignments
+    public static final Map<_Fields, libthrift091.meta_data.FieldMetaData> metaDataMap;
+    static {
+      Map<_Fields, libthrift091.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, libthrift091.meta_data.FieldMetaData>(_Fields.class);
+      tmpMap.put(_Fields.E, new libthrift091.meta_data.FieldMetaData("e", libthrift091.TFieldRequirementType.DEFAULT, 
+          new libthrift091.meta_data.FieldValueMetaData(libthrift091.protocol.TType.STRUCT)));
+      metaDataMap = Collections.unmodifiableMap(tmpMap);
+      libthrift091.meta_data.FieldMetaData.addStructMetaDataMap(deleteQuota_result.class, metaDataMap);
+    }
+
+    public deleteQuota_result() {
+    }
+
+    public deleteQuota_result(
+      com.xiaomi.infra.galaxy.talos.thrift.GalaxyTalosException e)
+    {
+      this();
+      this.e = e;
+    }
+
+    /**
+     * Performs a deep copy on <i>other</i>.
+     */
+    public deleteQuota_result(deleteQuota_result other) {
+      if (other.isSetE()) {
+        this.e = new com.xiaomi.infra.galaxy.talos.thrift.GalaxyTalosException(other.e);
+      }
+    }
+
+    public deleteQuota_result deepCopy() {
+      return new deleteQuota_result(this);
+    }
+
+    @Override
+    public void clear() {
+      this.e = null;
+    }
+
+    public com.xiaomi.infra.galaxy.talos.thrift.GalaxyTalosException getE() {
+      return this.e;
+    }
+
+    public deleteQuota_result setE(com.xiaomi.infra.galaxy.talos.thrift.GalaxyTalosException e) {
+      this.e = e;
+      return this;
+    }
+
+    public void unsetE() {
+      this.e = null;
+    }
+
+    /** Returns true if field e is set (has been assigned a value) and false otherwise */
+    public boolean isSetE() {
+      return this.e != null;
+    }
+
+    public void setEIsSet(boolean value) {
+      if (!value) {
+        this.e = null;
+      }
+    }
+
+    public void setFieldValue(_Fields field, Object value) {
+      switch (field) {
+      case E:
+        if (value == null) {
+          unsetE();
+        } else {
+          setE((com.xiaomi.infra.galaxy.talos.thrift.GalaxyTalosException)value);
+        }
+        break;
+
+      }
+    }
+
+    public Object getFieldValue(_Fields field) {
+      switch (field) {
+      case E:
+        return getE();
+
+      }
+      throw new IllegalStateException();
+    }
+
+    /** Returns true if field corresponding to fieldID is set (has been assigned a value) and false otherwise */
+    public boolean isSet(_Fields field) {
+      if (field == null) {
+        throw new IllegalArgumentException();
+      }
+
+      switch (field) {
+      case E:
+        return isSetE();
+      }
+      throw new IllegalStateException();
+    }
+
+    @Override
+    public boolean equals(Object that) {
+      if (that == null)
+        return false;
+      if (that instanceof deleteQuota_result)
+        return this.equals((deleteQuota_result)that);
+      return false;
+    }
+
+    public boolean equals(deleteQuota_result that) {
+      if (that == null)
+        return false;
+
+      boolean this_present_e = true && this.isSetE();
+      boolean that_present_e = true && that.isSetE();
+      if (this_present_e || that_present_e) {
+        if (!(this_present_e && that_present_e))
+          return false;
+        if (!this.e.equals(that.e))
+          return false;
+      }
+
+      return true;
+    }
+
+    @Override
+    public int hashCode() {
+      List<Object> list = new ArrayList<Object>();
+
+      boolean present_e = true && (isSetE());
+      list.add(present_e);
+      if (present_e)
+        list.add(e);
+
+      return list.hashCode();
+    }
+
+    @Override
+    public int compareTo(deleteQuota_result other) {
+      if (!getClass().equals(other.getClass())) {
+        return getClass().getName().compareTo(other.getClass().getName());
+      }
+
+      int lastComparison = 0;
+
+      lastComparison = Boolean.valueOf(isSetE()).compareTo(other.isSetE());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetE()) {
+        lastComparison = libthrift091.TBaseHelper.compareTo(this.e, other.e);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      return 0;
+    }
+
+    public _Fields fieldForId(int fieldId) {
+      return _Fields.findByThriftId(fieldId);
+    }
+
+    public void read(libthrift091.protocol.TProtocol iprot) throws libthrift091.TException {
+      schemes.get(iprot.getScheme()).getScheme().read(iprot, this);
+    }
+
+    public void write(libthrift091.protocol.TProtocol oprot) throws libthrift091.TException {
+      schemes.get(oprot.getScheme()).getScheme().write(oprot, this);
+      }
+
+    @Override
+    public String toString() {
+      StringBuilder sb = new StringBuilder("deleteQuota_result(");
+      boolean first = true;
+
+      sb.append("e:");
+      if (this.e == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.e);
+      }
+      first = false;
+      sb.append(")");
+      return sb.toString();
+    }
+
+    public void validate() throws libthrift091.TException {
+      // check for required fields
+      // check for sub-struct validity
+    }
+
+    private void writeObject(java.io.ObjectOutputStream out) throws java.io.IOException {
+      try {
+        write(new libthrift091.protocol.TCompactProtocol(new libthrift091.transport.TIOStreamTransport(out)));
+      } catch (libthrift091.TException te) {
+        throw new java.io.IOException(te);
+      }
+    }
+
+    private void readObject(java.io.ObjectInputStream in) throws java.io.IOException, ClassNotFoundException {
+      try {
+        read(new libthrift091.protocol.TCompactProtocol(new libthrift091.transport.TIOStreamTransport(in)));
+      } catch (libthrift091.TException te) {
+        throw new java.io.IOException(te);
+      }
+    }
+
+    private static class deleteQuota_resultStandardSchemeFactory implements SchemeFactory {
+      public deleteQuota_resultStandardScheme getScheme() {
+        return new deleteQuota_resultStandardScheme();
+      }
+    }
+
+    private static class deleteQuota_resultStandardScheme extends StandardScheme<deleteQuota_result> {
+
+      public void read(libthrift091.protocol.TProtocol iprot, deleteQuota_result struct) throws libthrift091.TException {
+        libthrift091.protocol.TField schemeField;
+        iprot.readStructBegin();
+        while (true)
+        {
+          schemeField = iprot.readFieldBegin();
+          if (schemeField.type == libthrift091.protocol.TType.STOP) { 
+            break;
+          }
+          switch (schemeField.id) {
+            case 1: // E
+              if (schemeField.type == libthrift091.protocol.TType.STRUCT) {
+                struct.e = new com.xiaomi.infra.galaxy.talos.thrift.GalaxyTalosException();
+                struct.e.read(iprot);
+                struct.setEIsSet(true);
+              } else { 
+                libthrift091.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+              }
+              break;
+            default:
+              libthrift091.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+          }
+          iprot.readFieldEnd();
+        }
+        iprot.readStructEnd();
+
+        // check for required fields of primitive type, which can't be checked in the validate method
+        struct.validate();
+      }
+
+      public void write(libthrift091.protocol.TProtocol oprot, deleteQuota_result struct) throws libthrift091.TException {
+        struct.validate();
+
+        oprot.writeStructBegin(STRUCT_DESC);
+        if (struct.e != null) {
+          oprot.writeFieldBegin(E_FIELD_DESC);
+          struct.e.write(oprot);
+          oprot.writeFieldEnd();
+        }
+        oprot.writeFieldStop();
+        oprot.writeStructEnd();
+      }
+
+    }
+
+    private static class deleteQuota_resultTupleSchemeFactory implements SchemeFactory {
+      public deleteQuota_resultTupleScheme getScheme() {
+        return new deleteQuota_resultTupleScheme();
+      }
+    }
+
+    private static class deleteQuota_resultTupleScheme extends TupleScheme<deleteQuota_result> {
+
+      @Override
+      public void write(libthrift091.protocol.TProtocol prot, deleteQuota_result struct) throws libthrift091.TException {
+        TTupleProtocol oprot = (TTupleProtocol) prot;
+        BitSet optionals = new BitSet();
+        if (struct.isSetE()) {
+          optionals.set(0);
+        }
+        oprot.writeBitSet(optionals, 1);
+        if (struct.isSetE()) {
+          struct.e.write(oprot);
+        }
+      }
+
+      @Override
+      public void read(libthrift091.protocol.TProtocol prot, deleteQuota_result struct) throws libthrift091.TException {
+        TTupleProtocol iprot = (TTupleProtocol) prot;
+        BitSet incoming = iprot.readBitSet(1);
+        if (incoming.get(0)) {
           struct.e = new com.xiaomi.infra.galaxy.talos.thrift.GalaxyTalosException();
           struct.e.read(iprot);
           struct.setEIsSet(true);
