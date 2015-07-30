@@ -15,12 +15,15 @@ public enum ErrorCode implements libthrift091.TEnum {
   TOPIC_EXIST(0),
   TOPIC_NOT_EXIST(1),
   QUOTA_NOT_EXIST(2),
-  MESSAGE_INDEX_UNDESIRED_ERROR(3),
-  INVALID_TOPIC_NAME(4),
-  INVALID_TOPIC_TALOS_RESOURCE_NAME(5),
-  HDFS_OPERATION_FAILED(6),
-  HBASE_OPERATION_FAILED(7),
-  INTERNAL_SERVER_ERROR(8);
+  LOCK_EXIST(3),
+  LOCK_NOT_EXIST(4),
+  LOCK_VALUE_NOT_EXPECTED(5),
+  MESSAGE_INDEX_UNDESIRED_ERROR(6),
+  INVALID_TOPIC_NAME(7),
+  INVALID_TOPIC_TALOS_RESOURCE_NAME(8),
+  HDFS_OPERATION_FAILED(9),
+  HBASE_OPERATION_FAILED(10),
+  INTERNAL_SERVER_ERROR(11);
 
   private final int value;
 
@@ -48,16 +51,22 @@ public enum ErrorCode implements libthrift091.TEnum {
       case 2:
         return QUOTA_NOT_EXIST;
       case 3:
-        return MESSAGE_INDEX_UNDESIRED_ERROR;
+        return LOCK_EXIST;
       case 4:
-        return INVALID_TOPIC_NAME;
+        return LOCK_NOT_EXIST;
       case 5:
-        return INVALID_TOPIC_TALOS_RESOURCE_NAME;
+        return LOCK_VALUE_NOT_EXPECTED;
       case 6:
-        return HDFS_OPERATION_FAILED;
+        return MESSAGE_INDEX_UNDESIRED_ERROR;
       case 7:
-        return HBASE_OPERATION_FAILED;
+        return INVALID_TOPIC_NAME;
       case 8:
+        return INVALID_TOPIC_TALOS_RESOURCE_NAME;
+      case 9:
+        return HDFS_OPERATION_FAILED;
+      case 10:
+        return HBASE_OPERATION_FAILED;
+      case 11:
         return INTERNAL_SERVER_ERROR;
       default:
         return null;
