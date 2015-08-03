@@ -16,6 +16,7 @@ import com.xiaomi.infra.galaxy.emq.thrift.GalaxyEmqServiceException;
 import com.xiaomi.infra.galaxy.emq.thrift.GetQueueInfoRequest;
 import com.xiaomi.infra.galaxy.emq.thrift.ListPermissionsRequest;
 import com.xiaomi.infra.galaxy.emq.thrift.ListQueueRequest;
+import com.xiaomi.infra.galaxy.emq.thrift.MessageAttribute;
 import com.xiaomi.infra.galaxy.emq.thrift.PurgeQueueRequest;
 import com.xiaomi.infra.galaxy.emq.thrift.QueryPermissionForIdRequest;
 import com.xiaomi.infra.galaxy.emq.thrift.QueryPermissionRequest;
@@ -183,6 +184,9 @@ public class EMQRequestCheckUtils {
           RangeConstants.GALAXY_EMQ_MESSAGE_INVISIBILITY_SECONDS_MINIMAL,
           RangeConstants.GALAXY_EMQ_MESSAGE_INVISIBILITY_SECONDS_MAXIMAL);
     }
+    if (request.isSetMessageAttributes()) {
+      check(request.getMessageAttributes());
+    }
   }
 
   public static void check(SendMessageRequest request)
@@ -198,6 +202,53 @@ public class EMQRequestCheckUtils {
       checkParameterRange("invisibilitySeconds", request.getInvisibilitySeconds(),
           RangeConstants.GALAXY_EMQ_MESSAGE_INVISIBILITY_SECONDS_MINIMAL,
           RangeConstants.GALAXY_EMQ_MESSAGE_INVISIBILITY_SECONDS_MAXIMAL);
+    }
+    if (request.isSetMessageAttributes()) {
+      check(request.getMessageAttributes());
+    }
+  }
+
+  public static void check(List<MessageAttribute> attributeList)
+      throws GalaxyEmqServiceException {
+    if (attributeList != null) {
+      Set<String> nameSet = new HashSet<String>(attributeList.size());
+      for (MessageAttribute attribute : attributeList) {
+        if (attribute.getType().toLowerCase().startsWith("string")) {
+          if (attribute.getStringValue() == null) {
+            throw new GalaxyEmqServiceException()
+                .setErrMsg("Invalid user-defined attributes")
+                .setDetails("stringValue cannot be null when type is STRING");
+          }
+        } else if (attribute.getType().toLowerCase().startsWith("binary")) {
+          if (attribute.getBinaryValue() == null) {
+            throw new GalaxyEmqServiceException()
+                .setErrMsg("Invalid user-defined attributes")
+                .setDetails("binaryValue cannot be null when type is BINARY");
+          }
+        } else {
+          throw new GalaxyEmqServiceException()
+              .setErrMsg("Invalid user-defined attributes")
+              .setDetails("Attribute type must start with \"STRING\" or \"BINARY\"");
+        }
+        for (char c : attribute.getType().toCharArray()) {
+          if (!Character.isLetter(c) && !Character.isDigit(c) && c != '.') {
+            throw new GalaxyEmqServiceException()
+                .setErrMsg("Invalid user-defined attributes")
+                .setDetails("Invalid character \'" + c + "\' in attribute type");
+          }
+        }
+        if (attribute.getName() == null || attribute.getName().isEmpty()) {
+          throw new GalaxyEmqServiceException()
+              .setErrMsg("Invalid user-defined attributes")
+              .setDetails("Empty attribute name");
+        }
+        boolean notExist = nameSet.add(attribute.getName());
+        if (!notExist) {
+          throw new GalaxyEmqServiceException()
+              .setErrMsg("Invalid user-defined attributes")
+              .setDetails("Duplicate attribute name:" + attribute.getName());
+        }
+      }
     }
   }
 

@@ -50,6 +50,11 @@ struct QueueAttribute {
   * Partition number for this queue default 4 (1 ~ 255)
   **/
   7: optional i32 partitionNumber;
+
+  /**
+  * User-defined attributes
+  **/
+  8: optional map<string, string> userAttributes;
 }
 
 struct QueueState {

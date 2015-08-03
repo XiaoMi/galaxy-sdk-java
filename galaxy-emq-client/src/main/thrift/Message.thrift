@@ -11,6 +11,31 @@ namespace go emq.message
  * Author: shenyuannan@xiaomi.com
  */
 
+struct MessageAttribute {
+  /**
+  * name of the attribute
+  * must be unique in one message
+  */
+  1: required string name;
+
+  /**
+  * must start with "STRING" or "BINARY", with an optional "." and a user-defined sub-type
+  * like "STRING.INTEGER" or "BINARY.JPEG"
+  * do not contain characters excepts alphabets, digits or "."
+  **/
+  2: required string type;
+
+  /**
+  * must be set if type is "STRING"
+  **/
+  3: optional string stringValue;
+
+  /**
+  * must be set if type is "BINARY"
+  **/
+  4: optional binary binaryValue;
+}
+
 struct SendMessageRequest {
   /**
   * Queue name;
@@ -33,6 +58,11 @@ struct SendMessageRequest {
   * invisibilitySeconds of this queue, default 30s (0s ~ 12hour);
   **/
   4: optional i32 invisibilitySeconds;
+
+  /**
+  * User-defined attributes attached to message
+  **/
+  5: optional list<MessageAttribute> messageAttributes;
 }
 
 struct SendMessageResponse {
@@ -68,6 +98,11 @@ struct SendMessageBatchRequestEntry {
   * invisibilitySeconds of this queue, default 30s (0s ~ 12hour);
   **/
   4: optional i32 invisibilitySeconds;
+
+  /**
+  * User-defined attributes attached to message
+  **/
+  5: optional list<MessageAttribute> messageAttributes;
 }
 
 struct SendMessageBatchRequest {
@@ -152,6 +187,11 @@ struct ReceiveMessageResponse {
   * Message body for the received message;
   **/
   3: required string messageBody;
+
+  /**
+  * User-defined attributes attached to message
+  **/
+  4: optional list<MessageAttribute> messageAttributes;
 }
 
 struct ChangeMessageVisibilityRequest {
