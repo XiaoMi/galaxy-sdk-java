@@ -23,10 +23,9 @@ public enum ErrorCode implements libthrift091.TEnum {
   MESSAGE_INDEX_NOT_EXIST(8),
   MESSAGE_INDEX_OUT_OF_RANGE(9),
   INVALID_TOPIC_NAME(10),
-  INVALID_TOPIC_TALOS_RESOURCE_NAME(11),
-  HDFS_OPERATION_FAILED(12),
-  HBASE_OPERATION_FAILED(13),
-  INTERNAL_SERVER_ERROR(14);
+  HDFS_OPERATION_FAILED(11),
+  HBASE_OPERATION_FAILED(12),
+  INTERNAL_SERVER_ERROR(13);
 
   private final int value;
 
@@ -70,12 +69,10 @@ public enum ErrorCode implements libthrift091.TEnum {
       case 10:
         return INVALID_TOPIC_NAME;
       case 11:
-        return INVALID_TOPIC_TALOS_RESOURCE_NAME;
-      case 12:
         return HDFS_OPERATION_FAILED;
-      case 13:
+      case 12:
         return HBASE_OPERATION_FAILED;
-      case 14:
+      case 13:
         return INTERNAL_SERVER_ERROR;
       default:
         return null;
