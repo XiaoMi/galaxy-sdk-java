@@ -15,7 +15,7 @@ public enum JobActionOnFailure implements libthrift091.TEnum {
   TERMINATE_JOB(1),
   TERMINATE_CLUSTER(2),
   CANCEL_AND_WAIT(3),
-  CON(4);
+  CONTINUE(4);
 
   private final int value;
 
@@ -43,7 +43,7 @@ public enum JobActionOnFailure implements libthrift091.TEnum {
       case 3:
         return CANCEL_AND_WAIT;
       case 4:
-        return CON;
+        return CONTINUE;
       default:
         return null;
     }
