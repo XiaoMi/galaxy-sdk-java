@@ -9,3 +9,4 @@ target/
 junit-report/
 dependency-reduced-pom.xml
 .travis.yml
+.git/arc/

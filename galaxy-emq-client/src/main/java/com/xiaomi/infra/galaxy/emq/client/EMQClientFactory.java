@@ -20,13 +20,12 @@ import org.apache.http.params.HttpParams;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.xiaomi.infra.galaxy.emq.thrift.CommonConstants;
 import com.xiaomi.infra.galaxy.emq.thrift.MessageService;
 import com.xiaomi.infra.galaxy.emq.thrift.QueueService;
 import com.xiaomi.infra.galaxy.emq.thrift.Version;
-import com.xiaomi.infra.galaxy.rpc.client.AutoRetryClient;
 import com.xiaomi.infra.galaxy.rpc.client.ThreadSafeClient;
 import com.xiaomi.infra.galaxy.rpc.thrift.Credential;
-import com.xiaomi.infra.galaxy.rpc.thrift.ErrorsConstants;
 import com.xiaomi.infra.galaxy.rpc.util.clock.AdjustableClock;
 
 /**
@@ -173,7 +172,7 @@ public class EMQClientFactory {
       int connTimeout) {
     return createClient(QueueService.Iface.class, QueueService.Client.class,
         endpoint + EMQConstants.QUEUE_SERVICE_PATH, socketTimeout, connTimeout,
-        false, ErrorsConstants.MAX_RETRY);
+        false, CommonConstants.MAX_RETRY);
   }
 
   public QueueService.Iface newQueueClient(String endpoint, boolean isRetry,
@@ -207,7 +206,7 @@ public class EMQClientFactory {
       int connTimeout) {
     return createClient(MessageService.Iface.class, MessageService.Client.class,
         endpoint + EMQConstants.MESSAGE_SERVICE_PATH, socketTimeout,
-        connTimeout, false, ErrorsConstants.MAX_RETRY);
+        connTimeout, false, CommonConstants.MAX_RETRY);
   }
 
   public MessageService.Iface newMessageClient(String endpoint, boolean isRetry,
@@ -247,4 +246,5 @@ public class EMQClientFactory {
         System.getProperty("java.version"));
   }
 }
+
 
