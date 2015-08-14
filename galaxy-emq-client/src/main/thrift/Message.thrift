@@ -13,27 +13,21 @@ namespace go emq.message
 
 struct MessageAttribute {
   /**
-  * name of the attribute
-  * must be unique in one message
-  */
-  1: required string name;
-
-  /**
   * must start with "STRING" or "BINARY", with an optional "." and a user-defined sub-type
   * like "STRING.INTEGER" or "BINARY.JPEG"
   * do not contain characters excepts alphabets, digits or "."
   **/
-  2: required string type;
+  1: required string type;
 
   /**
   * must be set if type is "STRING"
   **/
-  3: optional string stringValue;
+  2: optional string stringValue;
 
   /**
   * must be set if type is "BINARY"
   **/
-  4: optional binary binaryValue;
+  3: optional binary binaryValue;
 }
 
 struct SendMessageRequest {
@@ -62,15 +56,30 @@ struct SendMessageRequest {
   /**
   * User-defined attributes attached to message
   **/
-  5: optional list<MessageAttribute> messageAttributes;
+  5: optional map<string, MessageAttribute> messageAttributes;
 }
 
 struct SendMessageResponse {
   /**
-  * MessageID for the send message, it should in format
-  * "partititonID:createTimestamp:sequenceID";
+  * MessageID for the send message
   **/
   1: required string messageID;
+
+  /**
+  * Length of messge body
+  **/
+  2: optional i32 bodyLength;
+
+
+  /**
+  * MD5 string of the message body
+  **/
+  3: optional string bodyMd5;
+
+  /**
+  * timestamp when the message arrived servers
+  **/
+  4: optional i64 sendTimestamp;
 }
 
 
@@ -102,7 +111,7 @@ struct SendMessageBatchRequestEntry {
   /**
   * User-defined attributes attached to message
   **/
-  5: optional list<MessageAttribute> messageAttributes;
+  5: optional map<string, MessageAttribute> messageAttributes;
 }
 
 struct SendMessageBatchRequest {
@@ -124,10 +133,25 @@ struct SendMessageBatchResponseEntry {
   1: required string entryId;
 
   /**
-  * MessageID for the send message, it should in format
-  * "partititonID:createTimestamp:sequenceID";
+  * MessageID for the send message
   **/
   2: required string messageID;
+
+  /**
+  * Length of messge body
+  **/
+  3: optional i32 bodyLength;
+
+
+  /**
+  * MD5 string of the message body
+  **/
+  4: optional string bodyMd5;
+
+  /**
+  * timestamp when the message arrived servers
+  **/
+  5: optional i64 sendTimestamp;
 }
 
 struct MessageBatchErrorEntry {
@@ -189,9 +213,21 @@ struct ReceiveMessageResponse {
   3: required string messageBody;
 
   /**
+  * Attributes of message, including:
+  * - senderId
+  * - messageLength
+  * - md5OfBody
+  * - sendTimestamp
+  * - receiveTimestamp
+  * - firstReceiveTimestamp
+  * - receiveCount
+  **/
+  4: optional map<string, string> attributes;
+
+  /**
   * User-defined attributes attached to message
   **/
-  4: optional list<MessageAttribute> messageAttributes;
+  5: optional map<string, MessageAttribute> messageAttributes;
 }
 
 struct ChangeMessageVisibilityRequest {

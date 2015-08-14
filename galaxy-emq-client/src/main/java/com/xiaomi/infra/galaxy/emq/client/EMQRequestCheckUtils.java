@@ -185,7 +185,10 @@ public class EMQRequestCheckUtils {
           RangeConstants.GALAXY_EMQ_MESSAGE_INVISIBILITY_SECONDS_MAXIMAL);
     }
     if (request.isSetMessageAttributes()) {
-      check(request.getMessageAttributes());
+      for(MessageAttribute messageAttribute :
+          request.getMessageAttributes().values()) {
+        check(messageAttribute);
+      }
     }
   }
 
@@ -204,50 +207,37 @@ public class EMQRequestCheckUtils {
           RangeConstants.GALAXY_EMQ_MESSAGE_INVISIBILITY_SECONDS_MAXIMAL);
     }
     if (request.isSetMessageAttributes()) {
-      check(request.getMessageAttributes());
+      for(MessageAttribute messageAttribute :
+          request.getMessageAttributes().values()) {
+        check(messageAttribute);
+      }
     }
   }
 
-  public static void check(List<MessageAttribute> attributeList)
+  public static void check(MessageAttribute attribute)
       throws GalaxyEmqServiceException {
-    if (attributeList != null) {
-      Set<String> nameSet = new HashSet<String>(attributeList.size());
-      for (MessageAttribute attribute : attributeList) {
-        if (attribute.getType().toLowerCase().startsWith("string")) {
-          if (attribute.getStringValue() == null) {
-            throw new GalaxyEmqServiceException()
-                .setErrMsg("Invalid user-defined attributes")
-                .setDetails("stringValue cannot be null when type is STRING");
-          }
-        } else if (attribute.getType().toLowerCase().startsWith("binary")) {
-          if (attribute.getBinaryValue() == null) {
-            throw new GalaxyEmqServiceException()
-                .setErrMsg("Invalid user-defined attributes")
-                .setDetails("binaryValue cannot be null when type is BINARY");
-          }
-        } else {
-          throw new GalaxyEmqServiceException()
-              .setErrMsg("Invalid user-defined attributes")
-              .setDetails("Attribute type must start with \"STRING\" or \"BINARY\"");
-        }
-        for (char c : attribute.getType().toCharArray()) {
-          if (!Character.isLetter(c) && !Character.isDigit(c) && c != '.') {
-            throw new GalaxyEmqServiceException()
-                .setErrMsg("Invalid user-defined attributes")
-                .setDetails("Invalid character \'" + c + "\' in attribute type");
-          }
-        }
-        if (attribute.getName() == null || attribute.getName().isEmpty()) {
-          throw new GalaxyEmqServiceException()
-              .setErrMsg("Invalid user-defined attributes")
-              .setDetails("Empty attribute name");
-        }
-        boolean notExist = nameSet.add(attribute.getName());
-        if (!notExist) {
-          throw new GalaxyEmqServiceException()
-              .setErrMsg("Invalid user-defined attributes")
-              .setDetails("Duplicate attribute name:" + attribute.getName());
-        }
+    if (attribute.getType().toLowerCase().startsWith("string")) {
+      if (attribute.getStringValue() == null) {
+        throw new GalaxyEmqServiceException()
+            .setErrMsg("Invalid user-defined attributes")
+            .setDetails("stringValue cannot be null when type is STRING");
+      }
+    } else if (attribute.getType().toLowerCase().startsWith("binary")) {
+      if (attribute.getBinaryValue() == null) {
+        throw new GalaxyEmqServiceException()
+            .setErrMsg("Invalid user-defined attributes")
+            .setDetails("binaryValue cannot be null when type is BINARY");
+      }
+    } else {
+      throw new GalaxyEmqServiceException()
+          .setErrMsg("Invalid user-defined attributes")
+          .setDetails("Attribute type must start with \"STRING\" or \"BINARY\"");
+    }
+    for (char c : attribute.getType().toCharArray()) {
+      if (!Character.isLetter(c) && !Character.isDigit(c) && c != '.') {
+        throw new GalaxyEmqServiceException()
+            .setErrMsg("Invalid user-defined attributes")
+            .setDetails("Invalid character \'" + c + "\' in attribute type");
       }
     }
   }
