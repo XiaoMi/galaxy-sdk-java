@@ -12,20 +12,24 @@ import java.util.HashMap;
 import libthrift091.TEnum;
 
 public enum ErrorCode implements libthrift091.TEnum {
-  TOPIC_EXIST(0),
-  TOPIC_NOT_EXIST(1),
-  QUOTA_NOT_EXIST(2),
-  LOCK_EXIST(3),
-  LOCK_NOT_EXIST(4),
-  LOCK_VALUE_NOT_EXPECTED(5),
-  MESSAGE_INCOMPLETE(6),
-  MESSAGE_INDEX_UNDESIRED_ERROR(7),
-  MESSAGE_INDEX_NOT_EXIST(8),
-  MESSAGE_INDEX_OUT_OF_RANGE(9),
-  INVALID_TOPIC_NAME(10),
-  HDFS_OPERATION_FAILED(11),
-  HBASE_OPERATION_FAILED(12),
-  INTERNAL_SERVER_ERROR(13);
+  NO_ERROR(0),
+  UNEXCEPTED_ERROR(1),
+  TOPIC_EXIST(2),
+  TOPIC_NOT_EXIST(3),
+  QUOTA_NOT_EXIST(4),
+  LOCK_EXIST(5),
+  LOCK_NOT_EXIST(6),
+  LOCK_VALUE_NOT_EXPECTED(7),
+  MESSAGE_INCOMPLETE(8),
+  MESSAGE_INDEX_UNDESIRED_ERROR(9),
+  MESSAGE_INDEX_NOT_EXIST(10),
+  MESSAGE_INDEX_OUT_OF_RANGE(11),
+  INVALID_TOPIC_NAME(12),
+  OPERATION_FAILED(13),
+  HDFS_OPERATION_FAILED(14),
+  HBASE_OPERATION_FAILED(15),
+  PARTITION_NOT_SERVING(16),
+  INTERNAL_SERVER_ERROR(17);
 
   private final int value;
 
@@ -47,32 +51,40 @@ public enum ErrorCode implements libthrift091.TEnum {
   public static ErrorCode findByValue(int value) { 
     switch (value) {
       case 0:
-        return TOPIC_EXIST;
+        return NO_ERROR;
       case 1:
-        return TOPIC_NOT_EXIST;
+        return UNEXCEPTED_ERROR;
       case 2:
-        return QUOTA_NOT_EXIST;
+        return TOPIC_EXIST;
       case 3:
-        return LOCK_EXIST;
+        return TOPIC_NOT_EXIST;
       case 4:
-        return LOCK_NOT_EXIST;
+        return QUOTA_NOT_EXIST;
       case 5:
-        return LOCK_VALUE_NOT_EXPECTED;
+        return LOCK_EXIST;
       case 6:
-        return MESSAGE_INCOMPLETE;
+        return LOCK_NOT_EXIST;
       case 7:
-        return MESSAGE_INDEX_UNDESIRED_ERROR;
+        return LOCK_VALUE_NOT_EXPECTED;
       case 8:
-        return MESSAGE_INDEX_NOT_EXIST;
+        return MESSAGE_INCOMPLETE;
       case 9:
-        return MESSAGE_INDEX_OUT_OF_RANGE;
+        return MESSAGE_INDEX_UNDESIRED_ERROR;
       case 10:
-        return INVALID_TOPIC_NAME;
+        return MESSAGE_INDEX_NOT_EXIST;
       case 11:
-        return HDFS_OPERATION_FAILED;
+        return MESSAGE_INDEX_OUT_OF_RANGE;
       case 12:
-        return HBASE_OPERATION_FAILED;
+        return INVALID_TOPIC_NAME;
       case 13:
+        return OPERATION_FAILED;
+      case 14:
+        return HDFS_OPERATION_FAILED;
+      case 15:
+        return HBASE_OPERATION_FAILED;
+      case 16:
+        return PARTITION_NOT_SERVING;
+      case 17:
         return INTERNAL_SERVER_ERROR;
       default:
         return null;
