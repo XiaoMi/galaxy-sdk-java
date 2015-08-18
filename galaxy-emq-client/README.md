@@ -20,6 +20,9 @@ EMQ自身采用分布式架构，自动进行故障迁移与负载均衡。对�
 ####多语言SDK支持
 提供多种语言的SDK
 
+####注
+请使用JDK 1.6或者JDK 1.7进行编译
+
 ## EMQ的基本概念与操作
 
 #### Queue
@@ -32,7 +35,7 @@ Queue是Message的传输通道，开发者创建并使用不同的Queue来传递
 如果Sender向Queue中send Message成功，EMQ将为每条成功的Message返回一个全局（指这个Queue）唯一的id，作为这条消息的标识。
 
 #### Receipt Handle
-每条成功接收的Message中，除Message Body与Message Id外，还将包含一个全局唯一的Receipt Handle。Receiver正确处理这条消息后，需使用Receipt Handle向EMQ确认。否则，这条消息将在一段时间后，重新变成可读状态，并被Receiver再次接收。如果这种情况发生，再次接收到的Message的Receipt Handle将与前一次不同。
+每条成功接收的Message中，除Message Body与Message Id外，还将包含一个全局唯一的Receipt Handle。Receiver正确处理这条消息后，需使用Receipt Handle从Queue中删除这条Message。否则，这条消息将在一段时间后，重新变成可读状态，并被Receiver再次接收。如果这种情况发生，再次接收到的Message的Receipt Handle将与前一次不同。
 
 #### Invisibility Time
 Queue中的一条Message被Receiver接收后，将在一段时间内变为不可见，并等待Receiver的删除确认，这段时间被称为Invisibility Time。如果在这段时间EMQ一直未收到确认，这条消息将重新变成可读，被最终被Receiver再次接收。收到Message的Receiver如果发现在这段时间内无法完成消息的处理，可以通过SDK延长Invisibility Time；延长的时间从当前时刻起算。如果Receiver不愿处理这条Message，可以通过SDK将Invisibility Time设为0，使Message立刻可见，被最终被再次读取。
