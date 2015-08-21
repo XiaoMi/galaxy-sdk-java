@@ -20,20 +20,22 @@ public enum ErrorCode implements libthrift091.TEnum {
   LOCK_EXIST(5),
   LOCK_NOT_EXIST(6),
   LOCK_VALUE_NOT_EXPECTED(7),
-  MESSAGE_INCOMPLETE(8),
-  MESSAGE_INDEX_UNDESIRED_ERROR(9),
-  MESSAGE_INDEX_NOT_EXIST(10),
-  MESSAGE_INDEX_OUT_OF_RANGE(11),
-  INVALID_TOPIC_NAME(12),
-  OPERATION_FAILED(13),
-  HDFS_OPERATION_FAILED(14),
-  HBASE_OPERATION_FAILED(15),
-  ZOOKEEPER_OPERATION_FAILED(16),
-  INTERNAL_SERVER_ERROR(17),
-  PARTITION_NOT_SERVING(18),
-  ZK_NODE_EXIST(19),
-  ZK_NODE_NOT_EXIST(20),
-  REST_SERVER_INIT_ERROR(21);
+  MESSAGE_MISSING(8),
+  MESSAGE_INCOMPLETE(9),
+  MESSAGE_INDEX_UNDESIRED_ERROR(10),
+  MESSAGE_INDEX_NOT_EXIST(11),
+  MESSAGE_INDEX_OUT_OF_RANGE(12),
+  INVALID_TOPIC_NAME(13),
+  INVALID_TOPIC_ATTRIBUTE(14),
+  OPERATION_FAILED(15),
+  HDFS_OPERATION_FAILED(16),
+  HBASE_OPERATION_FAILED(17),
+  ZOOKEEPER_OPERATION_FAILED(18),
+  PARTITION_NOT_SERVING(19),
+  ZK_NODE_EXIST(20),
+  ZK_NODE_NOT_EXIST(21),
+  REST_SERVER_INIT_ERROR(22),
+  INTERNAL_SERVER_ERROR(23);
 
   private final int value;
 
@@ -71,33 +73,37 @@ public enum ErrorCode implements libthrift091.TEnum {
       case 7:
         return LOCK_VALUE_NOT_EXPECTED;
       case 8:
-        return MESSAGE_INCOMPLETE;
+        return MESSAGE_MISSING;
       case 9:
-        return MESSAGE_INDEX_UNDESIRED_ERROR;
+        return MESSAGE_INCOMPLETE;
       case 10:
-        return MESSAGE_INDEX_NOT_EXIST;
+        return MESSAGE_INDEX_UNDESIRED_ERROR;
       case 11:
-        return MESSAGE_INDEX_OUT_OF_RANGE;
+        return MESSAGE_INDEX_NOT_EXIST;
       case 12:
-        return INVALID_TOPIC_NAME;
+        return MESSAGE_INDEX_OUT_OF_RANGE;
       case 13:
-        return OPERATION_FAILED;
+        return INVALID_TOPIC_NAME;
       case 14:
-        return HDFS_OPERATION_FAILED;
+        return INVALID_TOPIC_ATTRIBUTE;
       case 15:
-        return HBASE_OPERATION_FAILED;
+        return OPERATION_FAILED;
       case 16:
-        return ZOOKEEPER_OPERATION_FAILED;
+        return HDFS_OPERATION_FAILED;
       case 17:
-        return INTERNAL_SERVER_ERROR;
+        return HBASE_OPERATION_FAILED;
       case 18:
-        return PARTITION_NOT_SERVING;
+        return ZOOKEEPER_OPERATION_FAILED;
       case 19:
-        return ZK_NODE_EXIST;
+        return PARTITION_NOT_SERVING;
       case 20:
-        return ZK_NODE_NOT_EXIST;
+        return ZK_NODE_EXIST;
       case 21:
+        return ZK_NODE_NOT_EXIST;
+      case 22:
         return REST_SERVER_INIT_ERROR;
+      case 23:
+        return INTERNAL_SERVER_ERROR;
       default:
         return null;
     }
