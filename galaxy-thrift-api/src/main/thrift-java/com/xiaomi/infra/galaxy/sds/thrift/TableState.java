@@ -36,7 +36,7 @@ public enum TableState implements libthrift091.TEnum {
    */
   DISABLED(5),
   /**
-   * 正在删除，不可操作
+   * 正在删除，不可见
    */
   DELETING(6),
   /**
@@ -44,7 +44,7 @@ public enum TableState implements libthrift091.TEnum {
    */
   DELETED(7),
   /**
-   * 延迟删除, 可见
+   * 延迟删除
    */
   LAZY_DELETE(8);
 

@@ -38,7 +38,7 @@ public class TableAccessor {
   private void init() {
     Credential credential = new Credential().setSecretKey(serviceToken).setSecretKeyId(secretKeyId)
         .setType(userType);
-    clientFactory = new ClientFactory(credential);
+    clientFactory = new ClientFactory().setCredential(credential);
     tableClient = clientFactory
         .newTableClient(endpoint + CommonConstants.TABLE_SERVICE_PATH, 10000, 3000, true, 3);
     isInit = true;

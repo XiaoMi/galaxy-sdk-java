@@ -9,6 +9,7 @@ import com.xiaomi.infra.galaxy.sds.thrift.Datum;
 import com.xiaomi.infra.galaxy.sds.thrift.DatumUtil;
 import com.xiaomi.infra.galaxy.sds.thrift.GetRequest;
 import com.xiaomi.infra.galaxy.sds.thrift.GetResult;
+import com.xiaomi.infra.galaxy.sds.thrift.OAuthInfo;
 import com.xiaomi.infra.galaxy.sds.thrift.PutRequest;
 import com.xiaomi.infra.galaxy.sds.thrift.ScanRequest;
 import com.xiaomi.infra.galaxy.sds.thrift.ScanResult;
@@ -24,21 +25,17 @@ import java.util.Random;
 
 public class ExtAppTableAccessor {
   private static TableService.Iface tableClient;
-  private String appId;
   private static String[] categories = { "work", "travel", "food" };
   private static int M = 10;
   private String endpoint;
   private String tableName;
-  private AppUserAuthProvider appUserAuthProvider;
-  private String accessToken;
+  private OAuthInfo oauthInfo;
 
-  public ExtAppTableAccessor(String appId, String tableName, String endpoint,
-      AppUserAuthProvider appUserAuthProvider, String accessToken) throws TException {
-    this.appId = appId;
+  public ExtAppTableAccessor(String tableName, String endpoint, OAuthInfo oauthInfo
+  ) throws TException {
     this.tableName = tableName;
     this.endpoint = endpoint;
-    this.appUserAuthProvider = appUserAuthProvider;
-    this.accessToken = accessToken;
+    this.oauthInfo = oauthInfo;
     init();
   }
 
@@ -47,7 +44,7 @@ public class ExtAppTableAccessor {
     AuthService.Iface authClient = clientFactory
         .newAuthClient(endpoint + CommonConstants.AUTH_SERVICE_PATH);
     Credential credential = authClient
-        .createCredential(appId, appUserAuthProvider, accessToken);
+        .createCredential(oauthInfo);
     clientFactory = new ClientFactory().setCredential(credential);
     tableClient = clientFactory
         .newTableClient(endpoint + CommonConstants.TABLE_SERVICE_PATH, 10000, 3000, true, 3);

@@ -4,7 +4,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.xiaomi.infra.galaxy</groupId>
   <artifactId>galaxy-sdk-java-pom</artifactId>
-  <version>1.2.1</version>
+  <version>1.2.2</version>
   <packaging>pom</packaging>
   <name>Galaxy SDK</name>
   <description>Xiaomi Galaxy Service SDK</description>
@@ -12,9 +12,9 @@
 
   <!--When publishing to maven central repository, using this parent.-->
   <!--<parent>-->
-  <!--<groupId>org.sonatype.oss</groupId>-->
-  <!--<artifactId>oss-parent</artifactId>-->
-  <!--<version>7</version>-->
+    <!--<groupId>org.sonatype.oss</groupId>-->
+    <!--<artifactId>oss-parent</artifactId>-->
+    <!--<version>7</version>-->
   <!--</parent>-->
 
   <scm>
@@ -32,13 +32,15 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <commons-codec.version>1.4</commons-codec.version>
     <commons-lang3.version>3.1</commons-lang3.version>
-    <galaxy-sdk.version>1.3</galaxy-sdk.version>
+    <galaxy-sdk.version>${project.version}</galaxy-sdk.version>
+    <galaxy.version>1.3-SNAPSHOT</galaxy.version>
     <httpcomponents.version>4.2.2</httpcomponents.version>
     <log4j.version>1.2.4</log4j.version>
     <junit.version>4.11</junit.version>
     <servlet-api.version>2.5</servlet-api.version>
     <slf4j.version>1.6.1</slf4j.version>
     <snappy.version>1.1.1.6</snappy.version>
+    <guava.version>11.0.2</guava.version>
   </properties>
 
   <developers>
@@ -159,7 +161,10 @@
   </profiles>
 
   <modules>
+    <module>galaxy-sdk-common</module>
     <module>galaxy-thrift-api</module>
     <module>galaxy-client-java</module>
+    <module>galaxy-emq-client</module>
+    <module>galaxy-talos-client</module>
   </modules>
 </project>

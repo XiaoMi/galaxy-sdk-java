@@ -11,6 +11,7 @@ import com.xiaomi.infra.galaxy.sds.thrift.DataType;
 import com.xiaomi.infra.galaxy.sds.thrift.EntityGroupSpec;
 import com.xiaomi.infra.galaxy.sds.thrift.KeySpec;
 import com.xiaomi.infra.galaxy.sds.thrift.LocalSecondaryIndexSpec;
+import com.xiaomi.infra.galaxy.sds.thrift.OAuthInfo;
 import com.xiaomi.infra.galaxy.sds.thrift.ProvisionThroughput;
 import com.xiaomi.infra.galaxy.sds.thrift.SecondaryIndexConsistencyMode;
 import com.xiaomi.infra.galaxy.sds.thrift.TableMetadata;
@@ -33,18 +34,17 @@ public class ExtAppTableCreator {
   private String secretKey;
   private String endpoint;
   private String tableName;
-  private AppUserAuthProvider appUserAuthProvider;
+  private OAuthInfo oauthIfo;
   private String extAppId;
 
   public ExtAppTableCreator(String appId, String secretKeyId, String secretKey, String tableName,
-      String endpoint,
-      AppUserAuthProvider appUserAuthProvider, String extAppId) throws TException {
+      String endpoint, OAuthInfo oauthIfo, String extAppId) throws TException {
     this.appId = appId;
     this.secretKeyId = secretKeyId;
     this.secretKey = secretKey;
     this.tableName = tableName;
     this.endpoint = endpoint;
-    this.appUserAuthProvider = appUserAuthProvider;
+    this.oauthIfo = oauthIfo;
     this.extAppId = extAppId;
     init();
   }
@@ -57,11 +57,13 @@ public class ExtAppTableCreator {
         .newAdminClient(endpoint + CommonConstants.ADMIN_SERVICE_PATH, 50000, 3000);
     // save the mapping from appUserAuthProvider to extAppId
     // for use the xiaomi AppId and appUserAuthProvider to get extAppId in createCredential.
+
     AppInfo appInfo = new AppInfo();
     appInfo.setAppId(appId);
     Map<String, String> oAuthMap = new HashMap<String, String>();
-    oAuthMap.put(appUserAuthProvider.name(), extAppId);
+    oAuthMap.put(oauthIfo.getAppUserAuthProvider().name(), extAppId);
     appInfo.setOauthAppMapping(oAuthMap);
+    // Notice: saveAppInfo with cover the original app info
     adminClient.saveAppInfo(appInfo);
   }
 

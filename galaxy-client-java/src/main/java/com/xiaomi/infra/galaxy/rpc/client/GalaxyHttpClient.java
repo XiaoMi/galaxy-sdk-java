@@ -16,21 +16,18 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-import com.xiaomi.infra.galaxy.rpc.thrift.*;
+import com.google.common.collect.LinkedListMultimap;
 import libthrift091.TException;
 import libthrift091.TSerializer;
 import libthrift091.protocol.TJSONProtocol;
 import libthrift091.transport.TTransport;
 import libthrift091.transport.TTransportException;
 import libthrift091.transport.TTransportFactory;
-
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpHost;
@@ -43,9 +40,20 @@ import org.apache.http.params.CoreConnectionPNames;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.xiaomi.infra.galaxy.auth.Authenticator;
+import com.xiaomi.infra.galaxy.auth.authentication.HttpKeys;
+import com.xiaomi.infra.galaxy.auth.authentication.HttpMethod;
+import com.xiaomi.infra.galaxy.auth.authentication.HttpUtils;
+import com.xiaomi.infra.galaxy.auth.authentication.signature.SignAlgorithm;
+import com.xiaomi.infra.galaxy.auth.authentication.signature.Signer;
+import com.xiaomi.infra.galaxy.rpc.thrift.AuthenticationConstants;
+import com.xiaomi.infra.galaxy.rpc.thrift.CommonConstants;
+import com.xiaomi.infra.galaxy.rpc.thrift.Credential;
+import com.xiaomi.infra.galaxy.rpc.thrift.HttpAuthorizationHeader;
+import com.xiaomi.infra.galaxy.rpc.thrift.HttpStatusCode;
+import com.xiaomi.infra.galaxy.rpc.thrift.ThriftProtocol;
 import com.xiaomi.infra.galaxy.rpc.util.BytesUtil;
 import com.xiaomi.infra.galaxy.rpc.util.DigestUtil;
-import com.xiaomi.infra.galaxy.rpc.util.SignatureUtil;
 import com.xiaomi.infra.galaxy.rpc.util.clock.AdjustableClock;
 
 /**
@@ -277,12 +285,6 @@ public class GalaxyHttpClient extends TTransport {
       //
 
       is = response.getEntity().getContent();
-
-      if (responseCode != HttpStatus.SC_OK) {
-        adjustClock(response, responseCode);
-        throw new HttpTTransportException(responseCode, reasonPhrase);
-      }
-
       // Read the responses into a byte array so we can release the connection
       // early. This implies that the whole content will have to be read in
       // memory, and that momentarily we might use up twice the memory (while the
@@ -308,8 +310,18 @@ public class GalaxyHttpClient extends TTransport {
         // We ignore this exception, it might only mean the server has no
         // keep-alive capability.
       }
+ 
+      if (responseCode != HttpStatus.SC_OK) {
+        Header[] typeHeader = response.getHeaders("Content-Type");
+        if (typeHeader.length == 0 ||
+            !typeHeader[0].getValue().startsWith("application/x-thrift")) {
+          adjustClock(response, responseCode);
+          throw new HttpTTransportException(responseCode, reasonPhrase + ":" +
+              new String(baos.toByteArray(), "UTF-8"));
+        }
+      }
 
-      inputStream_ = new ByteArrayInputStream(baos.toByteArray());
+     inputStream_ = new ByteArrayInputStream(baos.toByteArray());
     } catch (IOException ioe) {
       // Abort method so the connection gets released back to the connection manager
       if (null != post) {
@@ -353,39 +365,42 @@ public class GalaxyHttpClient extends TTransport {
       if (credential.getType() != null && credential.getSecretKeyId() != null) {
         // signature is supported
         if (AuthenticationConstants.SIGNATURE_SUPPORT.get(credential.getType())) {
-          List<String> signatureHeaders = new ArrayList<String>();
-          List<String> signatureParts = new ArrayList<String>();
-
           // host
           String host = this.host.toHostString();
           host = host.split(":")[0];
           post.setHeader(AuthenticationConstants.HK_HOST, host);
-          signatureHeaders.add(AuthenticationConstants.HK_HOST);
-          signatureParts.add(host);
 
           // timestamp
           String timestamp = Long.toString(clock.getCurrentEpoch());
           post.setHeader(AuthenticationConstants.HK_TIMESTAMP, timestamp);
-          signatureHeaders.add(AuthenticationConstants.HK_TIMESTAMP);
-          signatureParts.add(timestamp);
+          post.setHeader(HttpKeys.MI_DATE, HttpUtils.getGMTDatetime(new Date()));
 
           // content md5
           String md5 = BytesUtil
               .bytesToHex(DigestUtil.digest(DigestUtil.DigestAlgorithm.MD5, data));
           post.setHeader(AuthenticationConstants.HK_CONTENT_MD5, md5);
-          signatureHeaders.add(AuthenticationConstants.HK_CONTENT_MD5);
-          signatureParts.add(md5);
 
           // signature
-          authHeader = createSignatureHeader(signatureHeaders, signatureParts);
+          LinkedListMultimap<String, String> headers = LinkedListMultimap.create();
+          for (Header header : post.getAllHeaders()) {
+            headers.put(header.getName().toLowerCase(), header.getValue());
+          }
+          try {
+            String authString = "Galaxy-V2 " + credential.getSecretKeyId() + ":" +
+                Signer.signToBase64(HttpMethod.POST, post.getURI(), headers,
+                    credential.getSecretKey(), SignAlgorithm.HmacSHA1);
+            post.setHeader(AuthenticationConstants.HK_AUTHORIZATION, authString);
+          } catch (Exception e) {
+            throw new RuntimeException("Failed to sign", e);
+          }
         } else {
           authHeader = createSecretKeyHeader();
+          if (authHeader != null) {
+            authHeader.setSupportAccountKey(supportAccountKey);
+            post.setHeader(AuthenticationConstants.HK_AUTHORIZATION,
+                encodeAuthorizationHeader(authHeader));
+          }
         }
-      }
-      if (authHeader != null) {
-        authHeader.setSupportAccountKey(supportAccountKey);
-        post.setHeader(AuthenticationConstants.HK_AUTHORIZATION,
-            encodeAuthorizationHeader(authHeader));
       }
     }
     return this;
@@ -396,24 +411,6 @@ public class GalaxyHttpClient extends TTransport {
     auth.setUserType(credential.getType());
     auth.setSecretKeyId(credential.getSecretKeyId());
     auth.setSecretKey(credential.getSecretKey());
-    return auth;
-  }
-
-  private HttpAuthorizationHeader createSignatureHeader(List<String> signatureHeaders,
-      List<String> signatureParts) {
-    assert credential != null;
-    assert signatureHeaders.equals(AuthenticationConstants.SUGGESTED_SIGNATURE_HEADERS);
-
-    HttpAuthorizationHeader auth = new HttpAuthorizationHeader();
-    auth.setSignedHeaders(signatureHeaders);
-    auth.setSecretKeyId(credential.getSecretKeyId());
-    auth.setUserType(credential.getType());
-    auth.setAlgorithm(MacAlgorithm.HmacSHA1);
-
-    byte[] signature = SignatureUtil.sign(SignatureUtil.MacAlgorithm.HmacSHA1,
-        credential.getSecretKey(), signatureParts);
-    auth.setSignature(BytesUtil.bytesToHex(signature));
-
     return auth;
   }
 
@@ -457,7 +454,9 @@ public class GalaxyHttpClient extends TTransport {
     }
     return false;
   }
+
   private static String generateRandomId(int length) {
     return UUID.randomUUID().toString().substring(0, length);
   }
 }
+
