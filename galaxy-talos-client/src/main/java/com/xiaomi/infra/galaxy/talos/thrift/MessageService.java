@@ -45,7 +45,7 @@ public class MessageService {
      * 
      * @param request
      */
-    public void putMessage(PutMessageRequest request) throws com.xiaomi.infra.galaxy.talos.thrift.GalaxyTalosException, libthrift091.TException;
+    public PutMessageResponse putMessage(PutMessageRequest request) throws com.xiaomi.infra.galaxy.talos.thrift.GalaxyTalosException, libthrift091.TException;
 
     /**
      * Get message from talos;
@@ -85,10 +85,10 @@ public class MessageService {
       super(iprot, oprot);
     }
 
-    public void putMessage(PutMessageRequest request) throws com.xiaomi.infra.galaxy.talos.thrift.GalaxyTalosException, libthrift091.TException
+    public PutMessageResponse putMessage(PutMessageRequest request) throws com.xiaomi.infra.galaxy.talos.thrift.GalaxyTalosException, libthrift091.TException
     {
       send_putMessage(request);
-      recv_putMessage();
+      return recv_putMessage();
     }
 
     public void send_putMessage(PutMessageRequest request) throws libthrift091.TException
@@ -98,14 +98,17 @@ public class MessageService {
       sendBase("putMessage", args);
     }
 
-    public void recv_putMessage() throws com.xiaomi.infra.galaxy.talos.thrift.GalaxyTalosException, libthrift091.TException
+    public PutMessageResponse recv_putMessage() throws com.xiaomi.infra.galaxy.talos.thrift.GalaxyTalosException, libthrift091.TException
     {
       putMessage_result result = new putMessage_result();
       receiveBase(result, "putMessage");
+      if (result.isSetSuccess()) {
+        return result.success;
+      }
       if (result.e != null) {
         throw result.e;
       }
-      return;
+      throw new libthrift091.TApplicationException(libthrift091.TApplicationException.MISSING_RESULT, "putMessage failed: unknown result");
     }
 
     public GetMessageResponse getMessage(GetMessageRequest request) throws com.xiaomi.infra.galaxy.talos.thrift.GalaxyTalosException, libthrift091.TException
@@ -174,13 +177,13 @@ public class MessageService {
         prot.writeMessageEnd();
       }
 
-      public void getResult() throws com.xiaomi.infra.galaxy.talos.thrift.GalaxyTalosException, libthrift091.TException {
+      public PutMessageResponse getResult() throws com.xiaomi.infra.galaxy.talos.thrift.GalaxyTalosException, libthrift091.TException {
         if (getState() != libthrift091.async.TAsyncMethodCall.State.RESPONSE_READ) {
           throw new IllegalStateException("Method call not finished!");
         }
         libthrift091.transport.TMemoryInputTransport memoryTransport = new libthrift091.transport.TMemoryInputTransport(getFrameBuffer().array());
         libthrift091.protocol.TProtocol prot = client.getProtocolFactory().getProtocol(memoryTransport);
-        (new Client(prot)).recv_putMessage();
+        return (new Client(prot)).recv_putMessage();
       }
     }
 
@@ -250,7 +253,7 @@ public class MessageService {
       public putMessage_result getResult(I iface, putMessage_args args) throws libthrift091.TException {
         putMessage_result result = new putMessage_result();
         try {
-          iface.putMessage(args.request);
+          result.success = iface.putMessage(args.request);
         } catch (com.xiaomi.infra.galaxy.talos.thrift.GalaxyTalosException e) {
           result.e = e;
         }
@@ -300,7 +303,7 @@ public class MessageService {
       return processMap;
     }
 
-    public static class putMessage<I extends AsyncIface> extends libthrift091.AsyncProcessFunction<I, putMessage_args, Void> {
+    public static class putMessage<I extends AsyncIface> extends libthrift091.AsyncProcessFunction<I, putMessage_args, PutMessageResponse> {
       public putMessage() {
         super("putMessage");
       }
@@ -309,11 +312,12 @@ public class MessageService {
         return new putMessage_args();
       }
 
-      public AsyncMethodCallback<Void> getResultHandler(final AsyncFrameBuffer fb, final int seqid) {
+      public AsyncMethodCallback<PutMessageResponse> getResultHandler(final AsyncFrameBuffer fb, final int seqid) {
         final libthrift091.AsyncProcessFunction fcall = this;
-        return new AsyncMethodCallback<Void>() { 
-          public void onComplete(Void o) {
+        return new AsyncMethodCallback<PutMessageResponse>() { 
+          public void onComplete(PutMessageResponse o) {
             putMessage_result result = new putMessage_result();
+            result.success = o;
             try {
               fcall.sendResponse(fb,result, libthrift091.protocol.TMessageType.REPLY,seqid);
               return;
@@ -351,7 +355,7 @@ public class MessageService {
         return false;
       }
 
-      public void start(I iface, putMessage_args args, libthrift091.async.AsyncMethodCallback<Void> resultHandler) throws TException {
+      public void start(I iface, putMessage_args args, libthrift091.async.AsyncMethodCallback<PutMessageResponse> resultHandler) throws TException {
         iface.putMessage(args.request,resultHandler);
       }
     }
@@ -784,6 +788,7 @@ public class MessageService {
   public static class putMessage_result implements libthrift091.TBase<putMessage_result, putMessage_result._Fields>, java.io.Serializable, Cloneable, Comparable<putMessage_result>   {
     private static final libthrift091.protocol.TStruct STRUCT_DESC = new libthrift091.protocol.TStruct("putMessage_result");
 
+    private static final libthrift091.protocol.TField SUCCESS_FIELD_DESC = new libthrift091.protocol.TField("success", libthrift091.protocol.TType.STRUCT, (short)0);
     private static final libthrift091.protocol.TField E_FIELD_DESC = new libthrift091.protocol.TField("e", libthrift091.protocol.TType.STRUCT, (short)1);
 
     private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
@@ -792,10 +797,12 @@ public class MessageService {
       schemes.put(TupleScheme.class, new putMessage_resultTupleSchemeFactory());
     }
 
+    public PutMessageResponse success; // required
     public com.xiaomi.infra.galaxy.talos.thrift.GalaxyTalosException e; // required
 
     /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
     public enum _Fields implements libthrift091.TFieldIdEnum {
+      SUCCESS((short)0, "success"),
       E((short)1, "e");
 
       private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
@@ -811,6 +818,8 @@ public class MessageService {
        */
       public static _Fields findByThriftId(int fieldId) {
         switch(fieldId) {
+          case 0: // SUCCESS
+            return SUCCESS;
           case 1: // E
             return E;
           default:
@@ -856,6 +865,8 @@ public class MessageService {
     public static final Map<_Fields, libthrift091.meta_data.FieldMetaData> metaDataMap;
     static {
       Map<_Fields, libthrift091.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, libthrift091.meta_data.FieldMetaData>(_Fields.class);
+      tmpMap.put(_Fields.SUCCESS, new libthrift091.meta_data.FieldMetaData("success", libthrift091.TFieldRequirementType.DEFAULT, 
+          new libthrift091.meta_data.StructMetaData(libthrift091.protocol.TType.STRUCT, PutMessageResponse.class)));
       tmpMap.put(_Fields.E, new libthrift091.meta_data.FieldMetaData("e", libthrift091.TFieldRequirementType.DEFAULT, 
           new libthrift091.meta_data.FieldValueMetaData(libthrift091.protocol.TType.STRUCT)));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
@@ -866,9 +877,11 @@ public class MessageService {
     }
 
     public putMessage_result(
+      PutMessageResponse success,
       com.xiaomi.infra.galaxy.talos.thrift.GalaxyTalosException e)
     {
       this();
+      this.success = success;
       this.e = e;
     }
 
@@ -876,6 +889,9 @@ public class MessageService {
      * Performs a deep copy on <i>other</i>.
      */
     public putMessage_result(putMessage_result other) {
+      if (other.isSetSuccess()) {
+        this.success = new PutMessageResponse(other.success);
+      }
       if (other.isSetE()) {
         this.e = new com.xiaomi.infra.galaxy.talos.thrift.GalaxyTalosException(other.e);
       }
@@ -887,7 +903,32 @@ public class MessageService {
 
     @Override
     public void clear() {
+      this.success = null;
       this.e = null;
+    }
+
+    public PutMessageResponse getSuccess() {
+      return this.success;
+    }
+
+    public putMessage_result setSuccess(PutMessageResponse success) {
+      this.success = success;
+      return this;
+    }
+
+    public void unsetSuccess() {
+      this.success = null;
+    }
+
+    /** Returns true if field success is set (has been assigned a value) and false otherwise */
+    public boolean isSetSuccess() {
+      return this.success != null;
+    }
+
+    public void setSuccessIsSet(boolean value) {
+      if (!value) {
+        this.success = null;
+      }
     }
 
     public com.xiaomi.infra.galaxy.talos.thrift.GalaxyTalosException getE() {
@@ -916,6 +957,14 @@ public class MessageService {
 
     public void setFieldValue(_Fields field, Object value) {
       switch (field) {
+      case SUCCESS:
+        if (value == null) {
+          unsetSuccess();
+        } else {
+          setSuccess((PutMessageResponse)value);
+        }
+        break;
+
       case E:
         if (value == null) {
           unsetE();
@@ -929,6 +978,9 @@ public class MessageService {
 
     public Object getFieldValue(_Fields field) {
       switch (field) {
+      case SUCCESS:
+        return getSuccess();
+
       case E:
         return getE();
 
@@ -943,6 +995,8 @@ public class MessageService {
       }
 
       switch (field) {
+      case SUCCESS:
+        return isSetSuccess();
       case E:
         return isSetE();
       }
@@ -962,6 +1016,15 @@ public class MessageService {
       if (that == null)
         return false;
 
+      boolean this_present_success = true && this.isSetSuccess();
+      boolean that_present_success = true && that.isSetSuccess();
+      if (this_present_success || that_present_success) {
+        if (!(this_present_success && that_present_success))
+          return false;
+        if (!this.success.equals(that.success))
+          return false;
+      }
+
       boolean this_present_e = true && this.isSetE();
       boolean that_present_e = true && that.isSetE();
       if (this_present_e || that_present_e) {
@@ -977,6 +1040,11 @@ public class MessageService {
     @Override
     public int hashCode() {
       List<Object> list = new ArrayList<Object>();
+
+      boolean present_success = true && (isSetSuccess());
+      list.add(present_success);
+      if (present_success)
+        list.add(success);
 
       boolean present_e = true && (isSetE());
       list.add(present_e);
@@ -994,6 +1062,16 @@ public class MessageService {
 
       int lastComparison = 0;
 
+      lastComparison = Boolean.valueOf(isSetSuccess()).compareTo(other.isSetSuccess());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetSuccess()) {
+        lastComparison = libthrift091.TBaseHelper.compareTo(this.success, other.success);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
       lastComparison = Boolean.valueOf(isSetE()).compareTo(other.isSetE());
       if (lastComparison != 0) {
         return lastComparison;
@@ -1024,6 +1102,14 @@ public class MessageService {
       StringBuilder sb = new StringBuilder("putMessage_result(");
       boolean first = true;
 
+      sb.append("success:");
+      if (this.success == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.success);
+      }
+      first = false;
+      if (!first) sb.append(", ");
       sb.append("e:");
       if (this.e == null) {
         sb.append("null");
@@ -1038,6 +1124,9 @@ public class MessageService {
     public void validate() throws libthrift091.TException {
       // check for required fields
       // check for sub-struct validity
+      if (success != null) {
+        success.validate();
+      }
     }
 
     private void writeObject(java.io.ObjectOutputStream out) throws java.io.IOException {
@@ -1074,6 +1163,15 @@ public class MessageService {
             break;
           }
           switch (schemeField.id) {
+            case 0: // SUCCESS
+              if (schemeField.type == libthrift091.protocol.TType.STRUCT) {
+                struct.success = new PutMessageResponse();
+                struct.success.read(iprot);
+                struct.setSuccessIsSet(true);
+              } else { 
+                libthrift091.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+              }
+              break;
             case 1: // E
               if (schemeField.type == libthrift091.protocol.TType.STRUCT) {
                 struct.e = new com.xiaomi.infra.galaxy.talos.thrift.GalaxyTalosException();
@@ -1098,6 +1196,11 @@ public class MessageService {
         struct.validate();
 
         oprot.writeStructBegin(STRUCT_DESC);
+        if (struct.success != null) {
+          oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
+          struct.success.write(oprot);
+          oprot.writeFieldEnd();
+        }
         if (struct.e != null) {
           oprot.writeFieldBegin(E_FIELD_DESC);
           struct.e.write(oprot);
@@ -1121,10 +1224,16 @@ public class MessageService {
       public void write(libthrift091.protocol.TProtocol prot, putMessage_result struct) throws libthrift091.TException {
         TTupleProtocol oprot = (TTupleProtocol) prot;
         BitSet optionals = new BitSet();
-        if (struct.isSetE()) {
+        if (struct.isSetSuccess()) {
           optionals.set(0);
         }
-        oprot.writeBitSet(optionals, 1);
+        if (struct.isSetE()) {
+          optionals.set(1);
+        }
+        oprot.writeBitSet(optionals, 2);
+        if (struct.isSetSuccess()) {
+          struct.success.write(oprot);
+        }
         if (struct.isSetE()) {
           struct.e.write(oprot);
         }
@@ -1133,8 +1242,13 @@ public class MessageService {
       @Override
       public void read(libthrift091.protocol.TProtocol prot, putMessage_result struct) throws libthrift091.TException {
         TTupleProtocol iprot = (TTupleProtocol) prot;
-        BitSet incoming = iprot.readBitSet(1);
+        BitSet incoming = iprot.readBitSet(2);
         if (incoming.get(0)) {
+          struct.success = new PutMessageResponse();
+          struct.success.read(iprot);
+          struct.setSuccessIsSet(true);
+        }
+        if (incoming.get(1)) {
           struct.e = new com.xiaomi.infra.galaxy.talos.thrift.GalaxyTalosException();
           struct.e.read(iprot);
           struct.setEIsSet(true);
