@@ -16,13 +16,18 @@
     <dependencies>
         <dependency>
             <groupId>com.xiaomi.infra.galaxy</groupId>
-            <artifactId>galaxy-thrift-api</artifactId>
+            <artifactId>galaxy-client-java</artifactId>
             <version>${galaxy-sdk.version}</version>
         </dependency>
         <dependency>
             <groupId>com.xiaomi.infra.galaxy</groupId>
-            <artifactId>galaxy-client-java</artifactId>
-            <version>${galaxy-sdk.version}</version>
+            <artifactId>galaxy-talos-common</artifactId>
+            <version>0.1-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>com.xiaomi.infra.galaxy</groupId>
+            <artifactId>galaxy-talos-thrift</artifactId>
+            <version>0.1-SNAPSHOT</version>
         </dependency>
     </dependencies>
 </project>

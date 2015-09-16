@@ -26,8 +26,9 @@ import com.xiaomi.infra.galaxy.rpc.client.AutoRetryClient;
 import com.xiaomi.infra.galaxy.rpc.client.ThreadSafeClient;
 import com.xiaomi.infra.galaxy.rpc.thrift.Credential;
 import com.xiaomi.infra.galaxy.rpc.util.clock.AdjustableClock;
-import com.xiaomi.infra.galaxy.talos.thrift.CommonConstants;
+import com.xiaomi.infra.galaxy.talos.common.Constants;
 import com.xiaomi.infra.galaxy.talos.thrift.MessageService;
+import com.xiaomi.infra.galaxy.talos.thrift.QuotaService;
 import com.xiaomi.infra.galaxy.talos.thrift.TopicService;
 import com.xiaomi.infra.galaxy.talos.thrift.Version;
 
@@ -48,7 +49,7 @@ public class TalosClientFactory {
   public static HttpClient generateHttpClient(final int maxTotalConnections,
       final int maxTotalConnectionsPerRoute) {
     return generateHttpClient(maxTotalConnections, maxTotalConnectionsPerRoute,
-        (int) CommonConstants.DEFAULT_CLIENT_CONN_TIMEOUT);
+        Constants.TALOS_CLIENT_CONN_TIMEOUT_MILLI_SECS);
   }
 
   public static HttpClient generateHttpClient(final int maxTotalConnections,
@@ -117,33 +118,33 @@ public class TalosClientFactory {
     if (credential == null) {
       throw new IllegalArgumentException("Credential is not set");
     }
-    return newTopicClient(CommonConstants.DEFAULT_SECURE_SERVICE_ENDPOINT);
+    return newTopicClient(Constants.TALOS_SECURE_SERVICE_ENDPOINT);
   }
 
   public TopicService.Iface newTopicClient(String endpoint) {
-    return newTopicClient(endpoint, (int) CommonConstants.DEFAULT_CLIENT_TIMEOUT,
-        (int) CommonConstants.DEFAULT_CLIENT_CONN_TIMEOUT);
+    return newTopicClient(endpoint, Constants.TALOS_CLIENT_TIMEOUT_MILLI_SECS,
+        Constants.TALOS_CLIENT_CONN_TIMEOUT_MILLI_SECS);
   }
 
   public TopicService.Iface newTopicClient(String endpoint, int socketTimeout,
       int connTimeout) {
     return createClient(TopicService.Iface.class, TopicService.Client.class,
-        endpoint + CommonConstants.TOPIC_SERVICE_PATH, socketTimeout, connTimeout,
-        false, CommonConstants.MAX_RETRY);
+        endpoint + Constants.TALOS_TOPIC_SERVICE_PATH, socketTimeout, connTimeout,
+        false, Constants.TALOS_CLIENT_MAX_RETRY);
   }
 
   public TopicService.Iface newTopicClient(String endpoint, boolean isRetry,
       int maxRetry) {
     return createClient(TopicService.Iface.class, TopicService.Client.class,
-        endpoint + CommonConstants.TOPIC_SERVICE_PATH,
-        (int) CommonConstants.DEFAULT_CLIENT_TIMEOUT,
-        (int) CommonConstants.DEFAULT_CLIENT_CONN_TIMEOUT, isRetry, maxRetry);
+        endpoint + Constants.TALOS_TOPIC_SERVICE_PATH,
+        Constants.TALOS_CLIENT_TIMEOUT_MILLI_SECS,
+        Constants.TALOS_CLIENT_CONN_TIMEOUT_MILLI_SECS, isRetry, maxRetry);
   }
 
   public TopicService.Iface newTopicClient(String endpoint, int socketTimeout,
       int connTimeout, boolean isRetry, int maxRetry) {
     return createClient(TopicService.Iface.class, TopicService.Client.class,
-        endpoint + CommonConstants.TOPIC_SERVICE_PATH,
+        endpoint + Constants.TALOS_TOPIC_SERVICE_PATH,
         socketTimeout, connTimeout, isRetry, maxRetry);
   }
 
@@ -151,33 +152,67 @@ public class TalosClientFactory {
     if (credential == null) {
       throw new IllegalArgumentException("Credential is not set");
     }
-    return newMessageClient(CommonConstants.DEFAULT_SECURE_SERVICE_ENDPOINT);
+    return newMessageClient(Constants.TALOS_SECURE_SERVICE_ENDPOINT);
   }
 
   public MessageService.Iface newMessageClient(String endpoint) {
-    return newMessageClient(endpoint, (int) CommonConstants.DEFAULT_CLIENT_TIMEOUT,
-        (int) CommonConstants.DEFAULT_CLIENT_CONN_TIMEOUT);
+    return newMessageClient(endpoint, Constants.TALOS_CLIENT_TIMEOUT_MILLI_SECS,
+        Constants.TALOS_CLIENT_CONN_TIMEOUT_MILLI_SECS);
   }
 
   public MessageService.Iface newMessageClient(String endpoint, int socketTimeout,
       int connTimeout) {
     return createClient(MessageService.Iface.class, MessageService.Client.class,
-        endpoint + CommonConstants.MESSAGE_SERVICE_PATH, socketTimeout,
-        connTimeout, false, CommonConstants.MAX_RETRY);
+        endpoint + Constants.TALOS_MESSAGE_SERVICE_PATH, socketTimeout,
+        connTimeout, false, Constants.TALOS_CLIENT_MAX_RETRY);
   }
 
   public MessageService.Iface newMessageClient(String endpoint, boolean isRetry,
       int maxRetry) {
     return createClient(MessageService.Iface.class, MessageService.Client.class,
-        endpoint + CommonConstants.MESSAGE_SERVICE_PATH,
-        (int) CommonConstants.DEFAULT_CLIENT_TIMEOUT,
-        (int) CommonConstants.DEFAULT_CLIENT_CONN_TIMEOUT, isRetry, maxRetry);
+        endpoint + Constants.TALOS_MESSAGE_SERVICE_PATH,
+        Constants.TALOS_CLIENT_TIMEOUT_MILLI_SECS,
+        Constants.TALOS_CLIENT_CONN_TIMEOUT_MILLI_SECS, isRetry, maxRetry);
   }
 
   public MessageService.Iface newMessageClient(String endpoint, int socketTimeout,
       int connTimeout, boolean isRetry, int maxRetry) {
     return createClient(MessageService.Iface.class, MessageService.Client.class,
-        endpoint + CommonConstants.MESSAGE_SERVICE_PATH, socketTimeout,
+        endpoint + Constants.TALOS_MESSAGE_SERVICE_PATH, socketTimeout,
+        connTimeout, isRetry, maxRetry);
+  }
+
+  public QuotaService.Iface newQuotaClient() {
+    if (credential == null) {
+      throw new IllegalArgumentException("Credential is not set");
+    }
+    return newQuotaClient(Constants.TALOS_SECURE_SERVICE_ENDPOINT);
+  }
+
+  public QuotaService.Iface newQuotaClient(String endpoint) {
+    return newQuotaClient(endpoint, Constants.TALOS_CLIENT_TIMEOUT_MILLI_SECS,
+        Constants.TALOS_CLIENT_CONN_TIMEOUT_MILLI_SECS);
+  }
+
+  public QuotaService.Iface newQuotaClient(String endpoint, int socketTimeout,
+      int connTimeout) {
+    return createClient(QuotaService.Iface.class, QuotaService.Client.class,
+        endpoint + Constants.TALOS_QUOTA_SERVICE_PATH, socketTimeout,
+        connTimeout, false, Constants.TALOS_CLIENT_MAX_RETRY);
+  }
+
+  public QuotaService.Iface newQuotaClient(String endpoint, boolean isRetry,
+      int maxRetry) {
+    return createClient(QuotaService.Iface.class, QuotaService.Client.class,
+        endpoint + Constants.TALOS_QUOTA_SERVICE_PATH,
+        Constants.TALOS_CLIENT_TIMEOUT_MILLI_SECS,
+        Constants.TALOS_CLIENT_CONN_TIMEOUT_MILLI_SECS, isRetry, maxRetry);
+  }
+
+  public QuotaService.Iface newQuotaClient(String endpoint, int socketTimeout,
+      int connTimeout, boolean isRetry, int maxRetry) {
+    return createClient(QuotaService.Iface.class, QuotaService.Client.class,
+        endpoint + Constants.TALOS_QUOTA_SERVICE_PATH, socketTimeout,
         connTimeout, isRetry, maxRetry);
   }
 
