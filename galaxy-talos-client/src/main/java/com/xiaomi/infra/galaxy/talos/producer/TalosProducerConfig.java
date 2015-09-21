@@ -9,7 +9,7 @@ package com.xiaomi.infra.galaxy.talos.producer;
 import org.apache.hadoop.conf.Configuration;
 
 import com.xiaomi.infra.galaxy.talos.client.TalosClientConfig;
-import com.xiaomi.infra.galaxy.talos.common.config.TalosConfigKeys;
+import com.xiaomi.infra.galaxy.talos.client.TalosClientConfigKeys;
 
 public class TalosProducerConfig extends TalosClientConfig {
   private int maxBufferedMsgNumber;
@@ -24,29 +24,29 @@ public class TalosProducerConfig extends TalosClientConfig {
   public TalosProducerConfig(Configuration configuration) {
     super(configuration);
     maxBufferedMsgNumber = configuration.getInt(
-        TalosConfigKeys.GALAXY_TALOS_PRODUCER_MAX_BUFFERED_MESSAGE_NUMBER,
-        TalosConfigKeys.GALAXY_TALOS_PRODUCER_MAX_BUFFERED_MESSAGE_NUMBER_DEFAULT);
+        TalosClientConfigKeys.GALAXY_TALOS_PRODUCER_MAX_BUFFERED_MESSAGE_NUMBER,
+        TalosClientConfigKeys.GALAXY_TALOS_PRODUCER_MAX_BUFFERED_MESSAGE_NUMBER_DEFAULT);
     maxBufferedMsgBytes = configuration.getInt(
-        TalosConfigKeys.GALAXY_TALOS_PRODUCER_MAX_BUFFERED_MESSAGE_BYTES,
-        TalosConfigKeys.GALAXY_TALOS_PRODUCER_MAX_BUFFERED_MESSAGE_BYTES_DEFAULT);
+        TalosClientConfigKeys.GALAXY_TALOS_PRODUCER_MAX_BUFFERED_MESSAGE_BYTES,
+        TalosClientConfigKeys.GALAXY_TALOS_PRODUCER_MAX_BUFFERED_MESSAGE_BYTES_DEFAULT);
     maxBufferedMsgTime = configuration.getInt(
-        TalosConfigKeys.GALAXY_TALOS_PRODUCER_MAX_BUFFERED_MILLI_SECS,
-        TalosConfigKeys.GALAXY_TALOS_PRODUCER_MAX_BUFFERED_MILLI_SECS_DEFAULT);
+        TalosClientConfigKeys.GALAXY_TALOS_PRODUCER_MAX_BUFFERED_MILLI_SECS,
+        TalosClientConfigKeys.GALAXY_TALOS_PRODUCER_MAX_BUFFERED_MILLI_SECS_DEFAULT);
     scanPartitionQueueInterval = configuration.getInt(
-        TalosConfigKeys.GALAXY_TALOS_PRODUCER_SCAN_PARTITION_QUEUE_INTERVAL,
-        TalosConfigKeys.GALAXY_TALOS_PRODUCER_SCAN_PARTITION_QUEUE_INTERVAL_DEFAULT);
+        TalosClientConfigKeys.GALAXY_TALOS_PRODUCER_SCAN_PARTITION_QUEUE_INTERVAL,
+        TalosClientConfigKeys.GALAXY_TALOS_PRODUCER_SCAN_PARTITION_QUEUE_INTERVAL_DEFAULT);
     maxPutMsgNumber = configuration.getInt(
-        TalosConfigKeys.GALAXY_TALOS_PRODUCER_MAX_PUT_MESSAGE_NUMBER,
-        TalosConfigKeys.GALAXY_TALOS_PRODUCER_MAX_PUT_MESSAGE_NUMBER_DEFAULT);
+        TalosClientConfigKeys.GALAXY_TALOS_PRODUCER_MAX_PUT_MESSAGE_NUMBER,
+        TalosClientConfigKeys.GALAXY_TALOS_PRODUCER_MAX_PUT_MESSAGE_NUMBER_DEFAULT);
     maxPutMsgBytes = configuration.getInt(
-        TalosConfigKeys.GALAXY_TALOS_PRODUCER_MAX_PUT_MESSAGE_BYTES,
-        TalosConfigKeys.GALAXY_TALOS_PRODUCER_MAX_PUT_MESSAGE_BYTES_DEFAULT);
+        TalosClientConfigKeys.GALAXY_TALOS_PRODUCER_MAX_PUT_MESSAGE_BYTES,
+        TalosClientConfigKeys.GALAXY_TALOS_PRODUCER_MAX_PUT_MESSAGE_BYTES_DEFAULT);
     threadPoolsize = configuration.getInt(
-        TalosConfigKeys.GALAXY_TALOS_PRODUCER_THREAD_POOL_SIZE,
-        TalosConfigKeys.GALAXY_TALOS_PRODUCER_THREAD_POOL_SIZE_DEFAULT);
+        TalosClientConfigKeys.GALAXY_TALOS_PRODUCER_THREAD_POOL_SIZE,
+        TalosClientConfigKeys.GALAXY_TALOS_PRODUCER_THREAD_POOL_SIZE_DEFAULT);
     checkPartitionInterval = configuration.getInt(
-        TalosConfigKeys.GALAXY_TALOS_PRODUCER_CHECK_PARTITION_INTERVAL,
-        TalosConfigKeys.GALAXY_TALOS_PRODUCER_CHECK_PARTITION_INTERVAL_DEFAULT);
+        TalosClientConfigKeys.GALAXY_TALOS_PRODUCER_CHECK_PARTITION_INTERVAL,
+        TalosClientConfigKeys.GALAXY_TALOS_PRODUCER_CHECK_PARTITION_INTERVAL_DEFAULT);
   }
 
   public int getMaxBufferedMsgNumber() {

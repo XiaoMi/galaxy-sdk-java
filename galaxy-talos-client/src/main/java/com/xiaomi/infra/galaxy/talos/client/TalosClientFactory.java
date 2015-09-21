@@ -26,7 +26,6 @@ import com.xiaomi.infra.galaxy.rpc.client.AutoRetryClient;
 import com.xiaomi.infra.galaxy.rpc.client.ThreadSafeClient;
 import com.xiaomi.infra.galaxy.rpc.thrift.Credential;
 import com.xiaomi.infra.galaxy.rpc.util.clock.AdjustableClock;
-import com.xiaomi.infra.galaxy.talos.common.Constants;
 import com.xiaomi.infra.galaxy.talos.thrift.MessageService;
 import com.xiaomi.infra.galaxy.talos.thrift.QuotaService;
 import com.xiaomi.infra.galaxy.talos.thrift.TopicService;
