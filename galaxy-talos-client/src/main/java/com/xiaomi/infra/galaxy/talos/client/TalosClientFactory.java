@@ -37,22 +37,24 @@ public class TalosClientFactory {
   private static final String USER_AGENT_HEADER = "User-Agent";
   private static final Version VERSION = new Version();
 
+  private TalosClientConfig talosClientConfig;
   private Credential credential;
   private Map<String, String> customHeaders;
   private HttpClient httpClient;
   private AdjustableClock clock;
 
-  private static HttpClient generateHttpClient() {
-    return generateHttpClient(1, 1);
+  private HttpClient generateHttpClient() {
+    return generateHttpClient(talosClientConfig.getMaxTotalConnections(),
+        talosClientConfig.getMaxTotalConnectionsPerRoute());
   }
 
-  public static HttpClient generateHttpClient(final int maxTotalConnections,
+  public HttpClient generateHttpClient(final int maxTotalConnections,
       final int maxTotalConnectionsPerRoute) {
     return generateHttpClient(maxTotalConnections, maxTotalConnectionsPerRoute,
-        Constants.TALOS_CLIENT_CONN_TIMEOUT_MILLI_SECS);
+        talosClientConfig.getClientConnTimeout());
   }
 
-  public static HttpClient generateHttpClient(final int maxTotalConnections,
+  public HttpClient generateHttpClient(final int maxTotalConnections,
       final int maxTotalConnectionsPerRoute, int connTimeout) {
     SchemeRegistry schemeRegistry = new SchemeRegistry();
     schemeRegistry.register(new Scheme("http", 80, PlainSocketFactory.getSocketFactory()));
@@ -67,8 +69,14 @@ public class TalosClientFactory {
     return new DefaultHttpClient(conMgr, httpParams);
   }
 
-  public TalosClientFactory() {
-    this.credential = null;
+  public TalosClientFactory(TalosClientConfig talosClientConfig) {
+    new TalosClientFactory(talosClientConfig, new Credential());
+  }
+
+  public TalosClientFactory(TalosClientConfig talosClientConfig,
+      Credential credential) {
+    this.talosClientConfig = talosClientConfig;
+    this.credential = credential;
     this.customHeaders = null;
     this.httpClient = generateHttpClient();
     this.clock = new AdjustableClock();
@@ -118,27 +126,27 @@ public class TalosClientFactory {
     if (credential == null) {
       throw new IllegalArgumentException("Credential is not set");
     }
-    return newTopicClient(Constants.TALOS_SECURE_SERVICE_ENDPOINT);
+    return newTopicClient(talosClientConfig.getSecureServiceEndpoint());
   }
 
   public TopicService.Iface newTopicClient(String endpoint) {
-    return newTopicClient(endpoint, Constants.TALOS_CLIENT_TIMEOUT_MILLI_SECS,
-        Constants.TALOS_CLIENT_CONN_TIMEOUT_MILLI_SECS);
+    return newTopicClient(endpoint, talosClientConfig.getClientTimeout(),
+        talosClientConfig.getClientConnTimeout());
   }
 
   public TopicService.Iface newTopicClient(String endpoint, int socketTimeout,
       int connTimeout) {
     return createClient(TopicService.Iface.class, TopicService.Client.class,
         endpoint + Constants.TALOS_TOPIC_SERVICE_PATH, socketTimeout, connTimeout,
-        false, Constants.TALOS_CLIENT_MAX_RETRY);
+        false, talosClientConfig.getMaxRetry());
   }
 
   public TopicService.Iface newTopicClient(String endpoint, boolean isRetry,
       int maxRetry) {
     return createClient(TopicService.Iface.class, TopicService.Client.class,
         endpoint + Constants.TALOS_TOPIC_SERVICE_PATH,
-        Constants.TALOS_CLIENT_TIMEOUT_MILLI_SECS,
-        Constants.TALOS_CLIENT_CONN_TIMEOUT_MILLI_SECS, isRetry, maxRetry);
+        talosClientConfig.getClientTimeout(),
+        talosClientConfig.getClientConnTimeout(), isRetry, maxRetry);
   }
 
   public TopicService.Iface newTopicClient(String endpoint, int socketTimeout,
@@ -152,27 +160,27 @@ public class TalosClientFactory {
     if (credential == null) {
       throw new IllegalArgumentException("Credential is not set");
     }
-    return newMessageClient(Constants.TALOS_SECURE_SERVICE_ENDPOINT);
+    return newMessageClient(talosClientConfig.getSecureServiceEndpoint());
   }
 
   public MessageService.Iface newMessageClient(String endpoint) {
-    return newMessageClient(endpoint, Constants.TALOS_CLIENT_TIMEOUT_MILLI_SECS,
-        Constants.TALOS_CLIENT_CONN_TIMEOUT_MILLI_SECS);
+    return newMessageClient(endpoint, talosClientConfig.getClientTimeout(),
+        talosClientConfig.getClientConnTimeout());
   }
 
   public MessageService.Iface newMessageClient(String endpoint, int socketTimeout,
       int connTimeout) {
     return createClient(MessageService.Iface.class, MessageService.Client.class,
         endpoint + Constants.TALOS_MESSAGE_SERVICE_PATH, socketTimeout,
-        connTimeout, false, Constants.TALOS_CLIENT_MAX_RETRY);
+        connTimeout, false, talosClientConfig.getMaxRetry());
   }
 
   public MessageService.Iface newMessageClient(String endpoint, boolean isRetry,
       int maxRetry) {
     return createClient(MessageService.Iface.class, MessageService.Client.class,
         endpoint + Constants.TALOS_MESSAGE_SERVICE_PATH,
-        Constants.TALOS_CLIENT_TIMEOUT_MILLI_SECS,
-        Constants.TALOS_CLIENT_CONN_TIMEOUT_MILLI_SECS, isRetry, maxRetry);
+        talosClientConfig.getClientTimeout(),
+        talosClientConfig.getClientConnTimeout(), isRetry, maxRetry);
   }
 
   public MessageService.Iface newMessageClient(String endpoint, int socketTimeout,
@@ -186,27 +194,27 @@ public class TalosClientFactory {
     if (credential == null) {
       throw new IllegalArgumentException("Credential is not set");
     }
-    return newQuotaClient(Constants.TALOS_SECURE_SERVICE_ENDPOINT);
+    return newQuotaClient(talosClientConfig.getSecureServiceEndpoint());
   }
 
   public QuotaService.Iface newQuotaClient(String endpoint) {
-    return newQuotaClient(endpoint, Constants.TALOS_CLIENT_TIMEOUT_MILLI_SECS,
-        Constants.TALOS_CLIENT_CONN_TIMEOUT_MILLI_SECS);
+    return newQuotaClient(endpoint, talosClientConfig.getClientTimeout(),
+        talosClientConfig.getClientConnTimeout());
   }
 
   public QuotaService.Iface newQuotaClient(String endpoint, int socketTimeout,
       int connTimeout) {
     return createClient(QuotaService.Iface.class, QuotaService.Client.class,
         endpoint + Constants.TALOS_QUOTA_SERVICE_PATH, socketTimeout,
-        connTimeout, false, Constants.TALOS_CLIENT_MAX_RETRY);
+        connTimeout, false, talosClientConfig.getMaxRetry());
   }
 
   public QuotaService.Iface newQuotaClient(String endpoint, boolean isRetry,
       int maxRetry) {
     return createClient(QuotaService.Iface.class, QuotaService.Client.class,
         endpoint + Constants.TALOS_QUOTA_SERVICE_PATH,
-        Constants.TALOS_CLIENT_TIMEOUT_MILLI_SECS,
-        Constants.TALOS_CLIENT_CONN_TIMEOUT_MILLI_SECS, isRetry, maxRetry);
+        talosClientConfig.getClientTimeout(),
+        talosClientConfig.getClientConnTimeout(), isRetry, maxRetry);
   }
 
   public QuotaService.Iface newQuotaClient(String endpoint, int socketTimeout,
