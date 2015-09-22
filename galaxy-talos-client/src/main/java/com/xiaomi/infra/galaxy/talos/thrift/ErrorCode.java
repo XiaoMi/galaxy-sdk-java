@@ -13,29 +13,30 @@ import libthrift091.TEnum;
 
 public enum ErrorCode implements libthrift091.TEnum {
   NO_ERROR(0),
-  UNEXPECTED_ERROR(1),
-  TOPIC_EXIST(2),
-  TOPIC_NOT_EXIST(3),
-  QUOTA_NOT_EXIST(4),
-  LOCK_EXIST(5),
-  LOCK_NOT_EXIST(6),
-  LOCK_VALUE_NOT_EXPECTED(7),
-  MESSAGE_MISSING(8),
-  MESSAGE_INCOMPLETE(9),
-  MESSAGE_INDEX_UNDESIRED_ERROR(10),
-  MESSAGE_INDEX_NOT_EXIST(11),
-  MESSAGE_INDEX_OUT_OF_RANGE(12),
-  INVALID_TOPIC_NAME(13),
-  INVALID_TOPIC_ATTRIBUTE(14),
-  OPERATION_FAILED(15),
-  HDFS_OPERATION_FAILED(16),
-  HBASE_OPERATION_FAILED(17),
-  ZOOKEEPER_OPERATION_FAILED(18),
-  PARTITION_NOT_SERVING(19),
-  ZK_NODE_EXIST(20),
-  ZK_NODE_NOT_EXIST(21),
-  REST_SERVER_INIT_ERROR(22),
-  INTERNAL_SERVER_ERROR(23);
+  UNKNOWN(1),
+  UNEXPECTED_ERROR(2),
+  TOPIC_EXIST(3),
+  TOPIC_NOT_EXIST(4),
+  QUOTA_NOT_EXIST(5),
+  LOCK_EXIST(6),
+  LOCK_NOT_EXIST(7),
+  LOCK_VALUE_NOT_EXPECTED(8),
+  MESSAGE_MISSING(9),
+  MESSAGE_INCOMPLETE(10),
+  MESSAGE_INDEX_UNDESIRED_ERROR(11),
+  MESSAGE_INDEX_NOT_EXIST(12),
+  MESSAGE_INDEX_OUT_OF_RANGE(13),
+  INVALID_TOPIC_NAME(14),
+  INVALID_TOPIC_ATTRIBUTE(15),
+  OPERATION_FAILED(16),
+  HDFS_OPERATION_FAILED(17),
+  HBASE_OPERATION_FAILED(18),
+  ZOOKEEPER_OPERATION_FAILED(19),
+  PARTITION_NOT_SERVING(20),
+  ZK_NODE_EXIST(21),
+  ZK_NODE_NOT_EXIST(22),
+  REST_SERVER_INIT_ERROR(23),
+  INTERNAL_SERVER_ERROR(24);
 
   private final int value;
 
@@ -59,50 +60,52 @@ public enum ErrorCode implements libthrift091.TEnum {
       case 0:
         return NO_ERROR;
       case 1:
-        return UNEXPECTED_ERROR;
+        return UNKNOWN;
       case 2:
-        return TOPIC_EXIST;
+        return UNEXPECTED_ERROR;
       case 3:
-        return TOPIC_NOT_EXIST;
+        return TOPIC_EXIST;
       case 4:
-        return QUOTA_NOT_EXIST;
+        return TOPIC_NOT_EXIST;
       case 5:
-        return LOCK_EXIST;
+        return QUOTA_NOT_EXIST;
       case 6:
-        return LOCK_NOT_EXIST;
+        return LOCK_EXIST;
       case 7:
-        return LOCK_VALUE_NOT_EXPECTED;
+        return LOCK_NOT_EXIST;
       case 8:
-        return MESSAGE_MISSING;
+        return LOCK_VALUE_NOT_EXPECTED;
       case 9:
-        return MESSAGE_INCOMPLETE;
+        return MESSAGE_MISSING;
       case 10:
-        return MESSAGE_INDEX_UNDESIRED_ERROR;
+        return MESSAGE_INCOMPLETE;
       case 11:
-        return MESSAGE_INDEX_NOT_EXIST;
+        return MESSAGE_INDEX_UNDESIRED_ERROR;
       case 12:
-        return MESSAGE_INDEX_OUT_OF_RANGE;
+        return MESSAGE_INDEX_NOT_EXIST;
       case 13:
-        return INVALID_TOPIC_NAME;
+        return MESSAGE_INDEX_OUT_OF_RANGE;
       case 14:
-        return INVALID_TOPIC_ATTRIBUTE;
+        return INVALID_TOPIC_NAME;
       case 15:
-        return OPERATION_FAILED;
+        return INVALID_TOPIC_ATTRIBUTE;
       case 16:
-        return HDFS_OPERATION_FAILED;
+        return OPERATION_FAILED;
       case 17:
-        return HBASE_OPERATION_FAILED;
+        return HDFS_OPERATION_FAILED;
       case 18:
-        return ZOOKEEPER_OPERATION_FAILED;
+        return HBASE_OPERATION_FAILED;
       case 19:
-        return PARTITION_NOT_SERVING;
+        return ZOOKEEPER_OPERATION_FAILED;
       case 20:
-        return ZK_NODE_EXIST;
+        return PARTITION_NOT_SERVING;
       case 21:
-        return ZK_NODE_NOT_EXIST;
+        return ZK_NODE_EXIST;
       case 22:
-        return REST_SERVER_INIT_ERROR;
+        return ZK_NODE_NOT_EXIST;
       case 23:
+        return REST_SERVER_INIT_ERROR;
+      case 24:
         return INTERNAL_SERVER_ERROR;
       default:
         return null;

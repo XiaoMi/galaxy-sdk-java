@@ -17,6 +17,7 @@ public class TalosClientConfig {
   private String secureServiceEndpoint;
   private int maxTotalConnections;
   private int maxTotalConnectionsPerRoute;
+  private boolean isRetry;
 
   public TalosClientConfig(Configuration configuration) {
     maxRetry = configuration.getInt(
@@ -43,6 +44,9 @@ public class TalosClientConfig {
     maxTotalConnectionsPerRoute = configuration.getInt(
         TalosClientConfigKeys.GALAXY_TALOS_HTTP_MAX_TOTAL_CONNECTION_PER_ROUTE,
         TalosClientConfigKeys.GALAXY_TALOS_HTTP_MAX_TOTAL_CONNECTION_PER_ROUTE_DEFAULT);
+    isRetry = configuration.getBoolean(
+        TalosClientConfigKeys.GALAXY_TALOS_CLIENT_IS_RETRY,
+        TalosClientConfigKeys.GALAXY_TALOS_CLIENT_IS_RETRY_DEFAULT);
   }
 
   public int getMaxRetry() {
@@ -75,5 +79,9 @@ public class TalosClientConfig {
 
   public int getMaxTotalConnectionsPerRoute() {
     return maxTotalConnectionsPerRoute;
+  }
+
+  public boolean isRetry() {
+    return isRetry;
   }
 }

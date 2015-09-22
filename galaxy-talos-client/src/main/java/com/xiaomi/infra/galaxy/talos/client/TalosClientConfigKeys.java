@@ -34,6 +34,13 @@ public class TalosClientConfigKeys {
   public static final int GALAXY_TALOS_HTTP_MAX_TOTAL_CONNECTION_PER_ROUTE_DEFAULT = 2;
 
   /**
+   * The client whether to retry
+   */
+  public static final String GALAXY_TALOS_CLIENT_IS_RETRY =
+      "galaxy.talos.client.is.retry";
+  public static final boolean GALAXY_TALOS_CLIENT_IS_RETRY_DEFAULT = false;
+
+  /**
    * The client max retry times before throw exception
    */
   public static final String GALAXY_TALOS_CLIENT_MAX_RETRY =

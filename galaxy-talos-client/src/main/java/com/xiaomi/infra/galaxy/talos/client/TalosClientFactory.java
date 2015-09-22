@@ -137,7 +137,7 @@ public class TalosClientFactory {
       int connTimeout) {
     return createClient(TopicService.Iface.class, TopicService.Client.class,
         endpoint + Constants.TALOS_TOPIC_SERVICE_PATH, socketTimeout, connTimeout,
-        false, talosClientConfig.getMaxRetry());
+        talosClientConfig.isRetry(), talosClientConfig.getMaxRetry());
   }
 
   public TopicService.Iface newTopicClient(String endpoint, boolean isRetry,
@@ -171,7 +171,7 @@ public class TalosClientFactory {
       int connTimeout) {
     return createClient(MessageService.Iface.class, MessageService.Client.class,
         endpoint + Constants.TALOS_MESSAGE_SERVICE_PATH, socketTimeout,
-        connTimeout, false, talosClientConfig.getMaxRetry());
+        connTimeout, talosClientConfig.isRetry(), talosClientConfig.getMaxRetry());
   }
 
   public MessageService.Iface newMessageClient(String endpoint, boolean isRetry,
@@ -205,7 +205,7 @@ public class TalosClientFactory {
       int connTimeout) {
     return createClient(QuotaService.Iface.class, QuotaService.Client.class,
         endpoint + Constants.TALOS_QUOTA_SERVICE_PATH, socketTimeout,
-        connTimeout, false, talosClientConfig.getMaxRetry());
+        connTimeout, talosClientConfig.isRetry(), talosClientConfig.getMaxRetry());
   }
 
   public QuotaService.Iface newQuotaClient(String endpoint, boolean isRetry,
