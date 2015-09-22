@@ -68,6 +68,6 @@ public class CommonConstants {
   /**
    * The max retry time before throwing exception.
    */
-  public static final int MAX_RETRY = 1;
+  public static final int MAX_RETRY = 3;
 
 }

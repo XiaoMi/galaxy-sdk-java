@@ -193,6 +193,18 @@ struct ReceiveMessageRequest {
   * Max receive message wait seconds, default 20s (0 ~ 20), 0s means no wait;
   **/
   3: optional i32 maxReceiveMessageWaitSeconds = 0;
+
+  /**
+  * Attribute name to match
+  * case-sensitive
+  **/
+  4: optional string attributeName;
+
+  /**
+  * Attribute value to match, corresponding to attributeName
+  * case-sensitive
+  **/
+  5: optional MessageAttribute attributeValue;
 }
 
 struct ReceiveMessageResponse {
@@ -242,9 +254,7 @@ struct ChangeMessageVisibilityRequest {
   2: required string receiptHandle;
 
   /**
-  * The extra invisibilitySeconds for this message, the invisibility seconds
-  * will be (oldIvisibulitySeconds + newInvisibilitySeconds), and can only
-  * affect on the newly received message and ont exceed old invisibilitySeconds;
+  * The extra invisibilitySeconds for this message
   **/
   3: required i32 invisibilitySeconds;
 }
@@ -257,9 +267,7 @@ struct ChangeMessageVisibilityBatchRequestEntry {
   1: required string receiptHandle;
 
   /**
-  * The extra invisibilitySeconds for this message, the invisibility seconds
-  * will be (oldIvisibulitySeconds + newInvisibilitySeconds), and can only
-  * affect on the newly received message and ont exceed old invisibilitySeconds;
+  * The extra invisibilitySeconds for this message
   **/
   2: required i32 invisibilitySeconds;
 }

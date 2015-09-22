@@ -216,6 +216,10 @@ public class EMQRequestCheckUtils {
 
   public static void check(MessageAttribute attribute)
       throws GalaxyEmqServiceException {
+    if (attribute == null) {
+      throw new GalaxyEmqServiceException()
+          .setErrMsg("Message attribute is null");
+    }
     if (attribute.getType().toLowerCase().startsWith("string")) {
       if (attribute.getStringValue() == null) {
         throw new GalaxyEmqServiceException()
@@ -256,6 +260,10 @@ public class EMQRequestCheckUtils {
           request.getMaxReceiveMessageWaitSeconds(),
           RangeConstants.GALAXY_EMQ_QUEUE_RECEIVE_WAIT_SECONDS_MINIMAL,
           RangeConstants.GALAXY_EMQ_QUEUE_RECEIVE_WAIT_SECONDS_MAXIMAL);
+    }
+    if (request.isSetAttributeName()) {
+      checkNotEmpty(request.getAttributeName(), "attribute name");
+      check(request.getAttributeValue());
     }
   }
 
