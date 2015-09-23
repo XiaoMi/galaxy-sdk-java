@@ -69,7 +69,7 @@ public class TalosClientFactory {
   }
 
   public TalosClientFactory(TalosClientConfig talosClientConfig) {
-    new TalosClientFactory(talosClientConfig, new Credential());
+    this(talosClientConfig, new Credential());
   }
 
   public TalosClientFactory(TalosClientConfig talosClientConfig,

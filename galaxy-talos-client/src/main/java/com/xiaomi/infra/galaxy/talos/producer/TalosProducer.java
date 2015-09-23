@@ -173,13 +173,13 @@ public class TalosProducer {
 
   public TalosProducer(TalosProducerConfig producerConfig,
       TopicTalosResourceName topicTalosResourceName) throws TException {
-    new TalosProducer(producerConfig, new Credential(),
+    this(producerConfig, new Credential(),
         topicTalosResourceName, new SimplePartitioner());
   }
 
   public TalosProducer(TalosProducerConfig producerConfig, Credential credential,
       TopicTalosResourceName topicTalosResourceName) throws TException {
-    new TalosProducer(producerConfig, credential,
+    this(producerConfig, credential,
         topicTalosResourceName, new SimplePartitioner());
   }
 

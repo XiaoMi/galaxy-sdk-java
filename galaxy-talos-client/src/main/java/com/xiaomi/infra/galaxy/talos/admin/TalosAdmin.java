@@ -28,13 +28,11 @@ public class TalosAdmin {
   private TopicService.Iface topicClient;
 
   public TalosAdmin(TalosClientConfig talosClientConfig) {
-    new TalosAdmin(talosClientConfig, new Credential());
+    this(talosClientConfig, new Credential());
   }
 
   public TalosAdmin(TalosClientConfig talosClientConfig, Credential credential) {
-    TalosClientFactory talosClientFactory =
-        new TalosClientFactory(talosClientConfig, credential);
-    new TalosAdmin(talosClientFactory);
+    this(new TalosClientFactory(talosClientConfig, credential));
   }
 
   public TalosAdmin(TalosClientFactory talosClientFactory) {
