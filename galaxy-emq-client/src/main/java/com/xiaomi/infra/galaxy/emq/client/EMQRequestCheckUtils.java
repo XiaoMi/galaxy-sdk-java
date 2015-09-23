@@ -21,6 +21,7 @@ import com.xiaomi.infra.galaxy.emq.thrift.PurgeQueueRequest;
 import com.xiaomi.infra.galaxy.emq.thrift.QueryPermissionForIdRequest;
 import com.xiaomi.infra.galaxy.emq.thrift.QueryPermissionRequest;
 import com.xiaomi.infra.galaxy.emq.thrift.QueueAttribute;
+import com.xiaomi.infra.galaxy.emq.thrift.QueueQuota;
 import com.xiaomi.infra.galaxy.emq.thrift.RangeConstants;
 import com.xiaomi.infra.galaxy.emq.thrift.ReceiveMessageRequest;
 import com.xiaomi.infra.galaxy.emq.thrift.RevokePermissionRequest;
@@ -29,6 +30,7 @@ import com.xiaomi.infra.galaxy.emq.thrift.SendMessageBatchRequestEntry;
 import com.xiaomi.infra.galaxy.emq.thrift.SendMessageRequest;
 import com.xiaomi.infra.galaxy.emq.thrift.SetPermissionRequest;
 import com.xiaomi.infra.galaxy.emq.thrift.SetQueueAttributesRequest;
+import com.xiaomi.infra.galaxy.emq.thrift.SetQueueQuotaRequest;
 import com.xiaomi.infra.galaxy.emq.thrift.Version;
 
 /**
@@ -49,6 +51,8 @@ public class EMQRequestCheckUtils {
         check((PurgeQueueRequest) objects[0]);
       } else if (objects[0] instanceof SetQueueAttributesRequest) {
         check((SetQueueAttributesRequest) objects[0]);
+      } else if (objects[0] instanceof SetQueueQuotaRequest) {
+        check((SetQueueQuotaRequest) objects[0]);
       } else if (objects[0] instanceof GetQueueInfoRequest) {
         check((GetQueueInfoRequest) objects[0]);
       } else if (objects[0] instanceof ListQueueRequest) {
@@ -97,6 +101,9 @@ public class EMQRequestCheckUtils {
     if (request.getQueueAttribute() != null) {
       validateQueueAttribute(request.getQueueAttribute());
     }
+    if (request.getQueueQuota() != null) {
+      validateQueueQuota(request.getQueueQuota());
+    }
   }
 
   public static void check(DeleteQueueRequest request)
@@ -113,6 +120,12 @@ public class EMQRequestCheckUtils {
       throws GalaxyEmqServiceException {
     validateQueueName(request.getQueueName());
     validateQueueAttribute(request.getQueueAttribute());
+  }
+
+  public static void check(SetQueueQuotaRequest request)
+      throws GalaxyEmqServiceException {
+    validateQueueName(request.getQueueName());
+    validateQueueQuota(request.getQueueQuota());
   }
 
   public static void check(GetQueueInfoRequest request)
@@ -185,7 +198,7 @@ public class EMQRequestCheckUtils {
           RangeConstants.GALAXY_EMQ_MESSAGE_INVISIBILITY_SECONDS_MAXIMAL);
     }
     if (request.isSetMessageAttributes()) {
-      for(MessageAttribute messageAttribute :
+      for (MessageAttribute messageAttribute :
           request.getMessageAttributes().values()) {
         check(messageAttribute);
       }
@@ -207,7 +220,7 @@ public class EMQRequestCheckUtils {
           RangeConstants.GALAXY_EMQ_MESSAGE_INVISIBILITY_SECONDS_MAXIMAL);
     }
     if (request.isSetMessageAttributes()) {
-      for(MessageAttribute messageAttribute :
+      for (MessageAttribute messageAttribute :
           request.getMessageAttributes().values()) {
         check(messageAttribute);
       }
@@ -363,6 +376,30 @@ public class EMQRequestCheckUtils {
     }
   }
 
+  public static void validateQueueQuota(QueueQuota queueQuota)
+      throws GalaxyEmqServiceException {
+    if (queueQuota.isSetSpaceQuota()) {
+      if (queueQuota.getSpaceQuota().isSetSize()) {
+        checkParameterRange("queueSpaceQuota", queueQuota.getSpaceQuota().getSize(),
+            RangeConstants.GALAXY_EMQ_QUEUE_MAX_SPACE_QUOTA_MINIMAL,
+            RangeConstants.GALAXY_EMQ_QUEUE_MAX_SPACE_QUOTA_MAXIMAL);
+      }
+    }
+    if (queueQuota.isSetThroughput()) {
+      if (queueQuota.getThroughput().isSetReadQps()) {
+        checkParameterRange("queueReadQps", queueQuota.getThroughput().getReadQps(),
+            RangeConstants.GALAXY_EMQ_QUEUE_READ_QPS_MINIMAL,
+            RangeConstants.GALAXY_EMQ_QUEUE_READ_QPS_MAXIMAL);
+      }
+      if (queueQuota.getThroughput().isSetWriteQps()) {
+        checkParameterRange("queueWriteQps", queueQuota.getThroughput().getWriteQps(),
+            RangeConstants.GALAXY_EMQ_QUEUE_WRITE_QPS_MINIMAL,
+            RangeConstants.GALAXY_EMQ_QUEUE_WRITE_QPS_MAXIMAL);
+      }
+    }
+
+  }
+
   public static void validateQueueName(String queueName)
       throws GalaxyEmqServiceException {
     checkNotEmpty(queueName, "queue name");
@@ -396,8 +433,8 @@ public class EMQRequestCheckUtils {
     }
   }
 
-  public static void checkParameterRange(String parameter, int value,
-      int minValue, int maxValue) throws GalaxyEmqServiceException {
+  public static void checkParameterRange(String parameter, long value,
+      long minValue, long maxValue) throws GalaxyEmqServiceException {
     if (value < minValue || value > maxValue) {
       throw new GalaxyEmqServiceException().setErrMsg("Parameter Out of Range").
           setDetails(parameter + ":" + value + " should in range [" + minValue

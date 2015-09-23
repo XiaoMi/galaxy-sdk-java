@@ -96,6 +96,18 @@ public enum ErrorCode implements libthrift091.TEnum {
    */
   TTRANSPORT_ERROR(19),
   /**
+   * Quota exceeded exception.
+   */
+  QUOTA_EXCEEDED(20),
+  /**
+   * Quota not exist exception.
+   */
+  QUOTA_NOT_EXIST(21),
+  /**
+   * Quota lock failed exception.
+   */
+  QUOTA_LOCK_FAILED(22),
+  /**
    * Unknown exception.
    */
   UNKNOWN(30);
@@ -159,6 +171,12 @@ public enum ErrorCode implements libthrift091.TEnum {
         return PARTITION_NOT_SERVING;
       case 19:
         return TTRANSPORT_ERROR;
+      case 20:
+        return QUOTA_EXCEEDED;
+      case 21:
+        return QUOTA_NOT_EXIST;
+      case 22:
+        return QUOTA_LOCK_FAILED;
       case 30:
         return UNKNOWN;
       default:

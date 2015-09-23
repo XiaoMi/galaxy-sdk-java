@@ -49,7 +49,7 @@ struct SendMessageRequest {
 
   /**
   * Invisibility seconds for this message, this will overwrite
-  * invisibilitySeconds of this queue, default 30s (0s ~ 12hour);
+  * invisibilitySeconds of this queue, default 30s (2s ~ 12hour);
   **/
   4: optional i32 invisibilitySeconds;
 
@@ -66,7 +66,7 @@ struct SendMessageResponse {
   1: required string messageID;
 
   /**
-  * Length of messge body
+  * Length of message body
   **/
   2: optional i32 bodyLength;
 
@@ -85,7 +85,7 @@ struct SendMessageResponse {
 
 struct SendMessageBatchRequestEntry {
   /**
-  * The identifier for this partitcular receipt handle;
+  * The identifier for this particular receipt handle;
   * Using to identify the result in response;
   * Need to be unique within one batch
   **/
@@ -104,7 +104,7 @@ struct SendMessageBatchRequestEntry {
 
   /**
   * Invisibility seconds for this message, this will overwrite
-  * invisibilitySeconds of this queue, default 30s (0s ~ 12hour);
+  * invisibilitySeconds of this queue, default 30s (2s ~ 12hour);
   **/
   4: optional i32 invisibilitySeconds;
 
@@ -138,7 +138,7 @@ struct SendMessageBatchResponseEntry {
   2: required string messageID;
 
   /**
-  * Length of messge body
+  * Length of message body
   **/
   3: optional i32 bodyLength;
 
@@ -168,7 +168,7 @@ struct MessageBatchErrorEntry {
 
 struct SendMessageBatchResponse {
   /**
-  * The sucessful results list;
+  * The successful results list;
   **/
   1: list<SendMessageBatchResponseEntry> successful;
 
@@ -254,7 +254,7 @@ struct ChangeMessageVisibilityRequest {
   2: required string receiptHandle;
 
   /**
-  * The extra invisibilitySeconds for this message
+  * The extra invisibilitySeconds for this message (0s ~ 12hour)
   **/
   3: required i32 invisibilitySeconds;
 }
@@ -267,7 +267,7 @@ struct ChangeMessageVisibilityBatchRequestEntry {
   1: required string receiptHandle;
 
   /**
-  * The extra invisibilitySeconds for this message
+  * The extra invisibilitySeconds for this message (0s ~ 12hour)
   **/
   2: required i32 invisibilitySeconds;
 }
@@ -286,7 +286,7 @@ struct ChangeMessageVisibilityBatchRequest {
 
 struct ChangeMessageVisibilityBatchResponse {
   /**
-  * The sucessful receipt handle;
+  * The successful receipt handle;
   **/
   1: list<string> successful;
 
@@ -331,7 +331,7 @@ struct DeleteMessageBatchRequest {
 
 struct DeleteMessageBatchResponse {
   /**
-  * The sucessful receipt handle;
+  * The successful receipt handle;
   **/
   1: list<string> successful;
 

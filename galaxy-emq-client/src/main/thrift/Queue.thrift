@@ -52,7 +52,7 @@ struct QueueAttribute {
   7: optional i32 partitionNumber;
 
   /**
-  * User-defined attributes
+  * User-defined attributes;
   **/
   8: optional map<string, string> userAttributes;
 }
@@ -75,10 +75,10 @@ struct QueueState {
 
   /**
   * The available message number in this queue, this is for message that could
-  * be get using receivedMesasge
+  * be get using receivedMessage
   **/
   4: required i64 approximateAvailableMessageNumber;
-  
+
   /**
   * The invisibility message number in this queue, this is for received message
   * that in invisibilitySeconds and not deleted;
@@ -86,23 +86,59 @@ struct QueueState {
   5: required i64 approximateInvisibilityMessageNumber;
 }
 
+struct Throughput {
+  /**
+   * Queue read qps;
+   **/
+  1: optional i64 readQps;
+
+  /**
+   * Queue write qps;
+   **/
+  2: optional i64 writeQps;
+}
+
+struct SpaceQuota {
+  /**
+   * Queue read qps;
+   **/
+  1: optional i64 size;
+}
+
+struct QueueQuota {
+  /**
+   * Queue space quota;
+   **/
+  1: optional SpaceQuota spaceQuota;
+
+  /**
+   * Queue read and qps;
+   **/
+  2: optional Throughput throughput;
+}
+
 struct CreateQueueRequest {
   /**
-  * The queue name
+  * The queue name;
   **/
   1: required string queueName;
 
   /**
-  * The queue attribute
+  * The queue attribute;
   **/
   2: optional QueueAttribute queueAttribute;
+
+  /**
+   * The queue quota, including space quota, read qps, and write qps;
+   **/
+  3: optional QueueQuota queueQuota;
 }
 
 struct CreateQueueResponse {
   /**
-  * The queue name
-  * The name returned here may be a little different from user set in request (with developerId as prefix). 
-  * So the user should use the name returned by this response for those following operations 
+  * The queue name;
+  * The name returned here may be a little different from user set in request (with developerId as prefix).
+  * So the user should use the name returned by this response for those following operations
   **/
   1: required string queueName;
 
@@ -110,6 +146,11 @@ struct CreateQueueResponse {
   * The queue attribute;
   **/
   2: required QueueAttribute queueAttribute;
+
+  /**
+   * The queue quota;
+   **/
+  3: required QueueQuota queueQuota;
 }
 
 struct DeleteQueueRequest {
@@ -128,19 +169,19 @@ struct PurgeQueueRequest {
 
 struct SetQueueAttributesRequest {
   /**
-  * The queue name
+  * The queue name;
   **/
   1: required string queueName;
 
   /**
-  * The queue attribute
+  * The queue attribute;
   **/
   2: optional QueueAttribute queueAttribute;
 }
 
 struct SetQueueAttributesResponse {
   /**
-  * The queue name
+  * The queue name;
   **/
   1: required string queueName;
 
@@ -150,6 +191,29 @@ struct SetQueueAttributesResponse {
   2: required QueueAttribute queueAttribute;
 }
 
+struct SetQueueQuotaRequest {
+  /**
+  * The queue name;
+  **/
+  1: required string queueName;
+
+  /**
+  * The queue quota;
+  **/
+  2: optional QueueQuota queueQuota;
+}
+
+struct SetQueueQuotaResponse {
+  /**
+  * The queue name;
+  **/
+  1: required string queueName;
+
+  /**
+  * The queue quota;
+  **/
+  2: optional QueueQuota queueQuota;
+}
 
 struct GetQueueInfoRequest {
   /**
@@ -160,7 +224,7 @@ struct GetQueueInfoRequest {
 
 struct GetQueueInfoResponse {
   /**
-  * The queue name
+  * The queue name;
   **/
   1: required string queueName;
 
@@ -173,6 +237,11 @@ struct GetQueueInfoResponse {
   * The queue state;
   **/
   3: required QueueState queueState;
+
+  /**
+   * The queue quota;
+   **/
+  4: required QueueQuota queueQuota;
 }
 
 struct ListQueueRequest {
@@ -261,7 +330,12 @@ service QueueService extends Common.EMQBaseService {
   SetQueueAttributesResponse setQueueAttribute(1: SetQueueAttributesRequest request) throws (1: Common.GalaxyEmqServiceException e);
 
   /**
-  * Get queue info, incloud QueueAttribute and QueueState;
+  * Set queue quota;
+  **/
+  SetQueueQuotaResponse setQueueQuota(1: SetQueueQuotaRequest request) throws (1: Common.GalaxyEmqServiceException e);
+
+  /**
+  * Get queue info, include QueueAttribute, QueueState and QueueQuota;
   **/
   GetQueueInfoResponse getQueueInfo(1: GetQueueInfoRequest request) throws (1: Common.GalaxyEmqServiceException e);
 
@@ -271,10 +345,10 @@ service QueueService extends Common.EMQBaseService {
   ListQueueResponse listQueue(1: ListQueueRequest request) throws (1: Common.GalaxyEmqServiceException e);
 
   /**
-  * Set permisson for developer
+  * Set permission for developer
   * FULL_CONTROL required to use this method
   **/
-  void setPermission(1: SetPermissionRequest request) 
+  void setPermission(1: SetPermissionRequest request)
       throws (1: Common.GalaxyEmqServiceException e);
 
   /**
