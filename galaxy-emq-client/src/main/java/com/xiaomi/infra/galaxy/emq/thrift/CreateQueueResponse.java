@@ -64,7 +64,7 @@ public class CreateQueueResponse implements libthrift091.TBase<CreateQueueRespon
    * The queue quota;
    * 
    */
-  public QueueQuota queueQuota; // required
+  public QueueQuota queueQuota; // optional
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements libthrift091.TFieldIdEnum {
@@ -145,6 +145,7 @@ public class CreateQueueResponse implements libthrift091.TBase<CreateQueueRespon
   }
 
   // isset id assignments
+  private static final _Fields optionals[] = {_Fields.QUEUE_QUOTA};
   public static final Map<_Fields, libthrift091.meta_data.FieldMetaData> metaDataMap;
   static {
     Map<_Fields, libthrift091.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, libthrift091.meta_data.FieldMetaData>(_Fields.class);
@@ -152,7 +153,7 @@ public class CreateQueueResponse implements libthrift091.TBase<CreateQueueRespon
         new libthrift091.meta_data.FieldValueMetaData(libthrift091.protocol.TType.STRING)));
     tmpMap.put(_Fields.QUEUE_ATTRIBUTE, new libthrift091.meta_data.FieldMetaData("queueAttribute", libthrift091.TFieldRequirementType.REQUIRED, 
         new libthrift091.meta_data.StructMetaData(libthrift091.protocol.TType.STRUCT, QueueAttribute.class)));
-    tmpMap.put(_Fields.QUEUE_QUOTA, new libthrift091.meta_data.FieldMetaData("queueQuota", libthrift091.TFieldRequirementType.REQUIRED, 
+    tmpMap.put(_Fields.QUEUE_QUOTA, new libthrift091.meta_data.FieldMetaData("queueQuota", libthrift091.TFieldRequirementType.OPTIONAL, 
         new libthrift091.meta_data.StructMetaData(libthrift091.protocol.TType.STRUCT, QueueQuota.class)));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
     libthrift091.meta_data.FieldMetaData.addStructMetaDataMap(CreateQueueResponse.class, metaDataMap);
@@ -163,13 +164,11 @@ public class CreateQueueResponse implements libthrift091.TBase<CreateQueueRespon
 
   public CreateQueueResponse(
     String queueName,
-    QueueAttribute queueAttribute,
-    QueueQuota queueQuota)
+    QueueAttribute queueAttribute)
   {
     this();
     this.queueName = queueName;
     this.queueAttribute = queueAttribute;
-    this.queueQuota = queueQuota;
   }
 
   /**
@@ -497,14 +496,16 @@ public class CreateQueueResponse implements libthrift091.TBase<CreateQueueRespon
       sb.append(this.queueAttribute);
     }
     first = false;
-    if (!first) sb.append(", ");
-    sb.append("queueQuota:");
-    if (this.queueQuota == null) {
-      sb.append("null");
-    } else {
-      sb.append(this.queueQuota);
+    if (isSetQueueQuota()) {
+      if (!first) sb.append(", ");
+      sb.append("queueQuota:");
+      if (this.queueQuota == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.queueQuota);
+      }
+      first = false;
     }
-    first = false;
     sb.append(")");
     return sb.toString();
   }
@@ -516,9 +517,6 @@ public class CreateQueueResponse implements libthrift091.TBase<CreateQueueRespon
     }
     if (queueAttribute == null) {
       throw new libthrift091.protocol.TProtocolException("Required field 'queueAttribute' was not present! Struct: " + toString());
-    }
-    if (queueQuota == null) {
-      throw new libthrift091.protocol.TProtocolException("Required field 'queueQuota' was not present! Struct: " + toString());
     }
     // check for sub-struct validity
     if (queueAttribute != null) {
@@ -615,9 +613,11 @@ public class CreateQueueResponse implements libthrift091.TBase<CreateQueueRespon
         oprot.writeFieldEnd();
       }
       if (struct.queueQuota != null) {
-        oprot.writeFieldBegin(QUEUE_QUOTA_FIELD_DESC);
-        struct.queueQuota.write(oprot);
-        oprot.writeFieldEnd();
+        if (struct.isSetQueueQuota()) {
+          oprot.writeFieldBegin(QUEUE_QUOTA_FIELD_DESC);
+          struct.queueQuota.write(oprot);
+          oprot.writeFieldEnd();
+        }
       }
       oprot.writeFieldStop();
       oprot.writeStructEnd();
@@ -638,7 +638,14 @@ public class CreateQueueResponse implements libthrift091.TBase<CreateQueueRespon
       TTupleProtocol oprot = (TTupleProtocol) prot;
       oprot.writeString(struct.queueName);
       struct.queueAttribute.write(oprot);
-      struct.queueQuota.write(oprot);
+      BitSet optionals = new BitSet();
+      if (struct.isSetQueueQuota()) {
+        optionals.set(0);
+      }
+      oprot.writeBitSet(optionals, 1);
+      if (struct.isSetQueueQuota()) {
+        struct.queueQuota.write(oprot);
+      }
     }
 
     @Override
@@ -649,9 +656,12 @@ public class CreateQueueResponse implements libthrift091.TBase<CreateQueueRespon
       struct.queueAttribute = new QueueAttribute();
       struct.queueAttribute.read(iprot);
       struct.setQueueAttributeIsSet(true);
-      struct.queueQuota = new QueueQuota();
-      struct.queueQuota.read(iprot);
-      struct.setQueueQuotaIsSet(true);
+      BitSet incoming = iprot.readBitSet(1);
+      if (incoming.get(0)) {
+        struct.queueQuota = new QueueQuota();
+        struct.queueQuota.read(iprot);
+        struct.setQueueQuotaIsSet(true);
+      }
     }
   }
 

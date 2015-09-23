@@ -150,7 +150,8 @@ struct CreateQueueResponse {
   /**
    * The queue quota;
    **/
-  3: required QueueQuota queueQuota;
+  3: optional QueueQuota queueQuota;
+
 }
 
 struct DeleteQueueRequest {
@@ -241,7 +242,7 @@ struct GetQueueInfoResponse {
   /**
    * The queue quota;
    **/
-  4: required QueueQuota queueQuota;
+  4: optional QueueQuota queueQuota;
 }
 
 struct ListQueueRequest {
