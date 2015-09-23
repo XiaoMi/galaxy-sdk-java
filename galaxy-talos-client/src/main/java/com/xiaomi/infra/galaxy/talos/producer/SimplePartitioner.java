@@ -12,6 +12,6 @@ public class SimplePartitioner implements Partitioner {
 
   @Override
   public int partition(String partitionKey, int partitionNum) {
-    return partitionKey.hashCode() % partitionNum;
+    return (partitionKey.hashCode() & 0x7FFFFFFF) % partitionNum;
   }
 }

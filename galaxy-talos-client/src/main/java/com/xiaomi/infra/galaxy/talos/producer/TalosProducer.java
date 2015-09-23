@@ -14,6 +14,7 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -51,13 +52,16 @@ public class TalosProducer {
 
       if (!topicTalosResourceName.equals(
           topic.getTopicInfo().getTopicTalosResourceName())) {
-        throw new RuntimeException("The topic: " +
-            topicTalosResourceName.getTopicTalosResourceName() +
-            " not exist. It might have been deleted");
+        LOG.error("The topic: " + topicTalosResourceName.getTopicTalosResourceName() +
+            " not exist. It might have been deleted. " +
+            "The putMessage threads will be cancel.");
+        // cancel the putMessage thread
+        cancel();
+        return;
       }
 
       int topicPartitionNum = topic.getTopicAttribute().getPartitionNumber();
-      if (partitionNumber > topicPartitionNum) {
+      if (partitionNumber < topicPartitionNum) {
         // increase partitionQueue and scan thread (not allow decreasing)
         adjustPartitionMessageQueue(topicPartitionNum);
         // update partitionNumber
@@ -109,6 +113,10 @@ public class TalosProducer {
       try {
         putMessageResponse = messageClient.putMessage(putMessageRequest);
         setFutureOnSuccess(messageAndFutureList); // set future for success
+        if (LOG.isDebugEnabled()) {
+          LOG.debug("put " + messageList.size() +
+              " message success for partition: " + partitionId);
+        }
       } catch (TException e) {
         LOG.error("Failed to putMessage in partition " + partitionId + ": ");
         for (Message message : messageList) {
@@ -153,6 +161,7 @@ public class TalosProducer {
       new ConcurrentHashMap<Integer, PartitionMessageQueue>();
   private TalosProducerConfig talosProducerConfig;
   private ScheduledExecutorService scheduledExecutor;
+  private List<ScheduledFuture> scheduledFutureList;
   private TalosClientFactory talosClientFactory;
   private MessageService.Iface messageClient;
   private TalosAdmin talosAdmin;
@@ -174,6 +183,26 @@ public class TalosProducer {
         topicTalosResourceName, new SimplePartitioner());
   }
 
+  // for test
+  public TalosProducer(TalosProducerConfig producerConfig,
+      TopicTalosResourceName topicTalosResourceName, TalosAdmin talosAdmin,
+      MessageService.Iface messageClient) throws TException {
+    this.partitioner = new SimplePartitioner();
+    this.talosProducerConfig = producerConfig;
+    this.talosAdmin = talosAdmin;
+    this.messageClient = messageClient;
+    clientId = generateClientId();
+    checkAndGetTopicInfo(topicTalosResourceName);
+    scheduledExecutor = Executors.newScheduledThreadPool(
+        talosProducerConfig.getThreadPoolsize());
+    scheduledFutureList = new ArrayList<ScheduledFuture>();
+    initPartitionMessageQueue();
+    initCheckPartitionTask();
+    LOG.info("Init a producer for topic: " +
+        topicTalosResourceName.getTopicTalosResourceName() +
+        ", partition number: " + partitionNumber);
+  }
+
   public TalosProducer(TalosProducerConfig producerConfig, Credential credential,
       TopicTalosResourceName topicTalosResourceName, Partitioner partitioner)
       throws TException {
@@ -181,6 +210,7 @@ public class TalosProducer {
     talosProducerConfig = producerConfig;
     clientId = generateClientId();
     talosClientFactory = new TalosClientFactory(talosProducerConfig, credential);
+    talosAdmin = new TalosAdmin(talosClientFactory);
     checkAndGetTopicInfo(topicTalosResourceName);
 
     // Note: all the params of newMessageClient got by producerConfig
@@ -188,6 +218,7 @@ public class TalosProducer {
     messageClient = talosClientFactory.newMessageClient();
     scheduledExecutor = Executors.newScheduledThreadPool(
         talosProducerConfig.getThreadPoolsize());
+    scheduledFutureList = new ArrayList<ScheduledFuture>();
     initPartitionMessageQueue();
     initCheckPartitionTask();
     LOG.info("Init a producer for topic: " +
@@ -199,7 +230,6 @@ public class TalosProducer {
       throws TException {
     topicName = Utils.getTopicNameByResourceName(
         topicTalosResourceName.getTopicTalosResourceName());
-    talosAdmin = new TalosAdmin(talosClientFactory);
     Topic topic = talosAdmin.describeTopic(topicName);
 
     if (!topicTalosResourceName.equals(
@@ -219,10 +249,11 @@ public class TalosProducer {
     // schedule a executor thread to call putMessage continuously
     // when add a new partitionMessageQueue
     // scan msgQueue after 10 milli secs by default
-    scheduledExecutor.schedule(
+    ScheduledFuture f = scheduledExecutor.schedule(
         new PutMessageTask(partitionMessageQueue, partitionId),
         talosProducerConfig.getScanPartitionQueueInterval(),
         TimeUnit.MILLISECONDS);
+    scheduledFutureList.add(f);
   }
 
   private void initPartitionMessageQueue() {
@@ -233,12 +264,12 @@ public class TalosProducer {
 
   private void adjustPartitionMessageQueue(int newPartitionNum) {
     // Note: we do not allow and process 'newPartitionNum < partitionNumber'
-    if (newPartitionNum > partitionNumber) {
-      for (int partitionId = partitionNumber; partitionId < newPartitionNum;
-           ++partitionId) {
-        createPartitionMessageQueue(partitionId);
-      }
+    for (int partitionId = partitionNumber; partitionId < newPartitionNum;
+         ++partitionId) {
+      createPartitionMessageQueue(partitionId);
     }
+    LOG.info("Adjust partitionMessageQueue and partitionNumber from: " +
+        partitionNumber + " to: " + newPartitionNum);
   }
 
   private void initCheckPartitionTask() {
@@ -265,7 +296,7 @@ public class TalosProducer {
         requestId.getAndIncrement();
   }
 
-  public synchronized void setPartitionNumber(int partitionNumber) {
+  private synchronized void setPartitionNumber(int partitionNumber) {
     this.partitionNumber = partitionNumber;
   }
 
@@ -292,7 +323,27 @@ public class TalosProducer {
     return messageAndFuture.getFuture();
   }
 
+  // cancel the putMessage threads when topic not exist during producer running
+  public void cancel() {
+    for (ScheduledFuture f : scheduledFutureList) {
+      f.cancel(false);
+    }
+  }
+
+  // for test
+  public int getPartitionNumber() {
+    return partitionNumber;
+  }
+
+  // for test
+  public Map<Integer, PartitionMessageQueue> getOutgoingMessageMap() {
+    return outgoingMessageMap;
+  }
+
   private void checkUserMessageValidity(String partitionKey, ByteBuffer data) {
+    Preconditions.checkNotNull(partitionKey);
+    Preconditions.checkNotNull(data);
+
     if (partitionKey.length() < partitionKeyMinLen ||
         partitionKey.length() > partitionKeyMaxLen) {
       throw new IllegalArgumentException("Invalid partition key which length " +
@@ -300,8 +351,8 @@ public class TalosProducer {
           partitionKeyMinLen + ", got " + partitionKey.length());
     }
 
-    if (data != null &&
-        data.remaining() > Constants.TALOS_SINGLE_MESSAGE_BYTES_MAXIMAL) {
+    if (data.remaining() > Constants.TALOS_SINGLE_MESSAGE_BYTES_MAXIMAL ||
+        data.remaining() < Constants.TALOS_SINGLE_MESSAGE_BYTES_MINIMAL) {
       throw new IllegalArgumentException("Data must be less than or equal to " +
           Constants.TALOS_SINGLE_MESSAGE_BYTES_MAXIMAL + " bytes, got bytes: " +
           data.remaining());

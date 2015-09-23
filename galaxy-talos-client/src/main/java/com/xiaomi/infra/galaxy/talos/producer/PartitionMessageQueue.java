@@ -59,9 +59,9 @@ public class PartitionMessageQueue {
   }
 
   private synchronized boolean shouldPut() {
-    return (messageFutureList.size() > 0 && (System.currentTimeMillis()
-        - messageFutureList.peekLast().getTimestamp() >= maxBufferedTime)) ||
-        curMessageBytes > maxPutMsgBytes ||
-        messageFutureList.size() > maxPutMsgNumber;
+    return curMessageBytes > maxPutMsgBytes ||
+        messageFutureList.size() > maxPutMsgNumber ||
+        (messageFutureList.size() > 0 && (System.currentTimeMillis()
+        - messageFutureList.peekLast().getTimestamp() >= maxBufferedTime));
   }
 }
