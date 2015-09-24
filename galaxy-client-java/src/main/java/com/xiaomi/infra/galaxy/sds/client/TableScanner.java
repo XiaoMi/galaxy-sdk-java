@@ -31,7 +31,7 @@ public class TableScanner implements Iterable<Map<String, Datum>> {
     private final ScanRequest scan;
     private boolean finished = false;
     private int retry = 0;
-    private final static int MAX_RETRY = 100;
+    private final static int MAX_RETRY = 256;
     private Iterator<Map<String, Datum>> bufferIterator = null;
     private ScanResult lastResult = null;
     private ThreadLocal<Long> lastPauseTime = new ThreadLocal<Long>() {
@@ -81,7 +81,9 @@ public class TableScanner implements Iterable<Map<String, Datum>> {
             bufferIterator = buffer.iterator();
           }
 
-          if ((result.getNextStartKey() == null || result.getNextStartKey().isEmpty())) {
+          if ((result.getNextStartKey() == null ||
+              result.getNextStartKey().isEmpty()) &&
+              result.getNextSplitIndex() == -1) {
             // finish the whole scan request
             finished = true;
           } else {
@@ -98,6 +100,9 @@ public class TableScanner implements Iterable<Map<String, Datum>> {
             }
             lastResult = result;
             scan.setStartKey(result.getNextStartKey());
+            if (result.getNextSplitIndex() > 0) {
+              scan.setSplitIndex(result.getNextSplitIndex());
+            }
           }
           return hasNext();
         }
