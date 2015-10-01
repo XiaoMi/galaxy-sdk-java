@@ -165,6 +165,5 @@
     <module>galaxy-thrift-api</module>
     <module>galaxy-client-java</module>
     <module>galaxy-emq-client</module>
-    <module>galaxy-talos-client</module>
   </modules>
 </project>

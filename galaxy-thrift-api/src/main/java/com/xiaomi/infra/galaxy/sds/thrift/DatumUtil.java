@@ -59,7 +59,7 @@ public class DatumUtil {
     return null;
   }
 
-  private static <T> Datum fromSetToDatum(Set<T> set, DataType dataType) {
+  public static <T> Datum fromSetToDatum(Set<T> set, DataType dataType) {
     List<T> list = new ArrayList<T>();
     for (T e : set) {
       list.add(e);
@@ -84,7 +84,7 @@ public class DatumUtil {
     case BINARY_SET:
       return toDatum(list, DataType.BINARY);
     default:
-      throw new RuntimeException("Unsupported repeated type" + dataType);
+      throw new RuntimeException("Unsupported repeated type " + dataType);
     }
   }
 

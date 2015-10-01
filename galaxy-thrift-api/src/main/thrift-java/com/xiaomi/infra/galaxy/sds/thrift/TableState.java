@@ -44,7 +44,7 @@ public enum TableState implements libthrift091.TEnum {
    */
   DELETED(7),
   /**
-   * 延迟删除
+   * 延迟删除, 可见
    */
   LAZY_DELETE(8);
 
