@@ -41,12 +41,12 @@ public class EMRServiceConstants {
   public static final String DEFAULT_SECURE_SERVICE_ENDPOINT = "https://emr.api.xiaomi.com";
 
   /**
-   * RPC根路径
+   * RPC root path
    */
   public static final String API_ROOT_PATH = "/v1/api";
 
   /**
-   * EMR调度服务RPC路径
+   * path of EMR scheduler service
    */
   public static final String SCHEDULER_SERVICE_PATH = "/v1/api/scheduler";
 
