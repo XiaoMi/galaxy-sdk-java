@@ -139,4 +139,63 @@ public class TalosClientConfigKeys {
   public static final int GALAXY_TALOS_PRODUCER_CHECK_PARTITION_INTERVAL_DEFAULT =
       1000 * 60 * 3;
 
+
+  // consumer config
+
+  /**
+   * The consumer scan/update partition number interval(milli secs)
+   */
+  public static final String GALAXY_TALOS_CONSUMER_CHECK_PARTITION_INTERVAL =
+      "galaxy.talos.consumer.check.partition.interval";
+  public static final int GALAXY_TALOS_CONSUMER_CHECK_PARTITION_INTERVAL_DEFAULT =
+      60 * 1000;
+  public static final int GALAXY_TALOS_CONSUMER_CHECK_PARTITION_INTERVAL_MINIMUM =
+      1000 * 60;
+  public static final int GALAXY_TALOS_CONSUMER_CHECK_PARTITION_INTERVAL_MAXIMUM =
+      1000 * 60 * 3;
+
+  /**
+   * The consumer check alive worker info and their serving partitions interval
+   */
+  public static final String GALAXY_TALOS_CONSUMER_CHECK_WORKER_INFO_INTERVAL =
+      "galaxy.talos.consumer.check.worker.info.interval";
+  public static final int GALAXY_TALOS_CONSUMER_CHECK_WORKER_INFO_INTERVAL_DEFAULT =
+      1000 * 10;
+  public static final int GALAXY_TALOS_CONSUMER_CHECK_WORKER_INFO_INTERVAL_MINIMUM =
+      1000 * 10;
+  public static final int GALAXY_TALOS_CONSUMER_CHECK_WORKER_INFO_INTERVAL_MAXIMUM =
+      1000 * 30;
+
+  /**
+   * The consumer renew interval for both heartbeat and renew serving partitions
+   */
+  public static final String GALAXY_TALOS_CONSUMER_RENEW_INTERVAL =
+      "galaxy.talos.consumer.renew.interval";
+  public static final int GALAXY_TALOS_CONSUMER_RENEW_INTERVAL_DEFAULT = 1000 * 8;
+  public static final int GALAXY_TALOS_CONSUMER_RENEW_INTERVAL_MINIMUM = 1000 * 8;
+  public static final int GALAXY_TALOS_CONSUMER_RENEW_INTERVAL_MAXIMUM = 1000 * 30;
+
+  /**
+   * The consumer renew max retry
+   */
+  public static final String GALAXY_TALOS_CONSUMER_RENEW_MAX_RETRY =
+      "galaxy.talos.consumer.renew.max.retry";
+  public static final int GALAXY_TALOS_CONSUMER_RENEW_MAX_RETRY_DEFAULT = 1;
+  public static final int GALAXY_TALOS_CONSUMER_RENEW_MAX_RETRY_MINIMUM = 1;
+  public static final int GALAXY_TALOS_CONSUMER_RENEW_MAX_RETRY_MAXIMUM = 3;
+
+  /**
+   * The consumer getRecords max fetch message number
+   */
+  public static final String GALAXY_TALOS_CONSUMER_MAX_FETCH_RECORDS =
+      "galaxy.talos.consumer.max.fetch.records";
+  public static final int GALAXY_TALOS_CONSUMER_MAX_FETCH_RECORDS_DEFAULT = 1000;
+
+  /**
+   * The consumer worker register self max retry times
+   */
+  public static final String GALAXY_TALOS_CONSUMER_REGISTER_MAX_RETRY =
+      "galaxy.talos.consumer.register.max.retry";
+  public static final int GALAXY_TALOS_CONSUMER_REGISTER_MAX_RETRY_DEFAULT = 1;
+
 }

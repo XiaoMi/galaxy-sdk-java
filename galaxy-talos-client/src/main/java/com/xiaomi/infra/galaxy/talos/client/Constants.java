@@ -15,6 +15,7 @@ public class Constants {
   public static final String TALOS_TOPIC_SERVICE_PATH = TALOS_API_ROOT_PATH + "/topic";
   public static final String TALOS_MESSAGE_SERVICE_PATH = TALOS_API_ROOT_PATH + "/message";
   public static final String TALOS_QUOTA_SERVICE_PATH = TALOS_API_ROOT_PATH + "/quota";
+  public static final String TALOS_CONSUMER_SERVICE_PATH = TALOS_API_ROOT_PATH + "/consumer";
 
   public static final String TALOS_IDENTIFIER_DELIMITER = "#";
 

@@ -57,6 +57,8 @@ public class TalosProducer {
             "The putMessage threads will be cancel.");
         // cancel the putMessage thread
         cancel();
+        // TODO: cancel the running checkPartitionTask by throw a runtime exception
+        // refer: http://t.cn/RyRbqLu
         return;
       }
 
@@ -101,7 +103,7 @@ public class TalosProducer {
     }
 
     private void putMessage(List<MessageAndFuture> messageAndFutureList) {
-      String requestSequenceId = generateRequestSequenceId();
+      String requestSequenceId = Utils.generateRequestSequenceId(clientId, requestId);
       List<Message> messageList = new ArrayList<Message>(messageAndFutureList.size());
       for (MessageAndFuture messageAndFuture : messageAndFutureList) {
         messageList.add(messageAndFuture.getMessage());
@@ -191,7 +193,7 @@ public class TalosProducer {
     this.talosProducerConfig = producerConfig;
     this.talosAdmin = talosAdmin;
     this.messageClient = messageClient;
-    clientId = generateClientId();
+    clientId = Utils.generateClientId();
     checkAndGetTopicInfo(topicTalosResourceName);
     scheduledExecutor = Executors.newScheduledThreadPool(
         talosProducerConfig.getThreadPoolsize());
@@ -208,7 +210,7 @@ public class TalosProducer {
       throws TException {
     this.partitioner = partitioner;
     talosProducerConfig = producerConfig;
-    clientId = generateClientId();
+    clientId = Utils.generateClientId();
     talosClientFactory = new TalosClientFactory(talosProducerConfig, credential);
     talosAdmin = new TalosAdmin(talosClientFactory);
     checkAndGetTopicInfo(topicTalosResourceName);
@@ -283,17 +285,8 @@ public class TalosProducer {
     return partitioner.partition(partitionKey, partitionNumber);
   }
 
-  private String generateClientId() {
-    return System.currentTimeMillis() + UUID.randomUUID().toString().substring(0, 8);
-  }
-
   private String generatePartitionKey() {
     return UUID.randomUUID().toString();
-  }
-
-  private String generateRequestSequenceId() {
-    return clientId + Constants.TALOS_IDENTIFIER_DELIMITER +
-        requestId.getAndIncrement();
   }
 
   private synchronized void setPartitionNumber(int partitionNumber) {

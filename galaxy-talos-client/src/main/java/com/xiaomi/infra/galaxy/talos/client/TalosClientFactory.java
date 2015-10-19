@@ -26,6 +26,7 @@ import com.xiaomi.infra.galaxy.rpc.client.AutoRetryClient;
 import com.xiaomi.infra.galaxy.rpc.client.ThreadSafeClient;
 import com.xiaomi.infra.galaxy.rpc.thrift.Credential;
 import com.xiaomi.infra.galaxy.rpc.util.clock.AdjustableClock;
+import com.xiaomi.infra.galaxy.talos.thrift.ConsumerService;
 import com.xiaomi.infra.galaxy.talos.thrift.MessageService;
 import com.xiaomi.infra.galaxy.talos.thrift.QuotaService;
 import com.xiaomi.infra.galaxy.talos.thrift.TopicService;
@@ -122,9 +123,7 @@ public class TalosClientFactory {
   }
 
   public TopicService.Iface newTopicClient() {
-    if (credential == null) {
-      throw new IllegalArgumentException("Credential is not set");
-    }
+    checkCredential();
     return newTopicClient(talosClientConfig.getSecureServiceEndpoint());
   }
 
@@ -156,9 +155,7 @@ public class TalosClientFactory {
   }
 
   public MessageService.Iface newMessageClient() {
-    if (credential == null) {
-      throw new IllegalArgumentException("Credential is not set");
-    }
+    checkCredential();
     return newMessageClient(talosClientConfig.getSecureServiceEndpoint());
   }
 
@@ -190,9 +187,7 @@ public class TalosClientFactory {
   }
 
   public QuotaService.Iface newQuotaClient() {
-    if (credential == null) {
-      throw new IllegalArgumentException("Credential is not set");
-    }
+    checkCredential();
     return newQuotaClient(talosClientConfig.getSecureServiceEndpoint());
   }
 
@@ -223,6 +218,38 @@ public class TalosClientFactory {
         connTimeout, isRetry, maxRetry);
   }
 
+  public ConsumerService.Iface newConsumerClient() {
+    checkCredential();
+    return newConsumerClient(talosClientConfig.getSecureServiceEndpoint());
+  }
+
+  public ConsumerService.Iface newConsumerClient(String endpoint) {
+    return newConsumerClient(endpoint, talosClientConfig.getClientTimeout(),
+        talosClientConfig.getClientConnTimeout());
+  }
+
+  public ConsumerService.Iface newConsumerClient(String endpoint,
+      int socketTimeout, int connTimeout) {
+    return createClient(ConsumerService.Iface.class, ConsumerService.Client.class,
+        endpoint + Constants.TALOS_CONSUMER_SERVICE_PATH, socketTimeout,
+        connTimeout, talosClientConfig.isRetry(), talosClientConfig.getMaxRetry());
+  }
+
+  public ConsumerService.Iface newConsumerClient(String endpoint,
+      boolean isRetry, int maxRetry) {
+    return createClient(ConsumerService.Iface.class, ConsumerService.Iface.class,
+        endpoint + Constants.TALOS_CONSUMER_SERVICE_PATH,
+        talosClientConfig.getClientTimeout(),
+        talosClientConfig.getClientConnTimeout(), isRetry, maxRetry);
+  }
+
+  public ConsumerService.Iface newConsumerClient(String endpoint,
+      int socketTimeout, int connTimeout, boolean isRetry, int maxRetry) {
+    return createClient(ConsumerService.Iface.class, ConsumerService.Iface.class,
+        endpoint + Constants.TALOS_QUOTA_SERVICE_PATH, socketTimeout,
+        connTimeout, isRetry, maxRetry);
+  }
+
   private <IFace, Impl> IFace createClient(Class<IFace> ifaceClass,
       Class<Impl> implClass, String url, int socketTimeout, int connTimeout,
       boolean isRetry, int maxRetry) {
@@ -244,5 +271,11 @@ public class TalosClientFactory {
     return String.format("Java-SDK/%d.%d.%d Java/%s",
         VERSION.major, VERSION.minor, VERSION.revision,
         System.getProperty("java.version"));
+  }
+
+  private void checkCredential() {
+    if (credential == null) {
+      throw new IllegalArgumentException("Credential is not set");
+    }
   }
 }
