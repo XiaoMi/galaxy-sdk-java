@@ -29,8 +29,8 @@ import com.xiaomi.infra.galaxy.talos.client.Utils;
 import com.xiaomi.infra.galaxy.talos.thrift.CheckPoint;
 import com.xiaomi.infra.galaxy.talos.thrift.ConsumeUnit;
 import com.xiaomi.infra.galaxy.talos.thrift.ConsumerService;
-import com.xiaomi.infra.galaxy.talos.thrift.LockRequest;
-import com.xiaomi.infra.galaxy.talos.thrift.LockResponse;
+import com.xiaomi.infra.galaxy.talos.thrift.LockPartitionRequest;
+import com.xiaomi.infra.galaxy.talos.thrift.LockPartitionResponse;
 import com.xiaomi.infra.galaxy.talos.thrift.MessageAndOffset;
 import com.xiaomi.infra.galaxy.talos.thrift.QueryOffsetRequest;
 import com.xiaomi.infra.galaxy.talos.thrift.QueryOffsetResponse;
@@ -41,7 +41,7 @@ import com.xiaomi.infra.galaxy.talos.thrift.RenewResponse;
 import com.xiaomi.infra.galaxy.talos.thrift.Topic;
 import com.xiaomi.infra.galaxy.talos.thrift.TopicAndPartition;
 import com.xiaomi.infra.galaxy.talos.thrift.TopicTalosResourceName;
-import com.xiaomi.infra.galaxy.talos.thrift.UnlockRequest;
+import com.xiaomi.infra.galaxy.talos.thrift.UnlockPartitionRequest;
 import com.xiaomi.infra.galaxy.talos.thrift.UpdateOffsetRequest;
 import com.xiaomi.infra.galaxy.talos.thrift.UpdateOffsetResponse;
 
@@ -97,9 +97,9 @@ public class TalosConsumer {
    * a) current alive workers refer to scan 'consumerGroup+Topic+Worker'
    * b) all serving partitions got by the a)'s alive workers
    *
-   *  G+T+W    G+T+P
-   *   yes       no  -- normal, exist idle workers
-   *   no        yes -- abnormal, but ttl will fix it
+   * G+T+W    G+T+P
+   * yes       no  -- normal, exist idle workers
+   * no        yes -- abnormal, but ttl will fix it
    */
   private class CheckWorkerInfoTask implements Runnable {
 
@@ -160,6 +160,7 @@ public class TalosConsumer {
           continue;
         }
 
+        // TODO: renew check heartbeat success or failed and do something
         if (renewResponse.getFailedPartitionListSize() == 0) {
           LOG.info("The worker: " + workerId + " success renew partitions: " +
               servingPartitionList);
@@ -503,12 +504,12 @@ public class TalosConsumer {
     // try to lock
     ConsumeUnit consumeUnit = new ConsumeUnit(consumerGroup,
         topicTalosResourceName, toStealList, workerId);
-    LockRequest lockRequest = new LockRequest(consumeUnit);
+    LockPartitionRequest lockRequest = new LockPartitionRequest(consumeUnit);
 
     // TODO: if lock fail, retry a few times
-    LockResponse lockResponse = null;
+    LockPartitionResponse lockResponse = null;
     try {
-      lockResponse = consumerClient.lock(lockRequest);
+      lockResponse = consumerClient.lockPartition(lockRequest);
     } catch (TException e) {
       LOG.error("Worker: " + workerId + " steal partition error: " + e.toString());
       return;
@@ -576,9 +577,9 @@ public class TalosConsumer {
     // release lock, if unlock failed, we just wait ttl work.
     ConsumeUnit consumeUnit = new ConsumeUnit(consumerGroup,
         topicTalosResourceName, toReleaseList, workerId);
-    UnlockRequest unlockRequest = new UnlockRequest(consumeUnit);
+    UnlockPartitionRequest unlockRequest = new UnlockPartitionRequest(consumeUnit);
     try {
-      consumerClient.unlock(unlockRequest);
+      consumerClient.unlockPartition(unlockRequest);
     } catch (Throwable e) {
       LOG.warn("Worker: " + workerId + " release partition error: " + e.toString());
       return;

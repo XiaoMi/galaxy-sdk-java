@@ -40,6 +40,7 @@ public class Utils {
     return System.currentTimeMillis() + UUID.randomUUID().toString().substring(0, 8);
   }
 
+  // TODO: check prefix can not contains character '#'
   public static String generateClientId(String prefix) {
     return prefix + generateClientId();
   }
