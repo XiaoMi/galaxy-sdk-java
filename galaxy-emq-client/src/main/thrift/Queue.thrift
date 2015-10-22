@@ -151,7 +151,6 @@ struct CreateQueueResponse {
    * The queue quota;
    **/
   3: optional QueueQuota queueQuota;
-
 }
 
 struct DeleteQueueRequest {
@@ -309,6 +308,56 @@ struct ListPermissionsResponse {
   1: map<string, Permission> permissionList;
 }
 
+struct QueryMetricRequest {
+  1: optional string queueName;
+  2: optional i64 startTime;
+  3: optional i64 endTime;
+  /**
+  * metric name
+  **/
+  4: optional string metrics;
+  /**
+  * tags, reference to opentsdb,
+  * e.g. <"type", "">
+  **/
+  5: optional map<string, string> tags;
+  /**
+  * data aggregator, reference to opentsdb,
+  * e.g. max, avg, min
+  **/
+  6: optional string aggregator;
+  /**
+  * similar to aggregator above
+  **/
+  7: optional string downsampleAggregator;
+  8: optional i32 downsampleInterval;
+  /**
+  * downsample interval unit, reference to opentsdb,
+  * e.g. ms(milliseconds), s(seconds), d(day)
+  **/
+  9: optional string downsampleTimeUnit;
+  10: optional bool calRate;
+
+}
+
+/**
+ * metrics time series data
+ */
+struct TimeSeriesData {
+  /**
+   * metric name
+   */
+  1: optional string metric,
+  /**
+   * tags
+   */
+  2: optional map<string, string> tags,
+  /**
+   * data, {timestamp => value}
+   */
+  3: optional map<i64, double> data,
+}
+
 service QueueService extends Common.EMQBaseService {
   /**
   * Create queue;
@@ -380,4 +429,12 @@ service QueueService extends Common.EMQBaseService {
   **/
   ListPermissionsResponse listPermissions(1: ListPermissionsRequest request)
       throws (1: Common.GalaxyEmqServiceException e);
+
+  /**
+  * query metrics
+  * FULL_CONTROL required to use this method
+  **/
+  TimeSeriesData queryMetric(1: QueryMetricRequest request)
+      throws(1: Common.GalaxyEmqServiceException e);
+
 }
