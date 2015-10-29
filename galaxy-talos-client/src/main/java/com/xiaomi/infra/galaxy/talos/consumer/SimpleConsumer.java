@@ -11,6 +11,8 @@ import java.util.concurrent.atomic.AtomicLong;
 
 import libthrift091.TException;
 
+import com.xiaomi.infra.galaxy.rpc.thrift.Credential;
+import com.xiaomi.infra.galaxy.talos.client.TalosClientFactory;
 import com.xiaomi.infra.galaxy.talos.client.Utils;
 import com.xiaomi.infra.galaxy.talos.thrift.GetMessageRequest;
 import com.xiaomi.infra.galaxy.talos.thrift.GetMessageResponse;
@@ -24,7 +26,7 @@ public class SimpleConsumer {
   private MessageService.Iface messageClient;
   private TalosConsumerConfig consumerConfig;
 
-  private final AtomicLong requestId = new AtomicLong(1);
+  private static final AtomicLong requestId = new AtomicLong(1);
   private String simpleConsumerId;
 
   public SimpleConsumer(TalosConsumerConfig consumerConfig,
@@ -39,6 +41,12 @@ public class SimpleConsumer {
   public SimpleConsumer(TalosConsumerConfig consumerConfig,
       TopicAndPartition topicAndPartition, MessageService.Iface messageClient) {
     this(consumerConfig, topicAndPartition, messageClient, "");
+  }
+
+  public SimpleConsumer(TalosConsumerConfig consumerConfig,
+      TopicAndPartition topicAndPartition, Credential credential) {
+    this(consumerConfig, topicAndPartition, new TalosClientFactory(
+        consumerConfig, credential).newMessageClient());
   }
 
   public TopicTalosResourceName getTopicTalosResourceName() {

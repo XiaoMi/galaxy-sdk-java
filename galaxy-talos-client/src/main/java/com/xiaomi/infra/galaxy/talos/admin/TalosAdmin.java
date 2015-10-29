@@ -70,16 +70,19 @@ public class TalosAdmin {
     quotaClient = talosClientFactory.newQuotaClient();
   }
 
-  public TopicTalosResourceName createTopic(String topicName)
-      throws GalaxyTalosException, TException {
+  // topicAttribute for partitionNumber required
+  public TopicTalosResourceName createTopic(String topicName,
+      TopicAttribute topicAttribute) throws GalaxyTalosException, TException {
     Preconditions.checkNotNull(topicName);
-    TopicAttribute topicAttribute = new TopicAttribute();
     CreateTopicRequest createTopicRequest = new CreateTopicRequest(
         topicName, topicAttribute);
     CreateTopicResponse createTopicResponse = topicClient.createTopic(
         createTopicRequest);
 
     LOG.info("Create topic: " + topicName + " success.");
+    if (topicAttribute.getPartitionNumber() == 0) {
+      LOG.warn("You have not set partition number, we will use default config.");
+    }
     return createTopicResponse.getTopicInfo().getTopicTalosResourceName();
   }
 
@@ -89,10 +92,6 @@ public class TalosAdmin {
     DescribeTopicRequest describeTopicRequest = new DescribeTopicRequest(topicName);
     DescribeTopicResponse describeTopicResponse = topicClient.describeTopic(
         describeTopicRequest);
-    if (describeTopicResponse == null) {
-      LOG.warn("Describe topic got null response for: " + topicName);
-      return null;
-    }
 
     return new Topic(describeTopicResponse.getTopicInfo(),
         describeTopicResponse.getTopicAttribute(),

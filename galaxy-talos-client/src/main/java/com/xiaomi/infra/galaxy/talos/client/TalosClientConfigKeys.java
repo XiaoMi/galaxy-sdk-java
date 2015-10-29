@@ -168,12 +168,13 @@ public class TalosClientConfigKeys {
 
   /**
    * The consumer renew interval for both heartbeat and renew serving partitions
+   * the worker column family ttl is 30s by default
    */
   public static final String GALAXY_TALOS_CONSUMER_RENEW_INTERVAL =
       "galaxy.talos.consumer.renew.interval";
-  public static final int GALAXY_TALOS_CONSUMER_RENEW_INTERVAL_DEFAULT = 1000 * 8;
-  public static final int GALAXY_TALOS_CONSUMER_RENEW_INTERVAL_MINIMUM = 1000 * 8;
-  public static final int GALAXY_TALOS_CONSUMER_RENEW_INTERVAL_MAXIMUM = 1000 * 30;
+  public static final int GALAXY_TALOS_CONSUMER_RENEW_INTERVAL_DEFAULT = 1000 * 7;
+  public static final int GALAXY_TALOS_CONSUMER_RENEW_INTERVAL_MINIMUM = 1000 * 7;
+  public static final int GALAXY_TALOS_CONSUMER_RENEW_INTERVAL_MAXIMUM = 1000 * 10;
 
   /**
    * The consumer renew max retry
@@ -197,5 +198,19 @@ public class TalosClientConfigKeys {
   public static final String GALAXY_TALOS_CONSUMER_REGISTER_MAX_RETRY =
       "galaxy.talos.consumer.register.max.retry";
   public static final int GALAXY_TALOS_CONSUMER_REGISTER_MAX_RETRY_DEFAULT = 1;
+
+  /**
+   * The consumer commit offset fetched records number threshold
+   */
+  public static final String GALAXY_TALOS_CONSUMER_COMMIT_OFFSET_THRESHOLD =
+      "galaxy.talos.consumer.commit.offset.record.fetched.num";
+  public static final int GALAXY_TALOS_CONSUMER_COMMIT_OFFSET_THRESHOLD_DEFAULT = 10000;
+
+  /**
+   * The consumer commit offset time interval threshold, milli secs
+   */
+  public static final String GALAXY_TALOS_CONSUMER_COMMIT_OFFSET_INTERVAL =
+      "galaxy.talos.consumer.commit.offset.interval.milli";
+  public static final int GALAXY_TALOS_CONSUMER_COMMIT_OFFSET_INTERVAL_DEFAULT = 5000;
 
 }

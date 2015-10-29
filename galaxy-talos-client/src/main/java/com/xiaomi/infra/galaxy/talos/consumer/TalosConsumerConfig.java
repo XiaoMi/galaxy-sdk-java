@@ -19,6 +19,8 @@ public class TalosConsumerConfig extends TalosClientConfig {
   private int reNewMaxRetry;
   private int maxFetchRecords;
   private int selfRegisterMaxRetry;
+  private int commitOffsetThreshold;
+  private int commitOffsetInterval;
 
   public TalosConsumerConfig(Configuration configuration) {
     super(configuration);
@@ -65,6 +67,14 @@ public class TalosConsumerConfig extends TalosClientConfig {
     selfRegisterMaxRetry = configuration.getInt(
         TalosClientConfigKeys.GALAXY_TALOS_CONSUMER_REGISTER_MAX_RETRY,
         TalosClientConfigKeys.GALAXY_TALOS_CONSUMER_REGISTER_MAX_RETRY_DEFAULT);
+
+    commitOffsetThreshold = configuration.getInt(
+        TalosClientConfigKeys.GALAXY_TALOS_CONSUMER_COMMIT_OFFSET_THRESHOLD,
+        TalosClientConfigKeys.GALAXY_TALOS_CONSUMER_COMMIT_OFFSET_THRESHOLD_DEFAULT);
+
+    commitOffsetInterval = configuration.getInt(
+        TalosClientConfigKeys.GALAXY_TALOS_CONSUMER_COMMIT_OFFSET_INTERVAL,
+        TalosClientConfigKeys.GALAXY_TALOS_CONSUMER_COMMIT_OFFSET_INTERVAL_DEFAULT);
   }
 
   public int getPartitionCheckInterval() {
@@ -89,5 +99,13 @@ public class TalosConsumerConfig extends TalosClientConfig {
 
   public int getSelfRegisterMaxRetry() {
     return selfRegisterMaxRetry;
+  }
+
+  public int getCommitOffsetThreshold() {
+    return commitOffsetThreshold;
+  }
+
+  public int getCommitOffsetInterval() {
+    return commitOffsetInterval;
   }
 }

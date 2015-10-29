@@ -157,7 +157,7 @@ public class TalosProducer {
   private static final Logger LOG = LoggerFactory.getLogger(TalosProducer.class);
   private final int partitionKeyMinLen = Constants.TALOS_PARTITION_KEY_LENGTH_MINIMAL;
   private final int partitionKeyMaxLen = Constants.TALOS_PARTITION_KEY_LENGTH_MAXIMAL;
-  private final AtomicLong requestId = new AtomicLong(1);
+  private static final AtomicLong requestId = new AtomicLong(1);
 
   private final Map<Integer, PartitionMessageQueue> outgoingMessageMap =
       new ConcurrentHashMap<Integer, PartitionMessageQueue>();
@@ -321,16 +321,6 @@ public class TalosProducer {
     for (ScheduledFuture f : scheduledFutureList) {
       f.cancel(false);
     }
-  }
-
-  // for test
-  public int getPartitionNumber() {
-    return partitionNumber;
-  }
-
-  // for test
-  public Map<Integer, PartitionMessageQueue> getOutgoingMessageMap() {
-    return outgoingMessageMap;
   }
 
   private void checkUserMessageValidity(String partitionKey, ByteBuffer data) {
