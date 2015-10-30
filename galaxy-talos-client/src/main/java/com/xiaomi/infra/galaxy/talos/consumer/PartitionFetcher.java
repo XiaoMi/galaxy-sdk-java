@@ -12,6 +12,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicLong;
 
+import com.google.common.base.Preconditions;
 import libthrift091.TException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -67,28 +68,21 @@ public class PartitionFetcher {
   private class MessageReader implements Runnable {
     private final int commitThreshold = talosConsumerConfig.getCommitOffsetThreshold();
     private final int commitInterval = talosConsumerConfig.getCommitOffsetInterval();
+    private final int fetchInterval = talosConsumerConfig.getFetchMessageInterval();
 
     private AtomicLong startOffset;
     private long finishedOffset;
     private MessageProcessor messageProcessor;
     private long lastCommitTime;
     private long lastCommitOffset;
+    private long lastFetchTime;
 
     private MessageReader(MessageProcessor messageProcessor) {
       this.messageProcessor = messageProcessor;
-      lastCommitTime = System.currentTimeMillis();
+      lastCommitTime = lastFetchTime = System.currentTimeMillis();
       lastCommitOffset = finishedOffset = -1;
       startOffset = new AtomicLong(-1);
       LOG.info("initialize message reader for partition: " + partitionId);
-    }
-
-    private long getStartOffset() throws TException {
-      QueryOffsetRequest queryOffsetRequest = new QueryOffsetRequest(
-          consumerGroup, topicAndPartition);
-      QueryOffsetResponse queryOffsetResponse = consumerClient.queryOffset(
-          queryOffsetRequest);
-      // startOffset = queryOffset + 1
-      return queryOffsetResponse.getMsgOffset() + 1;
     }
 
     private boolean shoudCommit() {
@@ -114,12 +108,6 @@ public class PartitionFetcher {
       }
     }
 
-    // unlock partitionLock, then revoke this task and set it to 'UNLOCKED'
-    private void clean() {
-      releasePartition();
-      updateState(TASK_STATE.UNLOCKED);
-    }
-
     @Override
     public void run() {
       // try to lock partition from HBase, if failed, set to UNLOCKED and return;
@@ -142,9 +130,19 @@ public class PartitionFetcher {
       LOG.info("The workerId: " + workerId + " is serving partition: " +
           partitionId);
       while (getCurState() == TASK_STATE.LOCKED) {
+        // control fetch qps
+        if (System.currentTimeMillis() - lastFetchTime < fetchInterval) {
+          try {
+            Thread.sleep(lastFetchTime + fetchInterval - System.currentTimeMillis());
+          } catch (InterruptedException e) {
+            // do nothing
+          }
+        }
+
         try {
           List<MessageAndOffset> messageList = simpleConsumer.fetchMessage(
               startOffset.get());
+          lastFetchTime = System.currentTimeMillis();
           if (messageList == null || messageList.size() == 0) {
             continue;
           }
@@ -158,6 +156,7 @@ public class PartitionFetcher {
         } catch (Throwable e) {
           LOG.error("Error: " + e.toString() + " when getting messages from topic: " +
               topicTalosResourceName + " partition: " + partitionId);
+          lastFetchTime = System.currentTimeMillis();
         }
       }
 
@@ -336,11 +335,27 @@ public class PartitionFetcher {
     // get the successfully locked partition
     List<Integer> successPartitionList = lockResponse.getSuccessPartitions();
     if (successPartitionList.size() > 0) {
+      Preconditions.checkArgument(successPartitionList.get(0) == partitionId);
       LOG.info("Worker: " + workerId + " success to lock partitions: " +
           partitionId);
       return true;
     }
     LOG.error("Worker: " + workerId + " failed to lock partitions: " + partitionId);
     return false;
+  }
+
+  private long getStartOffset() throws TException {
+    QueryOffsetRequest queryOffsetRequest = new QueryOffsetRequest(
+        consumerGroup, topicAndPartition);
+    QueryOffsetResponse queryOffsetResponse = consumerClient.queryOffset(
+        queryOffsetRequest);
+    // startOffset = queryOffset + 1
+    return queryOffsetResponse.getMsgOffset() + 1;
+  }
+
+  // unlock partitionLock, then revoke this task and set it to 'UNLOCKED'
+  private void clean() {
+    releasePartition();
+    updateState(TASK_STATE.UNLOCKED);
   }
 }

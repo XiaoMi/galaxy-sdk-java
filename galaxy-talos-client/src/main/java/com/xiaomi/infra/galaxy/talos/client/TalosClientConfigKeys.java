@@ -186,6 +186,16 @@ public class TalosClientConfigKeys {
   public static final int GALAXY_TALOS_CONSUMER_RENEW_MAX_RETRY_MAXIMUM = 3;
 
   /**
+   * The consumer fetch message operation interval
+   * Note server GetRecords qps is [1,5], the minimal interval is 200ms
+   */
+  public static final String GALAXY_TALOS_CONSUMER_FETCH_INTERVAL =
+      "galaxy.talos.consumer.fetch.interval.ms";
+  public static final int GALAXY_TALOS_CONSUMER_FETCH_INTERVAL_DEFAULT = 200;
+  public static final int GALAXY_TALOS_CONSUMER_FETCH_INTERVAL_MINIMUM = 200;
+  public static final int GALAXY_TALOS_CONSUMER_FETCH_INTERVAL_MAXIMUM = 800;
+
+  /**
    * The consumer getRecords max fetch message number
    */
   public static final String GALAXY_TALOS_CONSUMER_MAX_FETCH_RECORDS =
