@@ -245,7 +245,7 @@ public class TalosProducer {
 
   private void createPartitionMessageQueue(int partitionId) {
     PartitionMessageQueue partitionMessageQueue =
-        new PartitionMessageQueue(talosProducerConfig);
+        new PartitionMessageQueue(talosProducerConfig, partitionId);
     outgoingMessageMap.put(partitionId, partitionMessageQueue);
 
     // schedule a executor thread to call putMessage continuously
@@ -293,12 +293,13 @@ public class TalosProducer {
     this.partitionNumber = partitionNumber;
   }
 
-  public ListenableFuture<UserMessageResult> addUserMessage(ByteBuffer data) {
+  public ListenableFuture<UserMessageResult> addUserMessage(ByteBuffer data)
+      throws ExcessivePendingMessageException {
     return addUserMessage(generatePartitionKey(), null, data);
   }
 
   public ListenableFuture<UserMessageResult> addUserMessage(String partitionKey,
-      String sequenceNumber, ByteBuffer data) {
+      String sequenceNumber, ByteBuffer data) throws ExcessivePendingMessageException {
     // check arguments
     checkUserMessageValidity(partitionKey, data);
 

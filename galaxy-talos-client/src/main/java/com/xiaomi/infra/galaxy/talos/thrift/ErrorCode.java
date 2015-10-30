@@ -36,7 +36,8 @@ public enum ErrorCode implements libthrift091.TEnum {
   ZK_NODE_EXIST(21),
   ZK_NODE_NOT_EXIST(22),
   REST_SERVER_INIT_ERROR(23),
-  INTERNAL_SERVER_ERROR(24);
+  INTERNAL_SERVER_ERROR(24),
+  EXCESSIVE_PENDING_MESSAGE(25);
 
   private final int value;
 
@@ -107,6 +108,8 @@ public enum ErrorCode implements libthrift091.TEnum {
         return REST_SERVER_INIT_ERROR;
       case 24:
         return INTERNAL_SERVER_ERROR;
+      case 25:
+        return EXCESSIVE_PENDING_MESSAGE;
       default:
         return null;
     }

@@ -35,6 +35,7 @@ public class PartitionMessageQueueTest {
   private static final int producerMaxBufferedMillSecs = 500;
   private static final int producerMaxPutMsgNumber = 2;
   private static final int producerMaxPutMsgBytes = 30;
+  private static final int partitionId = 0;
   private static List<MessageAndFuture> messageAndFutureList;
 
   @Before
@@ -50,7 +51,8 @@ public class PartitionMessageQueueTest {
         TalosClientConfigKeys.GALAXY_TALOS_PRODUCER_MAX_PUT_MESSAGE_BYTES,
         producerMaxPutMsgBytes);
     talosProducerConfig = new TalosProducerConfig(configuration);
-    partitionMessageQueue = new PartitionMessageQueue(talosProducerConfig);
+    partitionMessageQueue = new PartitionMessageQueue(
+        talosProducerConfig, partitionId);
     messageAndFutureList = new ArrayList<MessageAndFuture>();
 
     messageAndFuture1 = new MessageAndFuture(

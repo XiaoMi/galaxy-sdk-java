@@ -13,6 +13,7 @@ import java.util.List;
 public class PartitionMessageQueue {
   private LinkedList<MessageAndFuture> messageFutureList;
   private int curMessageBytes;
+  private int partitionId;
 
   private int maxBufferedMsgNumber;
   private int maxBufferedMsgBytes;
@@ -20,9 +21,11 @@ public class PartitionMessageQueue {
   private int maxPutMsgNumber;
   private int maxPutMsgBytes;
 
-  public PartitionMessageQueue(TalosProducerConfig producerConfig) {
+  public PartitionMessageQueue(TalosProducerConfig producerConfig,
+      int partitionId) {
     messageFutureList = new LinkedList<MessageAndFuture>();
     curMessageBytes = 0;
+    this.partitionId = partitionId;
 
     maxBufferedMsgNumber = producerConfig.getMaxBufferedMsgNumber();
     maxBufferedMsgBytes = producerConfig.getMaxBufferedMsgBytes();
@@ -31,9 +34,14 @@ public class PartitionMessageQueue {
     maxPutMsgBytes = producerConfig.getMaxPutMsgBytes();
   }
 
-  public synchronized void addMessage(MessageAndFuture messageAndFuture) {
-    // TODO: if this partition queue become maxBufferedMsgNumber/maxBufferedMsgBytes,
-    // TODO: then try to block or add message to other partition queue by random partitionKey.
+  public synchronized void addMessage(MessageAndFuture messageAndFuture)
+      throws ExcessivePendingMessageException {
+    if (messageFutureList.size() >= maxBufferedMsgNumber ||
+        curMessageBytes >= maxBufferedMsgBytes) {
+      throw new ExcessivePendingMessageException("The queue for partition: " +
+          partitionId + " has too many pending message waiting for send to server, " +
+          "please change partitionKey of message or just wait a moment.");
+    }
 
     messageFutureList.addFirst(messageAndFuture);
     curMessageBytes += messageAndFuture.getMessageSize();
