@@ -57,6 +57,7 @@ public class ScanRequest implements libthrift091.TBase<ScanRequest, ScanRequest.
   private static final libthrift091.protocol.TField ACTION_FIELD_DESC = new libthrift091.protocol.TField("action", libthrift091.protocol.TType.STRUCT, (short)12);
   private static final libthrift091.protocol.TField SPLIT_INDEX_FIELD_DESC = new libthrift091.protocol.TField("splitIndex", libthrift091.protocol.TType.I32, (short)13);
   private static final libthrift091.protocol.TField INITIAL_START_KEY_FIELD_DESC = new libthrift091.protocol.TField("initialStartKey", libthrift091.protocol.TType.MAP, (short)14);
+  private static final libthrift091.protocol.TField SCAN_IN_ONE_SPLIT_FIELD_DESC = new libthrift091.protocol.TField("scanInOneSplit", libthrift091.protocol.TType.BOOL, (short)15);
 
   private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
   static {
@@ -123,6 +124,10 @@ public class ScanRequest implements libthrift091.TBase<ScanRequest, ScanRequest.
    * 查询范围开始的初始值，对salted table全局无序扫描时设置
    */
   public Map<String,Datum> initialStartKey; // optional
+  /**
+   * 对salted table, 确定startKey和stopKey在同一个split内，可开启该选项加速
+   */
+  public boolean scanInOneSplit; // optional
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements libthrift091.TFieldIdEnum {
@@ -184,7 +189,11 @@ public class ScanRequest implements libthrift091.TBase<ScanRequest, ScanRequest.
     /**
      * 查询范围开始的初始值，对salted table全局无序扫描时设置
      */
-    INITIAL_START_KEY((short)14, "initialStartKey");
+    INITIAL_START_KEY((short)14, "initialStartKey"),
+    /**
+     * 对salted table, 确定startKey和stopKey在同一个split内，可开启该选项加速
+     */
+    SCAN_IN_ONE_SPLIT((short)15, "scanInOneSplit");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -227,6 +236,8 @@ public class ScanRequest implements libthrift091.TBase<ScanRequest, ScanRequest.
           return SPLIT_INDEX;
         case 14: // INITIAL_START_KEY
           return INITIAL_START_KEY;
+        case 15: // SCAN_IN_ONE_SPLIT
+          return SCAN_IN_ONE_SPLIT;
         default:
           return null;
       }
@@ -273,8 +284,9 @@ public class ScanRequest implements libthrift091.TBase<ScanRequest, ScanRequest.
   private static final int __CACHERESULT_ISSET_ID = 3;
   private static final int __LOOKAHEADSTEP_ISSET_ID = 4;
   private static final int __SPLITINDEX_ISSET_ID = 5;
+  private static final int __SCANINONESPLIT_ISSET_ID = 6;
   private byte __isset_bitfield = 0;
-  private static final _Fields optionals[] = {_Fields.TABLE_NAME,_Fields.INDEX_NAME,_Fields.START_KEY,_Fields.STOP_KEY,_Fields.ATTRIBUTES,_Fields.CONDITION,_Fields.LIMIT,_Fields.REVERSE,_Fields.IN_GLOBAL_ORDER,_Fields.CACHE_RESULT,_Fields.LOOK_AHEAD_STEP,_Fields.ACTION,_Fields.SPLIT_INDEX,_Fields.INITIAL_START_KEY};
+  private static final _Fields optionals[] = {_Fields.TABLE_NAME,_Fields.INDEX_NAME,_Fields.START_KEY,_Fields.STOP_KEY,_Fields.ATTRIBUTES,_Fields.CONDITION,_Fields.LIMIT,_Fields.REVERSE,_Fields.IN_GLOBAL_ORDER,_Fields.CACHE_RESULT,_Fields.LOOK_AHEAD_STEP,_Fields.ACTION,_Fields.SPLIT_INDEX,_Fields.INITIAL_START_KEY,_Fields.SCAN_IN_ONE_SPLIT};
   public static final Map<_Fields, libthrift091.meta_data.FieldMetaData> metaDataMap;
   static {
     Map<_Fields, libthrift091.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, libthrift091.meta_data.FieldMetaData>(_Fields.class);
@@ -306,6 +318,8 @@ public class ScanRequest implements libthrift091.TBase<ScanRequest, ScanRequest.
         new libthrift091.meta_data.FieldValueMetaData(libthrift091.protocol.TType.I32)));
     tmpMap.put(_Fields.INITIAL_START_KEY, new libthrift091.meta_data.FieldMetaData("initialStartKey", libthrift091.TFieldRequirementType.OPTIONAL, 
         new libthrift091.meta_data.FieldValueMetaData(libthrift091.protocol.TType.MAP        , "Dictionary")));
+    tmpMap.put(_Fields.SCAN_IN_ONE_SPLIT, new libthrift091.meta_data.FieldMetaData("scanInOneSplit", libthrift091.TFieldRequirementType.OPTIONAL, 
+        new libthrift091.meta_data.FieldValueMetaData(libthrift091.protocol.TType.BOOL)));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
     libthrift091.meta_data.FieldMetaData.addStructMetaDataMap(ScanRequest.class, metaDataMap);
   }
@@ -322,6 +336,8 @@ public class ScanRequest implements libthrift091.TBase<ScanRequest, ScanRequest.
     this.lookAheadStep = 0;
 
     this.splitIndex = -1;
+
+    this.scanInOneSplit = false;
 
   }
 
@@ -360,6 +376,7 @@ public class ScanRequest implements libthrift091.TBase<ScanRequest, ScanRequest.
     if (other.isSetInitialStartKey()) {
       this.initialStartKey = other.initialStartKey;
     }
+    this.scanInOneSplit = other.scanInOneSplit;
   }
 
   public ScanRequest deepCopy() {
@@ -388,6 +405,8 @@ public class ScanRequest implements libthrift091.TBase<ScanRequest, ScanRequest.
     this.splitIndex = -1;
 
     this.initialStartKey = null;
+    this.scanInOneSplit = false;
+
   }
 
   public String getTableName() {
@@ -858,6 +877,35 @@ public class ScanRequest implements libthrift091.TBase<ScanRequest, ScanRequest.
     }
   }
 
+  /**
+   * 对salted table, 确定startKey和stopKey在同一个split内，可开启该选项加速
+   */
+  public boolean isScanInOneSplit() {
+    return this.scanInOneSplit;
+  }
+
+  /**
+   * 对salted table, 确定startKey和stopKey在同一个split内，可开启该选项加速
+   */
+  public ScanRequest setScanInOneSplit(boolean scanInOneSplit) {
+    this.scanInOneSplit = scanInOneSplit;
+    setScanInOneSplitIsSet(true);
+    return this;
+  }
+
+  public void unsetScanInOneSplit() {
+    __isset_bitfield = EncodingUtils.clearBit(__isset_bitfield, __SCANINONESPLIT_ISSET_ID);
+  }
+
+  /** Returns true if field scanInOneSplit is set (has been assigned a value) and false otherwise */
+  public boolean isSetScanInOneSplit() {
+    return EncodingUtils.testBit(__isset_bitfield, __SCANINONESPLIT_ISSET_ID);
+  }
+
+  public void setScanInOneSplitIsSet(boolean value) {
+    __isset_bitfield = EncodingUtils.setBit(__isset_bitfield, __SCANINONESPLIT_ISSET_ID, value);
+  }
+
   public void setFieldValue(_Fields field, Object value) {
     switch (field) {
     case TABLE_NAME:
@@ -972,6 +1020,14 @@ public class ScanRequest implements libthrift091.TBase<ScanRequest, ScanRequest.
       }
       break;
 
+    case SCAN_IN_ONE_SPLIT:
+      if (value == null) {
+        unsetScanInOneSplit();
+      } else {
+        setScanInOneSplit((Boolean)value);
+      }
+      break;
+
     }
   }
 
@@ -1019,6 +1075,9 @@ public class ScanRequest implements libthrift091.TBase<ScanRequest, ScanRequest.
     case INITIAL_START_KEY:
       return getInitialStartKey();
 
+    case SCAN_IN_ONE_SPLIT:
+      return Boolean.valueOf(isScanInOneSplit());
+
     }
     throw new IllegalStateException();
   }
@@ -1058,6 +1117,8 @@ public class ScanRequest implements libthrift091.TBase<ScanRequest, ScanRequest.
       return isSetSplitIndex();
     case INITIAL_START_KEY:
       return isSetInitialStartKey();
+    case SCAN_IN_ONE_SPLIT:
+      return isSetScanInOneSplit();
     }
     throw new IllegalStateException();
   }
@@ -1201,6 +1262,15 @@ public class ScanRequest implements libthrift091.TBase<ScanRequest, ScanRequest.
         return false;
     }
 
+    boolean this_present_scanInOneSplit = true && this.isSetScanInOneSplit();
+    boolean that_present_scanInOneSplit = true && that.isSetScanInOneSplit();
+    if (this_present_scanInOneSplit || that_present_scanInOneSplit) {
+      if (!(this_present_scanInOneSplit && that_present_scanInOneSplit))
+        return false;
+      if (this.scanInOneSplit != that.scanInOneSplit)
+        return false;
+    }
+
     return true;
   }
 
@@ -1277,6 +1347,11 @@ public class ScanRequest implements libthrift091.TBase<ScanRequest, ScanRequest.
     list.add(present_initialStartKey);
     if (present_initialStartKey)
       list.add(initialStartKey);
+
+    boolean present_scanInOneSplit = true && (isSetScanInOneSplit());
+    list.add(present_scanInOneSplit);
+    if (present_scanInOneSplit)
+      list.add(scanInOneSplit);
 
     return list.hashCode();
   }
@@ -1429,6 +1504,16 @@ public class ScanRequest implements libthrift091.TBase<ScanRequest, ScanRequest.
         return lastComparison;
       }
     }
+    lastComparison = Boolean.valueOf(isSetScanInOneSplit()).compareTo(other.isSetScanInOneSplit());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetScanInOneSplit()) {
+      lastComparison = libthrift091.TBaseHelper.compareTo(this.scanInOneSplit, other.scanInOneSplit);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
     return 0;
   }
 
@@ -1562,6 +1647,12 @@ public class ScanRequest implements libthrift091.TBase<ScanRequest, ScanRequest.
       } else {
         sb.append(this.initialStartKey);
       }
+      first = false;
+    }
+    if (isSetScanInOneSplit()) {
+      if (!first) sb.append(", ");
+      sb.append("scanInOneSplit:");
+      sb.append(this.scanInOneSplit);
       first = false;
     }
     sb.append(")");
@@ -1774,6 +1865,14 @@ public class ScanRequest implements libthrift091.TBase<ScanRequest, ScanRequest.
               libthrift091.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
+          case 15: // SCAN_IN_ONE_SPLIT
+            if (schemeField.type == libthrift091.protocol.TType.BOOL) {
+              struct.scanInOneSplit = iprot.readBool();
+              struct.setScanInOneSplitIsSet(true);
+            } else { 
+              libthrift091.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
           default:
             libthrift091.protocol.TProtocolUtil.skip(iprot, schemeField.type);
         }
@@ -1906,6 +2005,11 @@ public class ScanRequest implements libthrift091.TBase<ScanRequest, ScanRequest.
           oprot.writeFieldEnd();
         }
       }
+      if (struct.isSetScanInOneSplit()) {
+        oprot.writeFieldBegin(SCAN_IN_ONE_SPLIT_FIELD_DESC);
+        oprot.writeBool(struct.scanInOneSplit);
+        oprot.writeFieldEnd();
+      }
       oprot.writeFieldStop();
       oprot.writeStructEnd();
     }
@@ -1966,7 +2070,10 @@ public class ScanRequest implements libthrift091.TBase<ScanRequest, ScanRequest.
       if (struct.isSetInitialStartKey()) {
         optionals.set(13);
       }
-      oprot.writeBitSet(optionals, 14);
+      if (struct.isSetScanInOneSplit()) {
+        optionals.set(14);
+      }
+      oprot.writeBitSet(optionals, 15);
       if (struct.isSetTableName()) {
         oprot.writeString(struct.tableName);
       }
@@ -2036,12 +2143,15 @@ public class ScanRequest implements libthrift091.TBase<ScanRequest, ScanRequest.
           }
         }
       }
+      if (struct.isSetScanInOneSplit()) {
+        oprot.writeBool(struct.scanInOneSplit);
+      }
     }
 
     @Override
     public void read(libthrift091.protocol.TProtocol prot, ScanRequest struct) throws libthrift091.TException {
       TTupleProtocol iprot = (TTupleProtocol) prot;
-      BitSet incoming = iprot.readBitSet(14);
+      BitSet incoming = iprot.readBitSet(15);
       if (incoming.get(0)) {
         struct.tableName = iprot.readString();
         struct.setTableNameIsSet(true);
@@ -2143,6 +2253,10 @@ public class ScanRequest implements libthrift091.TBase<ScanRequest, ScanRequest.
           }
         }
         struct.setInitialStartKeyIsSet(true);
+      }
+      if (incoming.get(14)) {
+        struct.scanInOneSplit = iprot.readBool();
+        struct.setScanInOneSplitIsSet(true);
       }
     }
   }
