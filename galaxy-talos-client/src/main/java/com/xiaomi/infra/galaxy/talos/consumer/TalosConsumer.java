@@ -444,7 +444,8 @@ public class TalosConsumer {
 
     for (int i = 0; i < sortedWorkerPairs.size(); ++i) {
       if (sortedWorkerPairs.get(i).workerId.equals(workerId)) {
-        int has = sortedWorkerPairs.get(i).hasPartitionNum;
+        List<Integer> hasList = getHasList();
+        int has = hasList.size();
 
         // workerNum > partitionNum, idle workers have no match target, do nothing
         if (i >= targetList.size()) {
@@ -459,7 +460,6 @@ public class TalosConsumer {
         } else if (has > target) {
           // release partitions
           int toReleaseNum = has - target;
-          List<Integer> hasList = copyWorkerInfoMap.get(workerId);
           while (toReleaseNum-- > 0 && hasList.size() > 0) {
             toReleaseList.add(hasList.remove(0));
           }
@@ -560,17 +560,21 @@ public class TalosConsumer {
     return idlePartitions;
   }
 
-  private void cancelAllConsumingTask() {
-    List<Integer> toCancelList = new ArrayList<Integer>();
+  private List<Integer> getHasList() {
+    List<Integer> hasList = new ArrayList<Integer>();
     readWriteLock.readLock().lock();
     for (Map.Entry<Integer, PartitionFetcher> entry :
         partitionFetcherMap.entrySet()) {
       if (entry.getValue().isServing()) {
-        toCancelList.add(entry.getKey());
+        hasList.add(entry.getKey());
       }
     }
     readWriteLock.readLock().unlock();
-    releasePartitionLock(toCancelList);
+    return hasList;
+  }
+
+  private void cancelAllConsumingTask() {
+    releasePartitionLock(getHasList());
   }
 
   private Map<String, List<Integer>> deepCopyWorkerInfoMap() {
