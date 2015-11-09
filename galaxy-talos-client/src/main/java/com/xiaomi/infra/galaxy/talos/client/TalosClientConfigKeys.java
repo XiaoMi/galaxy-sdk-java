@@ -139,6 +139,15 @@ public class TalosClientConfigKeys {
   public static final int GALAXY_TALOS_PRODUCER_CHECK_PARTITION_INTERVAL_DEFAULT =
       1000 * 60 * 3;
 
+  /**
+   * The producer update partitionId time interval when calling addMessage
+   * 10 secs by default
+   */
+  public static final String GALAXY_TALOS_PRODUCER_UPDATE_PARTITIONID_INTERVAL =
+      "galaxy.talos.producer.update.partition.id.interval.milli";
+  public static final long GALAXY_TALOS_PRODUCER_UPDATE_PARTITIONID_INTERVAL_DEFAULT =
+      10000;
+
 
   // consumer config
 

@@ -6,19 +6,15 @@
 
 package com.xiaomi.infra.galaxy.talos.producer;
 
-import com.google.common.util.concurrent.SettableFuture;
-
 import com.xiaomi.infra.galaxy.talos.thrift.Message;
 
-public class MessageAndFuture {
+public class UserMessage {
   private Message message;
-  private SettableFuture<UserMessageResult> future;
   private long timestamp;
   private int messageSize;
 
-  public MessageAndFuture(Message message) {
+  public UserMessage(Message message) {
     this.message = message;
-    future = SettableFuture.create();
     timestamp = System.currentTimeMillis();
     messageSize = message.getMessage().length;
     if (message.getSequenceNumber() != null) {
@@ -28,10 +24,6 @@ public class MessageAndFuture {
 
   public Message getMessage() {
     return message;
-  }
-
-  public SettableFuture<UserMessageResult> getFuture() {
-    return future;
   }
 
   public long getTimestamp() {

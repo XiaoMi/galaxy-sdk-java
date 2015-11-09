@@ -11,6 +11,9 @@ import java.util.concurrent.atomic.AtomicLong;
 
 import com.google.common.base.Preconditions;
 
+import com.xiaomi.infra.galaxy.talos.thrift.ErrorCode;
+import com.xiaomi.infra.galaxy.talos.thrift.GalaxyTalosException;
+
 import static com.xiaomi.infra.galaxy.talos.client.Constants.TALOS_IDENTIFIER_DELIMITER;
 
 public class Utils {
@@ -49,5 +52,14 @@ public class Utils {
       AtomicLong requestId) {
     return clientId + Constants.TALOS_IDENTIFIER_DELIMITER +
         requestId.getAndIncrement();
+  }
+
+  public static boolean isTopicNotExist(Throwable throwable) {
+    Throwable cause = throwable.getCause();
+    if (cause instanceof GalaxyTalosException) {
+      GalaxyTalosException e = (GalaxyTalosException) cause;
+      return (e.getErrorCode() == ErrorCode.TOPIC_NOT_EXIST);
+    }
+    return false;
   }
 }

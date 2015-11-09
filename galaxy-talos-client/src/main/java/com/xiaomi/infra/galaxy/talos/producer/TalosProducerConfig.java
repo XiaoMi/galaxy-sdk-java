@@ -20,6 +20,7 @@ public class TalosProducerConfig extends TalosClientConfig {
   private int maxPutMsgBytes;
   private int threadPoolsize;
   private int checkPartitionInterval;
+  private long updatePartitionIdInterval;
 
   public TalosProducerConfig(Configuration configuration) {
     super(configuration);
@@ -47,6 +48,9 @@ public class TalosProducerConfig extends TalosClientConfig {
     checkPartitionInterval = configuration.getInt(
         TalosClientConfigKeys.GALAXY_TALOS_PRODUCER_CHECK_PARTITION_INTERVAL,
         TalosClientConfigKeys.GALAXY_TALOS_PRODUCER_CHECK_PARTITION_INTERVAL_DEFAULT);
+    updatePartitionIdInterval = configuration.getLong(
+        TalosClientConfigKeys.GALAXY_TALOS_PRODUCER_UPDATE_PARTITIONID_INTERVAL,
+        TalosClientConfigKeys.GALAXY_TALOS_PRODUCER_UPDATE_PARTITIONID_INTERVAL_DEFAULT);
   }
 
   public int getMaxBufferedMsgNumber() {
@@ -79,5 +83,9 @@ public class TalosProducerConfig extends TalosClientConfig {
 
   public int getCheckPartitionInterval() {
     return checkPartitionInterval;
+  }
+
+  public long getUpdatePartitionIdInterval() {
+    return updatePartitionIdInterval;
   }
 }

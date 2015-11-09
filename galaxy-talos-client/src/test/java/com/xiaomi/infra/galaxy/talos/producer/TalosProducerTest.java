@@ -8,14 +8,9 @@ package com.xiaomi.infra.galaxy.talos.producer;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Random;
-import java.util.concurrent.Future;
 
-import com.google.common.util.concurrent.FutureCallback;
-import com.google.common.util.concurrent.Futures;
-import com.google.common.util.concurrent.ListenableFuture;
 import libthrift091.TException;
 import org.apache.hadoop.conf.Configuration;
 import org.junit.After;
@@ -25,13 +20,12 @@ import org.mockito.Mockito;
 
 import com.xiaomi.infra.galaxy.talos.admin.TalosAdmin;
 import com.xiaomi.infra.galaxy.talos.client.Constants;
+import com.xiaomi.infra.galaxy.talos.client.SimpleTopicAbnormalCallback;
 import com.xiaomi.infra.galaxy.talos.client.TalosClientConfigKeys;
 import com.xiaomi.infra.galaxy.talos.client.TalosClientConfigurationLoader;
 import com.xiaomi.infra.galaxy.talos.thrift.ErrorCode;
 import com.xiaomi.infra.galaxy.talos.thrift.GalaxyTalosException;
-import com.xiaomi.infra.galaxy.talos.thrift.MessageService;
-import com.xiaomi.infra.galaxy.talos.thrift.PutMessageRequest;
-import com.xiaomi.infra.galaxy.talos.thrift.PutMessageResponse;
+import com.xiaomi.infra.galaxy.talos.thrift.Message;
 import com.xiaomi.infra.galaxy.talos.thrift.Topic;
 import com.xiaomi.infra.galaxy.talos.thrift.TopicAttribute;
 import com.xiaomi.infra.galaxy.talos.thrift.TopicInfo;
@@ -39,9 +33,8 @@ import com.xiaomi.infra.galaxy.talos.thrift.TopicState;
 import com.xiaomi.infra.galaxy.talos.thrift.TopicStatus;
 import com.xiaomi.infra.galaxy.talos.thrift.TopicTalosResourceName;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyListOf;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
 
@@ -62,12 +55,11 @@ public class TalosProducerTest {
 
   private static TalosProducerConfig talosProducerConfig;
   private static TalosProducer talosProducer;
-  private static List<ByteBuffer> messageList;
+  private static List<Message> messageList;
   private static Topic topic;
-  private static PutMessageResponse putMessageResponse;
 
   private static TalosAdmin talosAdminMock;
-  private static MessageService.Iface messageClientMock;
+  private static PartitionSender partitionSenderMock;
   private static volatile int msgPutSuccessCount;
   private static volatile int msgPutFailureCount;
 
@@ -82,11 +74,6 @@ public class TalosProducerTest {
     return stringBuffer.toString();
   }
 
-  private static void clearCounter() {
-    msgPutFailureCount = 0;
-    msgPutSuccessCount = 0;
-  }
-
   private synchronized void addSuccessCounter() {
     msgPutSuccessCount++;
   }
@@ -96,17 +83,18 @@ public class TalosProducerTest {
   }
 
   // define callback for asynchronously putmessage
-  FutureCallback<UserMessageResult> testCallback = new FutureCallback<UserMessageResult>() {
+  private class TestCallback implements UserMessageCallback {
+
     @Override
-    public void onSuccess(UserMessageResult result) {
+    public void onSuccess(UserMessageResult userMessageResult) {
       addSuccessCounter();
     }
 
     @Override
-    public void onFailure(Throwable t) {
+    public void onError(UserMessageResult userMessageResult) {
       addFailureCounter();
     }
-  };
+  }
 
   @Before
   public void setUp() throws TException {
@@ -139,16 +127,16 @@ public class TalosProducerTest {
 
     // mock some return value
     talosAdminMock = Mockito.mock(TalosAdmin.class);
-    messageClientMock = Mockito.mock(MessageService.Iface.class);
+    partitionSenderMock = Mockito.mock(PartitionSender.class);
 
     // generate 100 random messages
-    messageList = new ArrayList<ByteBuffer>();
+    messageList = new ArrayList<Message>();
     for (int i = 0; i < 100; ++i) {
-      messageList.add(ByteBuffer.wrap(getRandomString(randomStrLen).getBytes()));
+      messageList.add(new Message(ByteBuffer.wrap(
+          getRandomString(randomStrLen).getBytes())));
     }
 
     // mock putMessageResponse
-    putMessageResponse = new PutMessageResponse();
     msgPutFailureCount = 0;
     msgPutSuccessCount = 0;
   }
@@ -158,104 +146,44 @@ public class TalosProducerTest {
   }
 
   @Test
-  public void testBarebonesAddUserMessage() throws Exception {
-    when(talosAdminMock.describeTopic(topicName)).thenReturn(topic);
-    when(messageClientMock.putMessage(any(PutMessageRequest.class)))
-        .thenReturn(putMessageResponse);
-    talosProducer = new TalosProducer(talosProducerConfig,
-        new TopicTalosResourceName(resourceName),
-        talosAdminMock, messageClientMock);
-
-    for (ByteBuffer data : messageList) {
-      talosProducer.addUserMessage(data);
-    }
-    Thread.sleep(producerMaxBufferedMillSecs * 10);
-    talosProducer.cancel();
-  }
-
-  @Test
-  public void testSynchronouslyAddUserMessage() throws Exception {
-    when(talosAdminMock.describeTopic(topicName)).thenReturn(topic);
-    when(messageClientMock.putMessage(any(PutMessageRequest.class)))
-        .thenReturn(putMessageResponse);
-    talosProducer = new TalosProducer(talosProducerConfig,
-        new TopicTalosResourceName(resourceName),
-        talosAdminMock, messageClientMock);
-
-    List<Future<UserMessageResult>> futures =
-        new LinkedList<Future<UserMessageResult>>();
-    for (ByteBuffer data : messageList) {
-      futures.add(talosProducer.addUserMessage(data));
-    }
-    assertEquals(messageList.size(), futures.size());
-
-    // not need to sleep, just wait to execute finished
-    for (Future<UserMessageResult> future : futures) {
-      assertEquals(true, future.get().isSuccessful());
-    }
-    talosProducer.cancel();
-  }
-
-  @Test
   public void testAsynchronouslyAddUserMessage() throws Exception {
     when(talosAdminMock.describeTopic(topicName)).thenReturn(topic);
-    when(messageClientMock.putMessage(any(PutMessageRequest.class)))
-        .thenReturn(putMessageResponse);
     talosProducer = new TalosProducer(talosProducerConfig,
-        new TopicTalosResourceName(resourceName),
-        talosAdminMock, messageClientMock);
+        new TopicTalosResourceName(resourceName), talosAdminMock,
+        partitionSenderMock, new SimpleTopicAbnormalCallback(),
+        new TestCallback());
+    doNothing().when(partitionSenderMock).addMessage(anyListOf(UserMessage.class));
 
-    for (ByteBuffer data : messageList) {
-      ListenableFuture<UserMessageResult> future =
-          talosProducer.addUserMessage(data);
-      Futures.addCallback(future, testCallback);
-    }
-
+    talosProducer.addUserMessage(messageList);
     // wait for execute finished
     Thread.sleep(producerMaxBufferedMillSecs * 10);
-    assertEquals(0, msgPutFailureCount);
-    assertEquals(messageList.size(), msgPutSuccessCount);
-    clearCounter();
-    talosProducer.cancel();
   }
 
-  // addUserMessage partial failure partial success
-  @Test
-  public void testAddUserMessagePartialFailedPartialSuccess() throws Exception {
-    when(talosAdminMock.describeTopic(topicName)).thenReturn(topic);
-    when(messageClientMock.putMessage(any(PutMessageRequest.class)))
-        .thenThrow(new GalaxyTalosException()
-            .setErrorCode(ErrorCode.HBASE_OPERATION_FAILED)
-            .setErrMsg("HBase operation failed"))
-        .thenReturn(putMessageResponse);
+  @Test(expected = ProducerNotActiveException.class)
+  public void testProducerNotActiveError() throws Exception {
+    TopicInfo topicInfo = new TopicInfo(
+        topicName, new TopicTalosResourceName(anotherResourceName), ownerId);
+    TopicAttribute topicAttribute = new TopicAttribute()
+        .setPartitionNumber(partitionNumber)
+        .setMessageRetentionMs(messageRetentionMs);
+    TopicState topicState = new TopicState()
+        .setTopicStatus(TopicStatus.ACTIVE)
+        .setCreateTimestamp(System.currentTimeMillis());
+    Topic another = new Topic(topicInfo, topicAttribute, topicState);
+
+    when(talosAdminMock.describeTopic(topicName))
+        .thenReturn(topic).thenReturn(another);
+    doNothing().when(partitionSenderMock).cancel(true);
     talosProducer = new TalosProducer(talosProducerConfig,
-        new TopicTalosResourceName(resourceName),
-        talosAdminMock, messageClientMock);
+        new TopicTalosResourceName(resourceName), talosAdminMock,
+        partitionSenderMock, new SimpleTopicAbnormalCallback(),
+        new TestCallback());
 
-    List<Future<UserMessageResult>> futures =
-        new LinkedList<Future<UserMessageResult>>();
-    for (ByteBuffer data : messageList) {
-      ListenableFuture<UserMessageResult> future =
-          talosProducer.addUserMessage(data);
-      Futures.addCallback(future, testCallback);
-      futures.add(future);
-    }
+    // wait check partition interval
+    Thread.sleep(checkPartitionInterval * 2);
 
-    // check callback wait for execute finished
-    Thread.sleep(producerMaxBufferedMillSecs * 10);
-    assertTrue(msgPutFailureCount > 0);
-    assertTrue(messageList.size() > msgPutSuccessCount);
-    clearCounter();
-
-    // check failed throw GalaxyTalosException
-    for (Future<UserMessageResult> future : futures) {
-      try {
-        future.get(); // failure future throw GalaxyTalosException
-      } catch (Throwable t) {
-        assertTrue(t.getCause() instanceof GalaxyTalosException);
-      }
-    }
-    talosProducer.cancel();
+    doNothing().when(partitionSenderMock).addMessage(anyListOf(UserMessage.class));
+    talosProducer.addUserMessage(messageList);
   }
 
   // addUserMessage check message validity
@@ -263,35 +191,44 @@ public class TalosProducerTest {
   public void testAddUserMessageValidity() throws Exception {
     when(talosAdminMock.describeTopic(topicName)).thenReturn(topic);
     talosProducer = new TalosProducer(talosProducerConfig,
-        new TopicTalosResourceName(resourceName),
-        talosAdminMock, messageClientMock);
+        new TopicTalosResourceName(resourceName), talosAdminMock,
+        partitionSenderMock, new SimpleTopicAbnormalCallback(),
+        new TestCallback());
 
     String partitionKey = getRandomString(
         Constants.TALOS_PARTITION_KEY_LENGTH_MAXIMAL + 1);
-    talosProducer.addUserMessage(partitionKey, "sequenceNumber",
-        ByteBuffer.wrap("hello".getBytes()));
+    ArrayList<Message> list = new ArrayList<Message>();
+    list.add(new Message(
+        ByteBuffer.wrap("hello".getBytes())).setPartitionKey(partitionKey));
+    talosProducer.addUserMessage(list);
   }
 
   @Test(expected = NullPointerException.class)
   public void testAddUserMessageValidity2() throws Exception {
     when(talosAdminMock.describeTopic(topicName)).thenReturn(topic);
     talosProducer = new TalosProducer(talosProducerConfig,
-        new TopicTalosResourceName(resourceName),
-        talosAdminMock, messageClientMock);
+        new TopicTalosResourceName(resourceName), talosAdminMock,
+        partitionSenderMock, new SimpleTopicAbnormalCallback(),
+        new TestCallback());
 
-    talosProducer.addUserMessage(ByteBuffer.wrap(null));
+    ArrayList<Message> list = new ArrayList<Message>();
+    list.add(null);
+    talosProducer.addUserMessage(list);
   }
 
   @Test(expected = IllegalArgumentException.class)
   public void testAddUserMessageValidity3() throws Exception {
     when(talosAdminMock.describeTopic(topicName)).thenReturn(topic);
     talosProducer = new TalosProducer(talosProducerConfig,
-        new TopicTalosResourceName(resourceName),
-        talosAdminMock, messageClientMock);
+        new TopicTalosResourceName(resourceName), talosAdminMock,
+        partitionSenderMock, new SimpleTopicAbnormalCallback(),
+        new TestCallback());
 
     String bigStr = getRandomString(
         Constants.TALOS_SINGLE_MESSAGE_BYTES_MAXIMAL + 1);
-    talosProducer.addUserMessage(ByteBuffer.wrap(bigStr.getBytes()));
+    ArrayList<Message> list = new ArrayList<Message>();
+    list.add(new Message(ByteBuffer.wrap(bigStr.getBytes())));
+    talosProducer.addUserMessage(list);
   }
 
   // check topic not exist when init Producer
@@ -300,16 +237,18 @@ public class TalosProducerTest {
     doThrow(new GalaxyTalosException().setErrorCode(ErrorCode.TOPIC_NOT_EXIST))
         .when(talosAdminMock).describeTopic(topicName);
     talosProducer = new TalosProducer(talosProducerConfig,
-        new TopicTalosResourceName(resourceName),
-        talosAdminMock, messageClientMock);
+        new TopicTalosResourceName(resourceName), talosAdminMock,
+        partitionSenderMock, new SimpleTopicAbnormalCallback(),
+        new TestCallback());
   }
 
   @Test(expected = IllegalArgumentException.class)
   public void testTopicNotExistForDifferentResourceName() throws Exception {
     when(talosAdminMock.describeTopic(topicName)).thenReturn(topic);
     talosProducer = new TalosProducer(talosProducerConfig,
-        new TopicTalosResourceName(anotherResourceName),
-        talosAdminMock, messageClientMock);
+        new TopicTalosResourceName(anotherResourceName), talosAdminMock,
+        partitionSenderMock, new SimpleTopicAbnormalCallback(),
+        new TestCallback());
   }
 
   // check partition change when producer running
@@ -328,8 +267,9 @@ public class TalosProducerTest {
     when(talosAdminMock.describeTopic(topicName))
         .thenReturn(topic).thenReturn(another);
     talosProducer = new TalosProducer(talosProducerConfig,
-        new TopicTalosResourceName(resourceName),
-        talosAdminMock, messageClientMock);
+        new TopicTalosResourceName(resourceName), talosAdminMock,
+        partitionSenderMock, new SimpleTopicAbnormalCallback(),
+        new TestCallback());
 
     // wait check partition interval
     Thread.sleep(checkPartitionInterval * 2);
@@ -351,11 +291,14 @@ public class TalosProducerTest {
 
     when(talosAdminMock.describeTopic(topicName))
         .thenReturn(topic).thenReturn(another);
+    doNothing().when(partitionSenderMock).cancel(true);
     talosProducer = new TalosProducer(talosProducerConfig,
-        new TopicTalosResourceName(resourceName),
-        talosAdminMock, messageClientMock);
+        new TopicTalosResourceName(resourceName), talosAdminMock,
+        partitionSenderMock, new SimpleTopicAbnormalCallback(),
+        new TestCallback());
 
     // wait check partition interval
-    Thread.sleep(checkPartitionInterval);
+    Thread.sleep(checkPartitionInterval * 2);
   }
+
 }

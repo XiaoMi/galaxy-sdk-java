@@ -28,11 +28,10 @@ import org.slf4j.LoggerFactory;
 import com.xiaomi.infra.galaxy.rpc.thrift.Credential;
 import com.xiaomi.infra.galaxy.talos.admin.TalosAdmin;
 import com.xiaomi.infra.galaxy.talos.client.TalosClientFactory;
+import com.xiaomi.infra.galaxy.talos.client.TopicAbnormalCallback;
 import com.xiaomi.infra.galaxy.talos.client.Utils;
 import com.xiaomi.infra.galaxy.talos.thrift.ConsumeUnit;
 import com.xiaomi.infra.galaxy.talos.thrift.ConsumerService;
-import com.xiaomi.infra.galaxy.talos.thrift.ErrorCode;
-import com.xiaomi.infra.galaxy.talos.thrift.GalaxyTalosException;
 import com.xiaomi.infra.galaxy.talos.thrift.LockWorkerRequest;
 import com.xiaomi.infra.galaxy.talos.thrift.LockWorkerResponse;
 import com.xiaomi.infra.galaxy.talos.thrift.QueryWorkerRequest;
@@ -50,15 +49,6 @@ public class TalosConsumer {
    */
   private class CheckPartitionTask implements Runnable {
 
-    private boolean isTopicNotExist(Throwable throwable) {
-      Throwable cause = throwable.getCause();
-      if (cause instanceof GalaxyTalosException) {
-        GalaxyTalosException e = (GalaxyTalosException) cause;
-        return (e.getErrorCode() == ErrorCode.TOPIC_NOT_EXIST);
-      }
-      return false;
-    }
-
     @Override
     public void run() {
       Topic topic;
@@ -68,7 +58,7 @@ public class TalosConsumer {
         LOG.error("Exception in CheckPartitionTask: " + throwable.toString());
         // if throwable instance of HBaseOperationFailed, just return
         // if throwable instance of TopicNotExist, cancel all reading task
-        if (isTopicNotExist(throwable)) {
+        if (Utils.isTopicNotExist(throwable)) {
           cancelAllConsumingTask();
           topicAbnormalCallback.abnormalHandler(topicTalosResourceName, throwable);
         }

@@ -17,8 +17,8 @@ import com.xiaomi.infra.galaxy.talos.thrift.Message;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
-public class MessageAndFutureTest {
-  private static MessageAndFuture messageAndFuture;
+public class UserMessageTest {
+  private static UserMessage userMessage;
   private static Message message;
   private static final String partitionKey = "123456qwerty";
   private static final String sequenceNumber = "654321";
@@ -27,7 +27,7 @@ public class MessageAndFutureTest {
   @Before
   public void setUp() {
     message = new Message(data).setPartitionKey(partitionKey);
-    messageAndFuture = new MessageAndFuture(message);
+    userMessage = new UserMessage(message);
   }
 
   @After
@@ -37,26 +37,21 @@ public class MessageAndFutureTest {
 
   @Test
   public void testGetMessage() {
-    assertEquals(message, messageAndFuture.getMessage());
-  }
-
-  @Test
-  public void testGetFuture() {
-    assertNotNull(messageAndFuture.getFuture());
+    assertEquals(message, userMessage.getMessage());
   }
 
   @Test
   public void testGetTimestamp() {
-    assertNotNull(messageAndFuture.getTimestamp());
+    assertNotNull(userMessage.getTimestamp());
   }
 
   @Test
   public void testGetMessageSize() {
-    assertEquals(data.array().length, messageAndFuture.getMessageSize());
+    assertEquals(data.array().length, userMessage.getMessageSize());
 
     message.setSequenceNumber(sequenceNumber);
-    messageAndFuture = new MessageAndFuture(message);
+    userMessage = new UserMessage(message);
     assertEquals(data.array().length + sequenceNumber.length(),
-        messageAndFuture.getMessageSize());
+        userMessage.getMessageSize());
   }
 }

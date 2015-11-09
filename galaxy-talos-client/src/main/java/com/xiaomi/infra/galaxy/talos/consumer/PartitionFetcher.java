@@ -147,6 +147,10 @@ public class PartitionFetcher {
             continue;
           }
 
+          /**
+           * Note: We guarantee the committed offset must be the messages that
+           * have been processed by user's MessageProcessor;
+           */
           messageProcessor.process(messageList);
           finishedOffset = messageList.get(messageList.size() - 1).getMessageOffset();
           startOffset.set(finishedOffset + 1);

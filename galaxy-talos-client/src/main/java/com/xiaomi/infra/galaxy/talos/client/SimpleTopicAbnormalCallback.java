@@ -4,7 +4,7 @@
  * Author: yongxing@xiaomi.com
  */
 
-package com.xiaomi.infra.galaxy.talos.consumer;
+package com.xiaomi.infra.galaxy.talos.client;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
