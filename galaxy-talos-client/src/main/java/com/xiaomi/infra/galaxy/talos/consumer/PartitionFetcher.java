@@ -94,6 +94,11 @@ public class PartitionFetcher {
     private void commitOffset() throws TException {
       CheckPoint checkPoint = new CheckPoint(consumerGroup, topicAndPartition,
           finishedOffset, workerId);
+      // check whether to check last commit offset
+      if (talosConsumerConfig.isCheckLastCommitOffset()) {
+        checkPoint.setLastCommitOffset(lastCommitOffset);
+      }
+
       UpdateOffsetRequest updateOffsetRequest = new UpdateOffsetRequest(checkPoint);
       UpdateOffsetResponse updateOffsetResponse = consumerClient.updateOffset(
           updateOffsetRequest);
@@ -119,6 +124,8 @@ public class PartitionFetcher {
       // query start offset to read, if failed, clean and return;
       try {
         startOffset.set(getStartOffset());
+        // guarantee lastCommitOffset and finishedOffset correct
+        lastCommitOffset = finishedOffset = startOffset.get() - 1;
       } catch (Throwable e) {
         LOG.error("Worker: " + workerId + " query partition offset error: " +
             e.toString() + " skip this partition");

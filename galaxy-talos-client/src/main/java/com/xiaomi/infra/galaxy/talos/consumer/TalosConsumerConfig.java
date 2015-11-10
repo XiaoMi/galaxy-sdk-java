@@ -22,6 +22,7 @@ public class TalosConsumerConfig extends TalosClientConfig {
   private int commitOffsetThreshold;
   private int commitOffsetInterval;
   private int fetchMessageInterval;
+  private boolean checkLastCommitOffset;
 
   public TalosConsumerConfig(Configuration configuration) {
     super(configuration);
@@ -85,6 +86,10 @@ public class TalosConsumerConfig extends TalosClientConfig {
     commitOffsetInterval = configuration.getInt(
         TalosClientConfigKeys.GALAXY_TALOS_CONSUMER_COMMIT_OFFSET_INTERVAL,
         TalosClientConfigKeys.GALAXY_TALOS_CONSUMER_COMMIT_OFFSET_INTERVAL_DEFAULT);
+
+    checkLastCommitOffset = configuration.getBoolean(
+        TalosClientConfigKeys.GALAXY_TALOS_CONSUMER_CHECK_LAST_COMMIT_OFFSET_SWITCH,
+        TalosClientConfigKeys.GALAXY_TALOS_CONSUMER_CHECK_LAST_COMMIT_OFFSET_SWITCH_DEFAULT);
   }
 
   public int getPartitionCheckInterval() {
@@ -121,5 +126,9 @@ public class TalosConsumerConfig extends TalosClientConfig {
 
   public int getFetchMessageInterval() {
     return fetchMessageInterval;
+  }
+
+  public boolean isCheckLastCommitOffset() {
+    return checkLastCommitOffset;
   }
 }

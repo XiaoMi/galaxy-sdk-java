@@ -232,4 +232,12 @@ public class TalosClientConfigKeys {
       "galaxy.talos.consumer.commit.offset.interval.milli";
   public static final int GALAXY_TALOS_CONSUMER_COMMIT_OFFSET_INTERVAL_DEFAULT = 5000;
 
+  /**
+   * The consumer switch for whether checking lastCommitOffset or not
+   * when commit offset
+   */
+  public static final String GALAXY_TALOS_CONSUMER_CHECK_LAST_COMMIT_OFFSET_SWITCH =
+      "galaxy.talos.consumer.check.last.commit.offset.switch";
+  public static final boolean GALAXY_TALOS_CONSUMER_CHECK_LAST_COMMIT_OFFSET_SWITCH_DEFAULT =
+      false;
 }
