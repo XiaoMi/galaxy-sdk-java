@@ -32,6 +32,7 @@ import com.xiaomi.infra.galaxy.talos.client.TopicAbnormalCallback;
 import com.xiaomi.infra.galaxy.talos.client.Utils;
 import com.xiaomi.infra.galaxy.talos.thrift.ConsumeUnit;
 import com.xiaomi.infra.galaxy.talos.thrift.ConsumerService;
+import com.xiaomi.infra.galaxy.talos.thrift.DescribeTopicRequest;
 import com.xiaomi.infra.galaxy.talos.thrift.LockWorkerRequest;
 import com.xiaomi.infra.galaxy.talos.thrift.LockWorkerResponse;
 import com.xiaomi.infra.galaxy.talos.thrift.QueryWorkerRequest;
@@ -53,7 +54,7 @@ public class TalosConsumer {
     public void run() {
       Topic topic;
       try {
-        topic = talosAdmin.describeTopic(topicName);
+        topic = talosAdmin.describeTopic(new DescribeTopicRequest(topicName));
       } catch (Throwable throwable) {
         LOG.error("Exception in CheckPartitionTask: " + throwable.toString());
         // if throwable instance of HBaseOperationFailed, just return
@@ -320,7 +321,7 @@ public class TalosConsumer {
       throws TException {
     topicName = Utils.getTopicNameByResourceName(
         topicTalosResourceName.getTopicTalosResourceName());
-    Topic topic = talosAdmin.describeTopic(topicName);
+    Topic topic = talosAdmin.describeTopic(new DescribeTopicRequest(topicName));
 
     if (!topicTalosResourceName.equals(
         topic.getTopicInfo().getTopicTalosResourceName())) {
@@ -547,7 +548,7 @@ public class TalosConsumer {
     readWriteLock.readLock().lock();
     Preconditions.checkArgument(partitionNumber > 0);
     List<Integer> idlePartitions = new ArrayList<Integer>();
-    for (int i = 1; i <= partitionNumber; ++i) {
+    for (int i = 0; i < partitionNumber; ++i) {
       idlePartitions.add(i);
     }
 
@@ -575,6 +576,21 @@ public class TalosConsumer {
 
   private void cancelAllConsumingTask() {
     releasePartitionLock(getHasList());
+  }
+
+  private void shutDownAllFetcher() {
+    for (Map.Entry<Integer, PartitionFetcher> entry :
+        partitionFetcherMap.entrySet()) {
+      entry.getValue().shutDown();
+    }
+  }
+
+  public void shutDown() {
+    shutDownAllFetcher();
+    partitionScheduledExecutor.shutdownNow();
+    workerScheduleExecutor.shutdownNow();
+    renewScheduleExecutor.shutdownNow();
+    reBalanceExecutor.shutdownNow();
   }
 
   private Map<String, List<Integer>> deepCopyWorkerInfoMap() {

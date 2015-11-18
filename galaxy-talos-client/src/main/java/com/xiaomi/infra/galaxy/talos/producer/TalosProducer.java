@@ -32,6 +32,7 @@ import com.xiaomi.infra.galaxy.talos.client.Constants;
 import com.xiaomi.infra.galaxy.talos.client.TalosClientFactory;
 import com.xiaomi.infra.galaxy.talos.client.TopicAbnormalCallback;
 import com.xiaomi.infra.galaxy.talos.client.Utils;
+import com.xiaomi.infra.galaxy.talos.thrift.DescribeTopicRequest;
 import com.xiaomi.infra.galaxy.talos.thrift.Message;
 import com.xiaomi.infra.galaxy.talos.thrift.Topic;
 import com.xiaomi.infra.galaxy.talos.thrift.TopicTalosResourceName;
@@ -43,7 +44,7 @@ public class TalosProducer {
     public void run() {
       Topic topic;
       try {
-        topic = talosAdmin.describeTopic(topicName);
+        topic = talosAdmin.describeTopic(new DescribeTopicRequest(topicName));
       } catch (Throwable throwable) {
         LOG.error("Exception in CheckPartitionTask: " + throwable.toString());
         if (Utils.isTopicNotExist(throwable)) {
@@ -259,7 +260,7 @@ public class TalosProducer {
 
   // cancel the putMessage threads and checkPartitionTask
   // when topic not exist during producer running
-  private synchronized void disableProducer(Throwable throwable) {
+  public synchronized void disableProducer(Throwable throwable) {
     if (producerState == PRODUCER_STATE.DISABLED) {
       return;
     }
@@ -269,7 +270,9 @@ public class TalosProducer {
       entry.getValue().cancel(true);
     }
     topicAbnormalCallback.abnormalHandler(topicTalosResourceName, throwable);
-    partitionCheckFuture.cancel(false);
+    partitionCheckFuture.cancel(true);
+    partitionCheckExecutor.shutdownNow();
+    messageCallbackExecutors.shutdownNow();
   }
 
   private synchronized PRODUCER_STATE getProducerState() {
@@ -280,7 +283,7 @@ public class TalosProducer {
       TopicTalosResourceName topicTalosResourceName) throws TException {
     topicName = Utils.getTopicNameByResourceName(
         topicTalosResourceName.getTopicTalosResourceName());
-    Topic topic = talosAdmin.describeTopic(topicName);
+    Topic topic = talosAdmin.describeTopic(new DescribeTopicRequest(topicName));
 
     if (!topicTalosResourceName.equals(
         topic.getTopicInfo().getTopicTalosResourceName())) {

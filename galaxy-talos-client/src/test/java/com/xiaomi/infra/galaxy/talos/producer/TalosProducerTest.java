@@ -23,6 +23,7 @@ import com.xiaomi.infra.galaxy.talos.client.Constants;
 import com.xiaomi.infra.galaxy.talos.client.SimpleTopicAbnormalCallback;
 import com.xiaomi.infra.galaxy.talos.client.TalosClientConfigKeys;
 import com.xiaomi.infra.galaxy.talos.client.TalosClientConfigurationLoader;
+import com.xiaomi.infra.galaxy.talos.thrift.DescribeTopicRequest;
 import com.xiaomi.infra.galaxy.talos.thrift.ErrorCode;
 import com.xiaomi.infra.galaxy.talos.thrift.GalaxyTalosException;
 import com.xiaomi.infra.galaxy.talos.thrift.Message;
@@ -147,7 +148,7 @@ public class TalosProducerTest {
 
   @Test
   public void testAsynchronouslyAddUserMessage() throws Exception {
-    when(talosAdminMock.describeTopic(topicName)).thenReturn(topic);
+    when(talosAdminMock.describeTopic(new DescribeTopicRequest(topicName))).thenReturn(topic);
     talosProducer = new TalosProducer(talosProducerConfig,
         new TopicTalosResourceName(resourceName), talosAdminMock,
         partitionSenderMock, new SimpleTopicAbnormalCallback(),
@@ -171,7 +172,7 @@ public class TalosProducerTest {
         .setCreateTimestamp(System.currentTimeMillis());
     Topic another = new Topic(topicInfo, topicAttribute, topicState);
 
-    when(talosAdminMock.describeTopic(topicName))
+    when(talosAdminMock.describeTopic(new DescribeTopicRequest(topicName)))
         .thenReturn(topic).thenReturn(another);
     doNothing().when(partitionSenderMock).cancel(true);
     talosProducer = new TalosProducer(talosProducerConfig,
@@ -189,7 +190,7 @@ public class TalosProducerTest {
   // addUserMessage check message validity
   @Test(expected = IllegalArgumentException.class)
   public void testAddUserMessageValidity() throws Exception {
-    when(talosAdminMock.describeTopic(topicName)).thenReturn(topic);
+    when(talosAdminMock.describeTopic(new DescribeTopicRequest(topicName))).thenReturn(topic);
     talosProducer = new TalosProducer(talosProducerConfig,
         new TopicTalosResourceName(resourceName), talosAdminMock,
         partitionSenderMock, new SimpleTopicAbnormalCallback(),
@@ -205,7 +206,7 @@ public class TalosProducerTest {
 
   @Test(expected = NullPointerException.class)
   public void testAddUserMessageValidity2() throws Exception {
-    when(talosAdminMock.describeTopic(topicName)).thenReturn(topic);
+    when(talosAdminMock.describeTopic(new DescribeTopicRequest(topicName))).thenReturn(topic);
     talosProducer = new TalosProducer(talosProducerConfig,
         new TopicTalosResourceName(resourceName), talosAdminMock,
         partitionSenderMock, new SimpleTopicAbnormalCallback(),
@@ -218,7 +219,7 @@ public class TalosProducerTest {
 
   @Test(expected = IllegalArgumentException.class)
   public void testAddUserMessageValidity3() throws Exception {
-    when(talosAdminMock.describeTopic(topicName)).thenReturn(topic);
+    when(talosAdminMock.describeTopic(new DescribeTopicRequest(topicName))).thenReturn(topic);
     talosProducer = new TalosProducer(talosProducerConfig,
         new TopicTalosResourceName(resourceName), talosAdminMock,
         partitionSenderMock, new SimpleTopicAbnormalCallback(),
@@ -235,7 +236,7 @@ public class TalosProducerTest {
   @Test(expected = GalaxyTalosException.class)
   public void testTopicNotExist() throws Exception {
     doThrow(new GalaxyTalosException().setErrorCode(ErrorCode.TOPIC_NOT_EXIST))
-        .when(talosAdminMock).describeTopic(topicName);
+        .when(talosAdminMock).describeTopic(new DescribeTopicRequest(topicName));
     talosProducer = new TalosProducer(talosProducerConfig,
         new TopicTalosResourceName(resourceName), talosAdminMock,
         partitionSenderMock, new SimpleTopicAbnormalCallback(),
@@ -244,7 +245,7 @@ public class TalosProducerTest {
 
   @Test(expected = IllegalArgumentException.class)
   public void testTopicNotExistForDifferentResourceName() throws Exception {
-    when(talosAdminMock.describeTopic(topicName)).thenReturn(topic);
+    when(talosAdminMock.describeTopic(new DescribeTopicRequest(topicName))).thenReturn(topic);
     talosProducer = new TalosProducer(talosProducerConfig,
         new TopicTalosResourceName(anotherResourceName), talosAdminMock,
         partitionSenderMock, new SimpleTopicAbnormalCallback(),
@@ -264,7 +265,7 @@ public class TalosProducerTest {
         .setCreateTimestamp(System.currentTimeMillis());
     Topic another = new Topic(topicInfo, topicAttribute, topicState);
 
-    when(talosAdminMock.describeTopic(topicName))
+    when(talosAdminMock.describeTopic(new DescribeTopicRequest(topicName)))
         .thenReturn(topic).thenReturn(another);
     talosProducer = new TalosProducer(talosProducerConfig,
         new TopicTalosResourceName(resourceName), talosAdminMock,
@@ -289,7 +290,7 @@ public class TalosProducerTest {
         .setCreateTimestamp(System.currentTimeMillis());
     Topic another = new Topic(topicInfo, topicAttribute, topicState);
 
-    when(talosAdminMock.describeTopic(topicName))
+    when(talosAdminMock.describeTopic(new DescribeTopicRequest(topicName)))
         .thenReturn(topic).thenReturn(another);
     doNothing().when(partitionSenderMock).cancel(true);
     talosProducer = new TalosProducer(talosProducerConfig,

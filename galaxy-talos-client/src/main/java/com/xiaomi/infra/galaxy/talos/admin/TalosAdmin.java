@@ -71,52 +71,28 @@ public class TalosAdmin {
   }
 
   // topicAttribute for partitionNumber required
-  public TopicTalosResourceName createTopic(String topicName,
-      TopicAttribute topicAttribute) throws GalaxyTalosException, TException {
-    Preconditions.checkNotNull(topicName);
-    CreateTopicRequest createTopicRequest = new CreateTopicRequest(
-        topicName, topicAttribute);
-    CreateTopicResponse createTopicResponse = topicClient.createTopic(
-        createTopicRequest);
-
-    LOG.info("Create topic: " + topicName + " success.");
-    if (topicAttribute.getPartitionNumber() == 0) {
-      LOG.warn("You have not set partition number, we will use default config.");
-    }
-    return createTopicResponse.getTopicInfo().getTopicTalosResourceName();
+  public CreateTopicResponse createTopic(CreateTopicRequest request)
+      throws GalaxyTalosException, TException {
+    return topicClient.createTopic(request);
   }
 
-  public Topic describeTopic(String topicName)
+  public Topic describeTopic(DescribeTopicRequest request)
       throws GalaxyTalosException, TException {
-    Preconditions.checkNotNull(topicName);
-    DescribeTopicRequest describeTopicRequest = new DescribeTopicRequest(topicName);
-    DescribeTopicResponse describeTopicResponse = topicClient.describeTopic(
-        describeTopicRequest);
-
+    DescribeTopicResponse describeTopicResponse =
+        topicClient.describeTopic(request);
     return new Topic(describeTopicResponse.getTopicInfo(),
         describeTopicResponse.getTopicAttribute(),
         describeTopicResponse.getTopicState());
   }
 
-  public void deleteTopic(TopicTalosResourceName topicTalosResourceName)
+  public void deleteTopic(DeleteTopicRequest request)
       throws GalaxyTalosException, TException {
-    Preconditions.checkNotNull(topicTalosResourceName);
-    DeleteTopicRequest deleteTopicRequest =
-        new DeleteTopicRequest(topicTalosResourceName);
-    topicClient.deleteTopic(deleteTopicRequest);
-    LOG.info("Delete topic: " +
-        topicTalosResourceName.getTopicTalosResourceName() + " success");
+    topicClient.deleteTopic(request);
   }
 
-  public void changeTopicAttribute(TopicTalosResourceName topicTalosResourceName,
-      TopicAttribute topicAttribute) throws GalaxyTalosException, TException {
-    Preconditions.checkNotNull(topicTalosResourceName);
-    Preconditions.checkNotNull(topicAttribute);
-    ChangeTopicAttributeRequest request = new ChangeTopicAttributeRequest(
-        topicTalosResourceName, topicAttribute);
+  public void changeTopicAttribute(ChangeTopicAttributeRequest request)
+      throws GalaxyTalosException, TException {
     topicClient.changeTopicAttribute(request);
-    LOG.info("Change topicAttribute success for: " +
-        topicTalosResourceName.getTopicTalosResourceName());
   }
 
   // add partitionNumber, an example of using changeTopicAttribute
@@ -124,8 +100,9 @@ public class TalosAdmin {
       TopicTalosResourceName topicTalosResourceName, int partitionNumber)
       throws GalaxyTalosException, TException {
     Preconditions.checkNotNull(topicTalosResourceName);
-    Topic topic = describeTopic(Utils.getTopicNameByResourceName(
-        topicTalosResourceName.getTopicTalosResourceName()));
+    Topic topic = describeTopic(new DescribeTopicRequest(
+        Utils.getTopicNameByResourceName(
+            topicTalosResourceName.getTopicTalosResourceName())));
     if (partitionNumber <= topic.getTopicAttribute().getPartitionNumber()) {
       // TODO: using specific GalaxyTalosException
       throw new IllegalArgumentException(
@@ -135,18 +112,13 @@ public class TalosAdmin {
     }
     TopicAttribute topicAttribute = topic.getTopicAttribute();
     topicAttribute.setPartitionNumber(partitionNumber);
-    changeTopicAttribute(topicTalosResourceName, topicAttribute);
+    changeTopicAttribute(new ChangeTopicAttributeRequest(
+        topicTalosResourceName, topicAttribute));
   }
 
-  public List<TopicInfo> listTopic(String developerId)
+  public List<TopicInfo> listTopic(ListTopicsRequest request)
       throws GalaxyTalosException, TException {
-    Preconditions.checkNotNull(developerId);
-    ListTopicsRequest listTopicsRequest = new ListTopicsRequest(developerId);
-    ListTopicsResponse listTopicsResponse = topicClient.listTopics(listTopicsRequest);
-    if (listTopicsResponse == null) {
-      LOG.warn("List topic got null response for: " + developerId);
-      return null;
-    }
+    ListTopicsResponse listTopicsResponse = topicClient.listTopics(request);
     return listTopicsResponse.getTopicInfos();
   }
 
@@ -158,7 +130,6 @@ public class TalosAdmin {
     SetPermissionRequest setPermissionRequest = new SetPermissionRequest(
         topicInfo, developerId, permission);
     topicClient.setPermission(setPermissionRequest);
-    LOG.info("Set permission success for: " + developerId);
   }
 
   public void revokePermission(TopicInfo topicInfo, String developerId)

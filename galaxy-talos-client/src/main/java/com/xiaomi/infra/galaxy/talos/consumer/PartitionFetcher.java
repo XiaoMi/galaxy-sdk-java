@@ -147,6 +147,10 @@ public class PartitionFetcher {
         }
 
         try {
+          if (LOG.isDebugEnabled()) {
+            LOG.debug("Reading message from offset: " + startOffset +
+                " of partition: " + partitionId);
+          }
           List<MessageAndOffset> messageList = simpleConsumer.fetchMessage(
               startOffset.get());
           lastFetchTime = System.currentTimeMillis();
@@ -258,6 +262,10 @@ public class PartitionFetcher {
       LOG.info("Worker: " + workerId + " has set partition: " +
           partitionId + " to 'UNLOCKING', it is revoking gracefully.");
     }
+  }
+
+  public void shutDown() {
+    singleExecutor.shutdownNow();
   }
 
   private synchronized TASK_STATE getCurState() {

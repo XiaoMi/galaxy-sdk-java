@@ -146,6 +146,7 @@ public class PartitionSender {
 
   public void cancel(boolean interrupt) {
     messageWriterFuture.cancel(interrupt);
+    singleExecutor.shutdownNow();
   }
 
   public void addMessage(List<UserMessage> userMessageList) {
