@@ -24,8 +24,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+import com.google.common.collect.LinkedListMultimap;
+import com.xiaomi.infra.galaxy.auth.authentication.HttpKeys;
+import com.xiaomi.infra.galaxy.auth.authentication.HttpMethod;
+import com.xiaomi.infra.galaxy.auth.authentication.HttpUtils;
+import com.xiaomi.infra.galaxy.auth.authentication.signature.SignAlgorithm;
+import com.xiaomi.infra.galaxy.auth.authentication.signature.Signer;
 import com.xiaomi.infra.galaxy.sds.thrift.CommonConstants;
 import com.xiaomi.infra.galaxy.sds.thrift.ThriftProtocol;
+import com.xiaomi.infra.galaxy.sds.thrift.UserType;
 import libthrift091.TException;
 import libthrift091.transport.TTransport;
 import libthrift091.transport.TTransportException;
@@ -74,6 +81,7 @@ public class SdsTHttpClient extends TTransport {
   private ThriftProtocol protocol_ = ThriftProtocol.TCOMPACT;
   private String queryString = null;
   private boolean supportAccountKey = false;
+  private String sid;
 
   public static class Factory extends TTransportFactory {
     private final String url;
@@ -183,6 +191,11 @@ public class SdsTHttpClient extends TTransport {
     return this;
   }
 
+  public SdsTHttpClient setSid(String sid) {
+    this.sid = sid;
+    return this;
+  }
+
   public void open() {
   }
 
@@ -268,7 +281,7 @@ public class SdsTHttpClient extends TTransport {
       post.setHeader("Accept", CommonConstants.THRIFT_HEADER_MAP.get(protocol_));
       post.setHeader("User-Agent", "Java/THttpClient/HC");
       setCustomHeaders(post);
-      setAuthenticationHeaders(post, data, supportAccountKey);
+      setAuthenticationHeaders(post, data);
 
       post.setEntity(new ByteArrayEntity(data));
 
@@ -352,44 +365,58 @@ public class SdsTHttpClient extends TTransport {
   /**
    * Set signature related headers when credential is properly set
    */
-  private SdsTHttpClient setAuthenticationHeaders(HttpPost post, byte[] data, boolean supportAccountKey) {
+  private SdsTHttpClient setAuthenticationHeaders(HttpPost post, byte[] data) {
     if (this.client != null && credential != null) {
       if (credential.getType() != null && credential.getSecretKeyId() != null) {
-        post.setHeader(AuthenticationConstants.HK_VERSION, "SDS_V1");
-        post.setHeader(AuthenticationConstants.HK_USER_TYPE, credential.getType().name());
-        post.setHeader(AuthenticationConstants.HK_SECRET_KEY_ID, credential.getSecretKeyId());
-        if (supportAccountKey) {
-          post.setHeader(AuthenticationConstants.HK_SUPPORT_ACCOUNT_KEY, "1");
-        }
+
         // signature is supported
         if (AuthenticationConstants.SIGNATURE_SUPPORT.get(credential.getType())) {
-          List<String> signatureParts = new ArrayList<String>();
 
           // host
           String host = this.host.toHostString();
           host = host.split(":")[0];
           post.setHeader(AuthenticationConstants.HK_HOST, host);
-          signatureParts.add(host);
 
           // timestamp
           String timestamp = Long.toString(clock.getCurrentEpoch());
           post.setHeader(AuthenticationConstants.HK_TIMESTAMP, timestamp);
-          signatureParts.add(timestamp);
+          post.setHeader(HttpKeys.MI_DATE, HttpUtils.getGMTDatetime(new Date()));
 
           // content md5
           String md5 = BytesUtil
               .bytesToHex(DigestUtil.digest(DigestUtil.DigestAlgorithm.MD5, data));
           post.setHeader(AuthenticationConstants.HK_CONTENT_MD5, md5);
-          signatureParts.add(md5);
 
-          // signature
-          byte[] signature = SignatureUtil.sign(SignatureUtil.MacAlgorithm.HmacMD5,
-              credential.getSecretKey(), signatureParts);
-
-          post.setHeader(AuthenticationConstants.HK_MAC_ALGORITHM, SignatureUtil.MacAlgorithm.HmacMD5.name());
-          post.setHeader(AuthenticationConstants.HK_SIGNATURE, BytesUtil.bytesToHex(signature));
+          LinkedListMultimap<String, String> headers = LinkedListMultimap.create();
+          for (Header header : post.getAllHeaders()) {
+            headers.put(header.getName().toLowerCase(), header.getValue());
+          }
+          try {
+            String authType = "Galaxy-V2 ";
+            if (supportAccountKey) {
+              authType = "Galaxy-V3 ";
+            }
+            if (credential.getType() == UserType.APP_ACCESS_TOKEN) {
+              authType = "OAuth ";
+            }
+            String authString = authType + credential.getSecretKeyId() + ":" +
+                Signer.signToBase64(HttpMethod.POST, post.getURI(), headers,
+                    credential.getSecretKey(), SignAlgorithm.HmacSHA1);
+            post.setHeader(AuthenticationConstants.HK_AUTHORIZATION, authString);
+          } catch (Exception e) {
+            throw new RuntimeException("Failed to sign", e);
+          }
         } else {
-          post.setHeader(AuthenticationConstants.HK_SECRET_KEY, credential.getSecretKey());
+          if (credential.getType() == UserType.APP_XIAOMI_SSO) {
+            String authString = "SSO " + sid + ":" + credential.getSecretKey() + ":" +
+                credential.getSecretKeyId();
+            post.setHeader(AuthenticationConstants.HK_AUTHORIZATION, authString);
+          } else if (credential.getType() == UserType.APP_ANONYMOUS) {
+            String authString = "Guest " + credential.getSecretKeyId();
+            post.setHeader(AuthenticationConstants.HK_AUTHORIZATION, authString);
+          } else {
+            throw new RuntimeException("Unsupported user type: " + credential.getType());
+          }
         }
       }
     }

@@ -43,6 +43,7 @@ public class ClientFactory {
   private static final Logger LOG = LoggerFactory.getLogger(ClientFactory.class);
   private static final String USER_AGENT_HEADER = "User-Agent";
   private static final Version VERSION = new Version();
+  private static final String SID = "galaxysds";
 
   private Credential credential;
   private Map<String, String> customHeaders;
@@ -333,7 +334,7 @@ public class ClientFactory {
               .getClient(httpClient, headers, credential, clock, protocol,
                   AdminService.Iface.class, AdminService.Client.class, url,
                   (int) CommonConstants.DEFAULT_CLIENT_TIMEOUT,
-                  (int) CommonConstants.DEFAULT_CLIENT_CONN_TIMEOUT, false);
+                  (int) CommonConstants.DEFAULT_CLIENT_CONN_TIMEOUT, false, SID);
           AdminService.Iface metricAdminServiceClient =
               AutoRetryClient.getAutoRetryClient(AdminService.Iface.class, adminClient, true, 3);
           metricsCollector = new MetricsCollector();
@@ -342,7 +343,8 @@ public class ClientFactory {
       }
     }
     IFace client = ThreadSafeClient.getClient(httpClient, headers, credential, clock, protocol,
-        ifaceClass, implClass, url, socketTimeout, connTimeout, supportAccountKey, metricsCollector);
+        ifaceClass, implClass, url, socketTimeout, connTimeout, supportAccountKey, SID,
+        metricsCollector);
     return AutoRetryClient.getAutoRetryClient(ifaceClass, client, isRetry, maxRetry);
   }
 

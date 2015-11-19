@@ -4,9 +4,6 @@ import com.xiaomi.infra.galaxy.sds.client.metrics.MetricsCollector;
 import com.xiaomi.infra.galaxy.sds.client.metrics.RequestMetrics;
 import com.xiaomi.infra.galaxy.sds.shared.clock.AdjustableClock;
 import com.xiaomi.infra.galaxy.sds.thrift.*;
-import libthrift091.protocol.TBinaryProtocol;
-import libthrift091.protocol.TCompactProtocol;
-import libthrift091.protocol.TJSONProtocol;
 import libthrift091.protocol.TProtocol;
 import libthrift091.transport.TTransport;
 import org.apache.http.client.HttpClient;
@@ -18,7 +15,6 @@ import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -44,13 +40,14 @@ public class ThreadSafeClient<IFace, Impl> {
     private int connTimeout = 0;
     private boolean supportAccountKey = false;
     private boolean isMetricsEnabled = false;
+    private String sid;
     private MetricsCollector metricsCollector;
 
 
     private ThreadSafeInvocationHandler(HttpClient client, Map<String, String> customHeaders,
                                         Credential credential, AdjustableClock clock, ThriftProtocol protocol,
                                         Class<IFace> ifaceClass, Class<Impl> implClass, String url, int socketTimeout,
-                                        int connTimeout, boolean supportAccountKey, MetricsCollector metricsCollector) {
+                                        int connTimeout, boolean supportAccountKey, String sid, MetricsCollector metricsCollector) {
       this.client = client;
       this.customHeaders = customHeaders;
       this.credential = credential;
@@ -62,6 +59,7 @@ public class ThreadSafeClient<IFace, Impl> {
       this.socketTimeout = socketTimeout;
       this.connTimeout = connTimeout;
       this.supportAccountKey = supportAccountKey;
+      this.sid = sid;
       this.metricsCollector = metricsCollector;
       if (metricsCollector != null) {
         isMetricsEnabled = true;
@@ -83,7 +81,8 @@ public class ThreadSafeClient<IFace, Impl> {
             .setConnectTimeout(connTimeout)
             .setProtocol(protocol)
             .setQueryString("type=" + method.getName())
-            .setSupportAccountKey(supportAccountKey);
+            .setSupportAccountKey(supportAccountKey)
+            .setSid(sid);
         if (customHeaders != null) {
           for (Map.Entry<String, String> header : customHeaders.entrySet()) {
             sdsHttpClient.setCustomHeader(header.getKey(), header.getValue());
@@ -123,23 +122,21 @@ public class ThreadSafeClient<IFace, Impl> {
   public static <IFace, Impl> IFace getClient(HttpClient client, Map<String, String> customHeaders,
                                               Credential credential, AdjustableClock clock, ThriftProtocol protocol,
                                               Class<IFace> ifaceClass, Class<Impl> implClass, String url, int socketTimeout,
-                                              int connTimeout, boolean supportAccountKey) {
-    return (IFace) Proxy.newProxyInstance(ThreadSafeClient.class.getClassLoader(),
-        new Class[]{ifaceClass},
-        new ThreadSafeInvocationHandler<IFace, Impl>(client, customHeaders, credential, clock, protocol,
-            ifaceClass, implClass, url, socketTimeout, connTimeout, supportAccountKey, null)
-    );
+                                              int connTimeout, boolean supportAccountKey, String sid) {
+    return getClient(client, customHeaders, credential, clock, protocol, ifaceClass, implClass, url,
+        socketTimeout, connTimeout, supportAccountKey, sid, null);
   }
 
   @SuppressWarnings("unchecked")
   public static <IFace, Impl> IFace getClient(HttpClient client, Map<String, String> customHeaders,
                                               Credential credential, AdjustableClock clock, ThriftProtocol protocol,
                                               Class<IFace> ifaceClass, Class<Impl> implClass, String url, int socketTimeout,
-                                              int connTimeout, boolean supportAccountKey, MetricsCollector metricsCollector) {
+                                              int connTimeout, boolean supportAccountKey, String sid,
+      MetricsCollector metricsCollector) {
     return (IFace) Proxy.newProxyInstance(ThreadSafeClient.class.getClassLoader(),
         new Class[]{ifaceClass},
         new ThreadSafeInvocationHandler<IFace, Impl>(client, customHeaders, credential, clock, protocol,
-            ifaceClass, implClass, url, socketTimeout, connTimeout, supportAccountKey, metricsCollector)
+            ifaceClass, implClass, url, socketTimeout, connTimeout, supportAccountKey, sid, metricsCollector)
     );
   }
 
