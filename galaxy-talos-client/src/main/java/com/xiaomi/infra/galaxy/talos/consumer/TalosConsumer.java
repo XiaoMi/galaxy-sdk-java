@@ -81,6 +81,8 @@ public class TalosConsumer {
 
       int topicPartitionNum = topic.getTopicAttribute().getPartitionNumber();
       if (partitionNumber < topicPartitionNum) {
+        LOG.info("partitionNumber changed from " + partitionNumber + " to " +
+            topicPartitionNum + ", execute a re-balance task.");
         // update partition number and call the re-balance
         setPartitionNumber(topicPartitionNum);
         // call the re-balance task
@@ -183,8 +185,10 @@ public class TalosConsumer {
         // 1) make heartbeat success and renew partitions success
         if (renewResponse.isHeartbeatSuccess() &&
             renewResponse.getFailedPartitionListSize() == 0) {
-          LOG.info("The worker: " + workerId + " success renew partitions: " +
-              toRenewPartitionList);
+          if (LOG.isDebugEnabled()) {
+            LOG.debug("The worker: " + workerId +
+                " success heartbeat and renew partitions: " + toRenewPartitionList);
+          }
           return;
         }
       }
@@ -203,6 +207,8 @@ public class TalosConsumer {
       // do not block the renew thread and switch thread to re-balance thread
       if (renewResponse != null && renewResponse.getFailedPartitionListSize() > 0) {
         List<Integer> failedRenewList = renewResponse.getFailedPartitionList();
+        LOG.error("The worker: " + workerId +
+            " failed to renew partitions: " + failedRenewList);
         releasePartitionLock(failedRenewList);
       }
     }
@@ -317,6 +323,43 @@ public class TalosConsumer {
         messageProcessorFactory, "", topicAbnormalCallback);
   }
 
+  // for test
+  public TalosConsumer(String consumerGroupName, TalosConsumerConfig consumerConfig,
+      TopicTalosResourceName topicTalosResourceName, String workerId,
+      TopicAbnormalCallback abnormalCallback,
+      ConsumerService.Iface consumerClientMock, TalosAdmin talosAdminMock,
+      Map<Integer, PartitionFetcher> fetcherMap) throws Exception {
+    this.workerId = workerId;
+    random = new Random();
+    consumerGroup = consumerGroupName;
+    partitionFetcherMap = fetcherMap;
+    talosConsumerConfig = consumerConfig;
+    talosAdmin = talosAdminMock;
+    consumerClient = consumerClientMock;
+    topicAbnormalCallback = abnormalCallback;
+    readWriteLock = new ReentrantReadWriteLock();
+
+    partitionScheduledExecutor = Executors.newSingleThreadScheduledExecutor();
+    workerScheduleExecutor = Executors.newSingleThreadScheduledExecutor();
+    renewScheduleExecutor = Executors.newSingleThreadScheduledExecutor();
+    reBalanceExecutor = Executors.newSingleThreadExecutor();
+
+    LOG.info("The worker: " + workerId + " is initializing...");
+    // check and get topic info such as partitionNumber
+    checkAndGetTopicInfo(topicTalosResourceName);
+    // register self workerId
+    registerSelf();
+    // get worker info
+    getWorkerInfo();
+    // do balance and init simple consumer
+    makeBalance();
+
+    // start CheckPartitionTask/CheckWorkerInfoTask/RenewTask
+    initCheckPartitionTask();
+    initCheckWorkerInfoTask();
+    initRenewTask();
+  }
+
   private void checkAndGetTopicInfo(TopicTalosResourceName topicTalosResourceName)
       throws TException {
     topicName = Utils.getTopicNameByResourceName(
@@ -325,6 +368,7 @@ public class TalosConsumer {
 
     if (!topicTalosResourceName.equals(
         topic.getTopicInfo().getTopicTalosResourceName())) {
+      LOG.info("The consumer initialize failed by topic not found");
       throw new IllegalArgumentException("The topic: " +
           topicTalosResourceName.getTopicTalosResourceName() + " not found");
     }
@@ -346,7 +390,8 @@ public class TalosConsumer {
         LOG.info("The worker: " + workerId + " register self success");
         return;
       }
-      LOG.warn("The worker: " + workerId + " register self failed, make retry");
+      LOG.warn("The worker: " + workerId +
+          " register self failed, make " + tryCount + " retry");
     }
     LOG.error("The worker: " + workerId + " register self failed");
     throw new RuntimeException(workerId + " register self failed");
@@ -361,7 +406,10 @@ public class TalosConsumer {
     // if queryWorkerInfoMap size equals 0,
     // it represents hbase failed error, do not update local map
     // because registration, the queryWorkerInfoMap size >= 1 at least
-    if (queryWorkerResponse.getWorkerMapSize() == 0) {
+    // if queryWorkerInfoMap not contains self, it indicates renew failed,
+    // do not update local map to prevent a bad re-balance
+    if (queryWorkerResponse.getWorkerMapSize() == 0 ||
+        (!queryWorkerResponse.getWorkerMap().containsKey(workerId))) {
       return;
     }
     readWriteLock.writeLock().lock();
@@ -453,6 +501,9 @@ public class TalosConsumer {
           break;
         }
         int target = targetList.get(i);
+        if (LOG.isDebugEnabled()) {
+          LOG.debug("Worker: " + workerId + " has: " + has + " target: " + target);
+        }
 
         // a balanced state, do nothing
         if (has == target) {
@@ -489,12 +540,13 @@ public class TalosConsumer {
       releasePartitionLock(toReleaseList);
     } else {
       // do nothing when reach balance state
-      LOG.info("The workers have reached a balance state.");
+      LOG.info("The worker: " + workerId + " have reached a balance state.");
     }
   }
 
   private void stealPartitionLock(List<Integer> toStealList) {
-    LOG.info("Worker: " + workerId + " try to steal partition: " + toStealList);
+    LOG.info("Worker: " + workerId + " try to steal " + toStealList.size() +
+        " partition: " + toStealList);
     // try to lock and invoke serving partition PartitionFetcher to 'LOCKED' state
     readWriteLock.writeLock().lock();
     for (Integer partitionId : toStealList) {
@@ -511,7 +563,8 @@ public class TalosConsumer {
   }
 
   private void releasePartitionLock(List<Integer> toReleaseList) {
-    LOG.info("Worker: " + workerId + " try to release partition: " + toReleaseList);
+    LOG.info("Worker: " + workerId + " try to release " + toReleaseList.size() +
+        " partition: " + toReleaseList);
     // stop read, commit offset, unlock the partition async
     for (Integer partitionId : toReleaseList) {
       Preconditions.checkArgument(partitionFetcherMap.containsKey(partitionId));

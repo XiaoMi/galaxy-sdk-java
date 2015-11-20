@@ -228,6 +228,27 @@ public class PartitionFetcher {
         " partition: " + partitionId + " init.");
   }
 
+  // for test
+  public PartitionFetcher(String consumerGroup, String topicName,
+      TopicTalosResourceName topicTalosResourceName, int partitionId,
+      TalosConsumerConfig talosConsumerConfig, String workerId,
+      ConsumerService.Iface consumerClient, SimpleConsumer simpleConsumer,
+      MessageProcessor messageProcessor) {
+    this.consumerGroup = consumerGroup;
+    this.topicTalosResourceName = topicTalosResourceName;
+    this.partitionId = partitionId;
+    this.talosConsumerConfig = talosConsumerConfig;
+    this.workerId = workerId;
+    this.consumerClient = consumerClient;
+    this.messageProcessor = messageProcessor;
+    curState = TASK_STATE.INIT;
+    singleExecutor = Executors.newSingleThreadExecutor();
+
+    topicAndPartition = new TopicAndPartition(topicName,
+        topicTalosResourceName, partitionId);
+    this.simpleConsumer = simpleConsumer;
+  }
+
   // used to know whether is serving and reading data
   public synchronized boolean isServing() {
     return (curState == TASK_STATE.LOCKED);
@@ -346,7 +367,7 @@ public class PartitionFetcher {
     LockPartitionResponse lockResponse = null;
     try {
       lockResponse = consumerClient.lockPartition(lockRequest);
-    } catch (TException e) {
+    } catch (Throwable e) {
       LOG.error("Worker: " + workerId + " steal partition error: " + e.toString());
       return false;
     }
