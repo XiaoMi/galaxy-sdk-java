@@ -15,12 +15,12 @@ public class TalosProducerConfig extends TalosClientConfig {
   private int maxBufferedMsgNumber;
   private int maxBufferedMsgBytes;
   private int maxBufferedMsgTime;
-  private int scanPartitionQueueInterval;
   private int maxPutMsgNumber;
   private int maxPutMsgBytes;
   private int threadPoolsize;
   private int checkPartitionInterval;
   private long updatePartitionIdInterval;
+  private long waitPartitionWorkingTime;
 
   public TalosProducerConfig(Configuration configuration) {
     super(configuration);
@@ -33,9 +33,6 @@ public class TalosProducerConfig extends TalosClientConfig {
     maxBufferedMsgTime = configuration.getInt(
         TalosClientConfigKeys.GALAXY_TALOS_PRODUCER_MAX_BUFFERED_MILLI_SECS,
         TalosClientConfigKeys.GALAXY_TALOS_PRODUCER_MAX_BUFFERED_MILLI_SECS_DEFAULT);
-    scanPartitionQueueInterval = configuration.getInt(
-        TalosClientConfigKeys.GALAXY_TALOS_PRODUCER_SCAN_PARTITION_QUEUE_INTERVAL,
-        TalosClientConfigKeys.GALAXY_TALOS_PRODUCER_SCAN_PARTITION_QUEUE_INTERVAL_DEFAULT);
     maxPutMsgNumber = configuration.getInt(
         TalosClientConfigKeys.GALAXY_TALOS_PRODUCER_MAX_PUT_MESSAGE_NUMBER,
         TalosClientConfigKeys.GALAXY_TALOS_PRODUCER_MAX_PUT_MESSAGE_NUMBER_DEFAULT);
@@ -51,6 +48,9 @@ public class TalosProducerConfig extends TalosClientConfig {
     updatePartitionIdInterval = configuration.getLong(
         TalosClientConfigKeys.GALAXY_TALOS_PRODUCER_UPDATE_PARTITIONID_INTERVAL,
         TalosClientConfigKeys.GALAXY_TALOS_PRODUCER_UPDATE_PARTITIONID_INTERVAL_DEFAULT);
+    waitPartitionWorkingTime = configuration.getLong(
+        TalosClientConfigKeys.GALAXY_TALOS_PRODUCER_WAIT_PARTITION_WORKING_TIME,
+        TalosClientConfigKeys.GALAXY_TALOS_PRODUCER_WAIT_PARTITION_WORKING_TIME_DEFAULT);
   }
 
   public int getMaxBufferedMsgNumber() {
@@ -63,10 +63,6 @@ public class TalosProducerConfig extends TalosClientConfig {
 
   public int getMaxBufferedMsgTime() {
     return maxBufferedMsgTime;
-  }
-
-  public int getScanPartitionQueueInterval() {
-    return scanPartitionQueueInterval;
   }
 
   public int getMaxPutMsgNumber() {
@@ -87,5 +83,9 @@ public class TalosProducerConfig extends TalosClientConfig {
 
   public long getUpdatePartitionIdInterval() {
     return updatePartitionIdInterval;
+  }
+
+  public long getWaitPartitionWorkingTime() {
+    return waitPartitionWorkingTime;
   }
 }

@@ -99,7 +99,18 @@ public class PartitionSender {
         userMessageResult.setSuccessful(false).setCause(e);
         messageCallbackExecutors.execute(
             new MessageCallbackTask(userMessageResult));
-      }
+
+        // delay when partitionNotServing
+        if (Utils.isPartitionNotServing(e)) {
+          LOG.warn("Partition: " + partitionId +
+              " is not serving state, sleep a while for waiting it work.");
+          try {
+            Thread.sleep(talosProducerConfig.getWaitPartitionWorkingTime());
+          } catch (InterruptedException e1) {
+            e1.printStackTrace();
+          }
+        } // if
+      } // catch
     }
 
   } // MessageWriter

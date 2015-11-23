@@ -10,6 +10,7 @@ import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
+import libthrift091.TException;
 import org.apache.hadoop.conf.Configuration;
 import org.junit.After;
 import org.junit.Before;
@@ -20,6 +21,7 @@ import org.slf4j.LoggerFactory;
 
 import com.xiaomi.infra.galaxy.talos.client.TalosClientConfigurationLoader;
 import com.xiaomi.infra.galaxy.talos.thrift.ConsumerService;
+import com.xiaomi.infra.galaxy.talos.thrift.ErrorCode;
 import com.xiaomi.infra.galaxy.talos.thrift.GalaxyTalosException;
 import com.xiaomi.infra.galaxy.talos.thrift.LockPartitionRequest;
 import com.xiaomi.infra.galaxy.talos.thrift.LockPartitionResponse;
@@ -185,6 +187,16 @@ public class PartitionFetcherTest {
     Thread.sleep(500);
     assertEquals(true, partitionFetcher.isHoldingLock());
     partitionFetcher.unlock();
+  }
+
+  @Test
+  public void testPartitionNotServing() throws Exception {
+    when(simpleConsumerMock.fetchMessage(anyLong()))
+        .thenThrow(new TException("test partitionNotServing",
+            new GalaxyTalosException().setErrorCode(
+                ErrorCode.PARTITION_NOT_SERVING)));
+    partitionFetcher.lock();
+    Thread.sleep(500);
   }
 
   @Test

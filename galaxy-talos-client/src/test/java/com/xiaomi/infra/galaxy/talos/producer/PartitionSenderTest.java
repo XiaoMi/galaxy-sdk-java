@@ -13,6 +13,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicLong;
 
+import libthrift091.TException;
 import org.apache.hadoop.conf.Configuration;
 import org.junit.After;
 import org.junit.Before;
@@ -22,6 +23,7 @@ import org.mockito.Mockito;
 import com.xiaomi.infra.galaxy.talos.client.TalosClientConfigKeys;
 import com.xiaomi.infra.galaxy.talos.client.TalosClientConfigurationLoader;
 import com.xiaomi.infra.galaxy.talos.client.Utils;
+import com.xiaomi.infra.galaxy.talos.thrift.ErrorCode;
 import com.xiaomi.infra.galaxy.talos.thrift.GalaxyTalosException;
 import com.xiaomi.infra.galaxy.talos.thrift.Message;
 import com.xiaomi.infra.galaxy.talos.thrift.MessageService;
@@ -165,6 +167,22 @@ public class PartitionSenderTest {
 
     Thread.sleep(110);
     assertEquals(2, msgPutSuccessCount);
+    clearCounter();
+  }
+
+  @Test
+  public void testPartitiionNotServingDelay() throws Exception {
+    userMessageList.add(userMessage1);
+    userMessageList.add(userMessage2);
+
+    when(messageClientMock.putMessage(any(PutMessageRequest.class)))
+        .thenThrow(new TException("test partition not serving",
+            new GalaxyTalosException().setErrorCode(
+                ErrorCode.PARTITION_NOT_SERVING)));
+    partitionSender.addMessage(userMessageList);
+
+    Thread.sleep(110);
+    assertEquals(2, msgPutFailureCount);
     clearCounter();
   }
 }

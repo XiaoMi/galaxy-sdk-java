@@ -17,6 +17,7 @@ import libthrift091.TException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.xiaomi.infra.galaxy.talos.client.Utils;
 import com.xiaomi.infra.galaxy.talos.thrift.CheckPoint;
 import com.xiaomi.infra.galaxy.talos.thrift.ConsumeUnit;
 import com.xiaomi.infra.galaxy.talos.thrift.ConsumerService;
@@ -171,8 +172,20 @@ public class PartitionFetcher {
         } catch (Throwable e) {
           LOG.error("Error: " + e.toString() + " when getting messages from topic: " +
               topicTalosResourceName + " partition: " + partitionId);
+
+          // delay when partitionNotServing
+          if (Utils.isPartitionNotServing(e)) {
+            LOG.warn("Partition: " + partitionId +
+                " is not serving state, sleep a while for waiting it work.");
+            try {
+              Thread.sleep(talosConsumerConfig.getWaitPartitionWorkingTime());
+            } catch (InterruptedException e1) {
+              e1.printStackTrace();
+            }
+          } // if
+
           lastFetchTime = System.currentTimeMillis();
-        }
+        } // catch
       }
 
       // wait task quit gracefully: stop reading, commit offset, clean and shutdown

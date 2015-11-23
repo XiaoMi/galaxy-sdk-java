@@ -54,12 +54,20 @@ public class Utils {
         requestId.getAndIncrement();
   }
 
-  public static boolean isTopicNotExist(Throwable throwable) {
+  private static ErrorCode getErrorCode(Throwable throwable) {
     Throwable cause = throwable.getCause();
     if (cause instanceof GalaxyTalosException) {
       GalaxyTalosException e = (GalaxyTalosException) cause;
-      return (e.getErrorCode() == ErrorCode.TOPIC_NOT_EXIST);
+      return e.getErrorCode();
     }
-    return false;
+    return null;
+  }
+
+  public static boolean isTopicNotExist(Throwable throwable) {
+    return getErrorCode(throwable) == ErrorCode.TOPIC_NOT_EXIST;
+  }
+
+  public static boolean isPartitionNotServing(Throwable throwable) {
+    return getErrorCode(throwable) == ErrorCode.PARTITION_NOT_SERVING;
   }
 }

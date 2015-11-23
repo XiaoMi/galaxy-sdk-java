@@ -101,14 +101,6 @@ public class TalosClientConfigKeys {
   public static final int GALAXY_TALOS_PRODUCER_MAX_BUFFERED_MILLI_SECS_DEFAULT = 1000;
 
   /**
-   * The producer scan buffered message queue interval (milli secs)
-   */
-  public static final String GALAXY_TALOS_PRODUCER_SCAN_PARTITION_QUEUE_INTERVAL =
-      "galaxy.talos.producer.scan.partition.queue.interval";
-  public static final int GALAXY_TALOS_PRODUCER_SCAN_PARTITION_QUEUE_INTERVAL_DEFAULT =
-      10;
-
-  /**
    * The producer max number of message in each putMessage batch
    */
   public static final String GALAXY_TALOS_PRODUCER_MAX_PUT_MESSAGE_NUMBER =
@@ -147,6 +139,14 @@ public class TalosClientConfigKeys {
       "galaxy.talos.producer.update.partition.id.interval.milli";
   public static final long GALAXY_TALOS_PRODUCER_UPDATE_PARTITIONID_INTERVAL_DEFAULT =
       10000;
+
+  /**
+   * The producer partitionSender sleep/delay time when partitionNotServing
+   */
+  public static final String GALAXY_TALOS_PRODUCER_WAIT_PARTITION_WORKING_TIME =
+      "galaxy.talos.producer.wait.partition.working.time.milli";
+  public static final long GALAXY_TALOS_PRODUCER_WAIT_PARTITION_WORKING_TIME_DEFAULT =
+      200;
 
 
   // consumer config
@@ -240,4 +240,12 @@ public class TalosClientConfigKeys {
       "galaxy.talos.consumer.check.last.commit.offset.switch";
   public static final boolean GALAXY_TALOS_CONSUMER_CHECK_LAST_COMMIT_OFFSET_SWITCH_DEFAULT =
       false;
+
+  /**
+   * The consumer partitionFetcher sleep/delay time when partitionNotServing
+   */
+  public static final String GALAXY_TALOS_CONSUMER_WAIT_PARTITION_WORKING_TIME =
+      "galaxy.talos.consumer.wait.partition.working.time.milli";
+  public static final long GALAXY_TALOS_CONSUMER_WAIT_PARTITION_WORKING_TIME_DEFAULT =
+      200;
 }
