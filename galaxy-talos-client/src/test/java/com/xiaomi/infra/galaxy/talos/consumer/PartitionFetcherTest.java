@@ -10,7 +10,6 @@ import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
-import libthrift091.TException;
 import org.apache.hadoop.conf.Configuration;
 import org.junit.After;
 import org.junit.Before;
@@ -192,9 +191,8 @@ public class PartitionFetcherTest {
   @Test
   public void testPartitionNotServing() throws Exception {
     when(simpleConsumerMock.fetchMessage(anyLong()))
-        .thenThrow(new TException("test partitionNotServing",
-            new GalaxyTalosException().setErrorCode(
-                ErrorCode.PARTITION_NOT_SERVING)));
+        .thenThrow(new GalaxyTalosException().setErrorCode(
+            ErrorCode.PARTITION_NOT_SERVING));
     partitionFetcher.lock();
     Thread.sleep(500);
   }

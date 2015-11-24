@@ -11,7 +11,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import libthrift091.TException;
 import org.apache.hadoop.conf.Configuration;
 import org.junit.After;
 import org.junit.Before;
@@ -482,9 +481,9 @@ public class TalosConsumerTest {
   public void testDescribeTopicNotExist() throws Exception {
     LOG.info("[testDescribeTopicNotExist] start");
     // partition check
-    doReturn(topic).doThrow(new TException("Topic Not Exist",
-        new GalaxyTalosException().setErrorCode(ErrorCode.TOPIC_NOT_EXIST)))
-        .when(talosAdminMock).describeTopic(any(DescribeTopicRequest.class));
+    doReturn(topic).doThrow(new GalaxyTalosException().setErrorCode(
+        ErrorCode.TOPIC_NOT_EXIST)).when(talosAdminMock).describeTopic(
+        any(DescribeTopicRequest.class));
     // register self
     LockWorkerResponse lockWorkerResponse = new LockWorkerResponse(true);
     when(consumerClientMock.lockWorker(any(LockWorkerRequest.class)))

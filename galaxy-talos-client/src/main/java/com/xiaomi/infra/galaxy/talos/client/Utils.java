@@ -55,9 +55,8 @@ public class Utils {
   }
 
   private static ErrorCode getErrorCode(Throwable throwable) {
-    Throwable cause = throwable.getCause();
-    if (cause instanceof GalaxyTalosException) {
-      GalaxyTalosException e = (GalaxyTalosException) cause;
+    if (throwable instanceof GalaxyTalosException) {
+      GalaxyTalosException e = (GalaxyTalosException) throwable;
       return e.getErrorCode();
     }
     return null;

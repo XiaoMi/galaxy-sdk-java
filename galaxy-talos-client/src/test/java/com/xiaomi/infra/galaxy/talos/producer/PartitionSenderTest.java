@@ -13,7 +13,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicLong;
 
-import libthrift091.TException;
 import org.apache.hadoop.conf.Configuration;
 import org.junit.After;
 import org.junit.Before;
@@ -176,9 +175,8 @@ public class PartitionSenderTest {
     userMessageList.add(userMessage2);
 
     when(messageClientMock.putMessage(any(PutMessageRequest.class)))
-        .thenThrow(new TException("test partition not serving",
-            new GalaxyTalosException().setErrorCode(
-                ErrorCode.PARTITION_NOT_SERVING)));
+        .thenThrow(new GalaxyTalosException().setErrorCode(
+                ErrorCode.PARTITION_NOT_SERVING));
     partitionSender.addMessage(userMessageList);
 
     Thread.sleep(110);
