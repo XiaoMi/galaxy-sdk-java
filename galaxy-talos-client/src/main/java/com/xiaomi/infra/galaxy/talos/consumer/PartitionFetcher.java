@@ -303,7 +303,12 @@ public class PartitionFetcher {
 
   public void shutDown() {
     if (fetcherFuture != null) {
-      fetcherFuture.cancel(true);
+      LOG.info("worker: " + workerId + " try to shutdown partition: " +
+          partitionId);
+      // set UNLOCKING to stop read and wait fetcher gracefully quit
+      updateState(TASK_STATE.UNLOCKING);
+      // 'false' means wait task done
+      fetcherFuture.cancel(false);
     }
     singleExecutor.shutdownNow();
   }
