@@ -450,7 +450,8 @@ public class TalosConsumer {
 
     // sort target by descending
     Collections.sort(targetList, Collections.reverseOrder());
-    LOG.info("calculate target partitions done: " + targetList);
+    LOG.info("worker: " + workerId + " calculate target partitions done: " +
+        targetList);
   }
 
   private void calculateWorkerPairs(Map<String, List<Integer>> copyWorkerMap,
@@ -459,7 +460,8 @@ public class TalosConsumer {
       sortedWorkerPairs.add(new WorkerPair(entry.getKey(), entry.getValue().size()));
     }
     Collections.sort(sortedWorkerPairs); // descending
-    LOG.info("calculate sorted worker pairs: " + sortedWorkerPairs);
+    LOG.info("worker: " + workerId + " calculate sorted worker pairs: " +
+        sortedWorkerPairs);
   }
 
   private void makeBalance() {
@@ -639,11 +641,13 @@ public class TalosConsumer {
   }
 
   public void shutDown() {
+    LOG.info("Worker: " + workerId + " is shutting down...");
     shutDownAllFetcher();
     partitionScheduledExecutor.shutdownNow();
     workerScheduleExecutor.shutdownNow();
     renewScheduleExecutor.shutdownNow();
     reBalanceExecutor.shutdownNow();
+    LOG.info("Worker: " + workerId + " shutdown.");
   }
 
   private Map<String, List<Integer>> deepCopyWorkerInfoMap() {

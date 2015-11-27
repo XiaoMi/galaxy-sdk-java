@@ -88,7 +88,7 @@ public class PartitionSender {
         }
       } catch (Throwable e) {
         LOG.error("Failed to put " + messageList.size() +
-            " messages for partition: " + partitionId);
+            " messages for partition: " + partitionId + " by: " + e.toString());
         if (LOG.isDebugEnabled()) {
           for (Message message : messageList) {
             LOG.error(message.getSequenceNumber() + ": " +

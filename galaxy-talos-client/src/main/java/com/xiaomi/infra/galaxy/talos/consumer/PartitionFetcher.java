@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicLong;
 
 import com.google.common.base.Preconditions;
@@ -108,10 +109,9 @@ public class PartitionFetcher {
         lastCommitOffset = finishedOffset;
         lastCommitTime = System.currentTimeMillis();
       }
-      if (LOG.isDebugEnabled()) {
-        LOG.debug("Consumer commit offset: " + lastCommitOffset +
-            " for partition: " + partitionId);
-      }
+
+      LOG.info("Worker: " + workerId + " commit offset: " +
+          lastCommitOffset + " for partition: " + partitionId);
     }
 
     @Override
@@ -136,7 +136,7 @@ public class PartitionFetcher {
 
       // reading data
       LOG.info("The workerId: " + workerId + " is serving partition: " +
-          partitionId);
+          partitionId + " from offset: " + startOffset.get());
       while (getCurState() == TASK_STATE.LOCKED) {
         // control fetch qps
         if (System.currentTimeMillis() - lastFetchTime < fetchInterval) {
@@ -149,7 +149,7 @@ public class PartitionFetcher {
 
         try {
           if (LOG.isDebugEnabled()) {
-            LOG.debug("Reading message from offset: " + startOffset +
+            LOG.debug("Reading message from offset: " + startOffset.get() +
                 " of partition: " + partitionId);
           }
           List<MessageAndOffset> messageList = simpleConsumer.fetchMessage(
@@ -200,7 +200,7 @@ public class PartitionFetcher {
 
       clean();
       LOG.info("The MessageProcessTask for topic: " + topicTalosResourceName +
-          " partition: " + partitionId + " is shutdown");
+          " partition: " + partitionId + " is finished");
     }
   } // MessageReader
 
@@ -214,6 +214,7 @@ public class PartitionFetcher {
   private MessageProcessor messageProcessor;
   private TASK_STATE curState;
   private ExecutorService singleExecutor;
+  private Future fetcherFuture;
 
   private TopicAndPartition topicAndPartition;
   private SimpleConsumer simpleConsumer;
@@ -232,6 +233,7 @@ public class PartitionFetcher {
     this.messageProcessor = messageProcessor;
     curState = TASK_STATE.INIT;
     singleExecutor = Executors.newSingleThreadExecutor();
+    fetcherFuture = null;
 
     topicAndPartition = new TopicAndPartition(topicName,
         topicTalosResourceName, partitionId);
@@ -256,6 +258,7 @@ public class PartitionFetcher {
     this.messageProcessor = messageProcessor;
     curState = TASK_STATE.INIT;
     singleExecutor = Executors.newSingleThreadExecutor();
+    fetcherFuture = null;
 
     topicAndPartition = new TopicAndPartition(topicName,
         topicTalosResourceName, partitionId);
@@ -284,9 +287,9 @@ public class PartitionFetcher {
   public void lock() {
     if (updateState(TASK_STATE.LOCKED)) {
       MessageReader messageReader = new MessageReader(messageProcessor);
-      singleExecutor.submit(messageReader);
+      fetcherFuture = singleExecutor.submit(messageReader);
       LOG.info("Worker: " + workerId + " invoke partition: " +
-          partitionId + " to 'LOCKED', success to serve it.");
+          partitionId + " to 'LOCKED', try to serve it.");
     }
   }
 
@@ -299,6 +302,9 @@ public class PartitionFetcher {
   }
 
   public void shutDown() {
+    if (fetcherFuture != null) {
+      fetcherFuture.cancel(true);
+    }
     singleExecutor.shutdownNow();
   }
 
@@ -359,7 +365,7 @@ public class PartitionFetcher {
       LOG.warn("Worker: " + workerId + " release partition error: " + e.toString());
       return;
     }
-    LOG.info("Success to release partition: " + partitionId);
+    LOG.info("Worker: " + workerId + " success to release partition: " + partitionId);
   }
 
   private boolean stealPartition() {
