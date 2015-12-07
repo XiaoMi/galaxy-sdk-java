@@ -24,6 +24,7 @@ public class TalosConsumerConfig extends TalosClientConfig {
   private int fetchMessageInterval;
   private boolean checkLastCommitOffset;
   private long waitPartitionWorkingTime;
+  private boolean resetLatestOffset;
 
   public TalosConsumerConfig(Configuration configuration) {
     this(configuration, true);
@@ -64,6 +65,9 @@ public class TalosConsumerConfig extends TalosClientConfig {
     waitPartitionWorkingTime = configuration.getLong(
         TalosClientConfigKeys.GALAXY_TALOS_CONSUMER_WAIT_PARTITION_WORKING_TIME,
         TalosClientConfigKeys.GALAXY_TALOS_CONSUMER_WAIT_PARTITION_WORKING_TIME_DEFAULT);
+    resetLatestOffset = configuration.getBoolean(
+        TalosClientConfigKeys.GALAXY_TALOS_CONSUMER_RESET_LATEST_OFFSET,
+        TalosClientConfigKeys.GALAXY_TALOS_CONSUMER_RESET_LATEST_OFFSET_DEFAULT);
 
     if (checkParameter) {
       Utils.checkParameterRange(
@@ -136,5 +140,9 @@ public class TalosConsumerConfig extends TalosClientConfig {
 
   public long getWaitPartitionWorkingTime() {
     return waitPartitionWorkingTime;
+  }
+
+  public boolean isResetLatestOffset() {
+    return resetLatestOffset;
   }
 }

@@ -69,4 +69,8 @@ public class Utils {
   public static boolean isPartitionNotServing(Throwable throwable) {
     return getErrorCode(throwable) == ErrorCode.PARTITION_NOT_SERVING;
   }
+
+  public static boolean isOffsetOutOfRange(Throwable throwable) {
+    return getErrorCode(throwable) == ErrorCode.MESSAGE_OFFSET_OUT_OF_RANGE;
+  }
 }

@@ -198,6 +198,15 @@ public class PartitionFetcherTest {
   }
 
   @Test
+  public void testOffsetOutOfRange() throws Exception {
+    when(simpleConsumerMock.fetchMessage(anyLong()))
+        .thenThrow(new GalaxyTalosException().setErrorCode(
+            ErrorCode.MESSAGE_OFFSET_OUT_OF_RANGE));
+    partitionFetcher.lock();
+    Thread.sleep(500);
+  }
+
+  @Test
   public void testLockLock() throws Exception {
     partitionFetcher.lock();
     Thread.sleep(50);

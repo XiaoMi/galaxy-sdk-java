@@ -248,4 +248,13 @@ public class TalosClientConfigKeys {
       "galaxy.talos.consumer.wait.partition.working.time.milli";
   public static final long GALAXY_TALOS_CONSUMER_WAIT_PARTITION_WORKING_TIME_DEFAULT =
       200;
+
+  /**
+   * The consumer reset offset by the latest offset when out of range
+   */
+  public static final String GALAXY_TALOS_CONSUMER_RESET_LATEST_OFFSET =
+      "galaxy.talos.consumer.reset.latest.offset";
+  public static final boolean GALAXY_TALOS_CONSUMER_RESET_LATEST_OFFSET_DEFAULT =
+      true;
+
 }

@@ -26,7 +26,7 @@ public enum ErrorCode implements libthrift091.TEnum {
   MESSAGE_INCOMPLETE(11),
   MESSAGE_INDEX_UNDESIRED_ERROR(12),
   MESSAGE_INDEX_NOT_EXIST(13),
-  MESSAGE_INDEX_OUT_OF_RANGE(14),
+  MESSAGE_OFFSET_OUT_OF_RANGE(14),
   INVALID_TOPIC_NAME(15),
   INVALID_TOPIC_ATTRIBUTE(16),
   OPERATION_FAILED(17),
@@ -88,7 +88,7 @@ public enum ErrorCode implements libthrift091.TEnum {
       case 13:
         return MESSAGE_INDEX_NOT_EXIST;
       case 14:
-        return MESSAGE_INDEX_OUT_OF_RANGE;
+        return MESSAGE_OFFSET_OUT_OF_RANGE;
       case 15:
         return INVALID_TOPIC_NAME;
       case 16:
