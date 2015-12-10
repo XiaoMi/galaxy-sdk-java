@@ -1,4 +1,5 @@
 include "Common.thrift"
+include "Message.thrift"
 
 namespace java com.xiaomi.infra.galaxy.emq.thrift
 namespace php EMQ.Queue
@@ -314,7 +315,7 @@ struct CreateTagRequest {
   3: optional i64 startTimestamp;
   4: optional i64 readQPSQuota;
   5: optional string attributeName;
-  6: optional Common.MessageAttribute attributeValue;
+  6: optional Message.MessageAttribute attributeValue;
   7: optional map<string, string> userAttributes;
 }
 
@@ -342,7 +343,7 @@ struct GetTagInfoResponse {
   4: required i64 startTimestamp;
   5: optional i64 readQPSQuota;
   6: optional string attributeName;
-  7: optional Common.MessageAttribute attributeValue;
+  7: optional Message.MessageAttribute attributeValue;
   8: optional map<string, string> userAttributes;
 }
 

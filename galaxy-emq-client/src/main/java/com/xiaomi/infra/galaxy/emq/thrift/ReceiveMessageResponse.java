@@ -82,7 +82,7 @@ public class ReceiveMessageResponse implements libthrift091.TBase<ReceiveMessage
    * User-defined attributes attached to message
    * 
    */
-  public Map<String,com.xiaomi.infra.galaxy.emq.thrift.MessageAttribute> messageAttributes; // optional
+  public Map<String,MessageAttribute> messageAttributes; // optional
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements libthrift091.TFieldIdEnum {
@@ -200,7 +200,7 @@ public class ReceiveMessageResponse implements libthrift091.TBase<ReceiveMessage
     tmpMap.put(_Fields.MESSAGE_ATTRIBUTES, new libthrift091.meta_data.FieldMetaData("messageAttributes", libthrift091.TFieldRequirementType.OPTIONAL, 
         new libthrift091.meta_data.MapMetaData(libthrift091.protocol.TType.MAP, 
             new libthrift091.meta_data.FieldValueMetaData(libthrift091.protocol.TType.STRING), 
-            new libthrift091.meta_data.StructMetaData(libthrift091.protocol.TType.STRUCT, com.xiaomi.infra.galaxy.emq.thrift.MessageAttribute.class))));
+            new libthrift091.meta_data.StructMetaData(libthrift091.protocol.TType.STRUCT, MessageAttribute.class))));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
     libthrift091.meta_data.FieldMetaData.addStructMetaDataMap(ReceiveMessageResponse.class, metaDataMap);
   }
@@ -237,15 +237,15 @@ public class ReceiveMessageResponse implements libthrift091.TBase<ReceiveMessage
       this.attributes = __this__attributes;
     }
     if (other.isSetMessageAttributes()) {
-      Map<String,com.xiaomi.infra.galaxy.emq.thrift.MessageAttribute> __this__messageAttributes = new HashMap<String,com.xiaomi.infra.galaxy.emq.thrift.MessageAttribute>(other.messageAttributes.size());
-      for (Map.Entry<String, com.xiaomi.infra.galaxy.emq.thrift.MessageAttribute> other_element : other.messageAttributes.entrySet()) {
+      Map<String,MessageAttribute> __this__messageAttributes = new HashMap<String,MessageAttribute>(other.messageAttributes.size());
+      for (Map.Entry<String, MessageAttribute> other_element : other.messageAttributes.entrySet()) {
 
         String other_element_key = other_element.getKey();
-        com.xiaomi.infra.galaxy.emq.thrift.MessageAttribute other_element_value = other_element.getValue();
+        MessageAttribute other_element_value = other_element.getValue();
 
         String __this__messageAttributes_copy_key = other_element_key;
 
-        com.xiaomi.infra.galaxy.emq.thrift.MessageAttribute __this__messageAttributes_copy_value = new com.xiaomi.infra.galaxy.emq.thrift.MessageAttribute(other_element_value);
+        MessageAttribute __this__messageAttributes_copy_value = new MessageAttribute(other_element_value);
 
         __this__messageAttributes.put(__this__messageAttributes_copy_key, __this__messageAttributes_copy_value);
       }
@@ -425,9 +425,9 @@ public class ReceiveMessageResponse implements libthrift091.TBase<ReceiveMessage
     return (this.messageAttributes == null) ? 0 : this.messageAttributes.size();
   }
 
-  public void putToMessageAttributes(String key, com.xiaomi.infra.galaxy.emq.thrift.MessageAttribute val) {
+  public void putToMessageAttributes(String key, MessageAttribute val) {
     if (this.messageAttributes == null) {
-      this.messageAttributes = new HashMap<String,com.xiaomi.infra.galaxy.emq.thrift.MessageAttribute>();
+      this.messageAttributes = new HashMap<String,MessageAttribute>();
     }
     this.messageAttributes.put(key, val);
   }
@@ -436,7 +436,7 @@ public class ReceiveMessageResponse implements libthrift091.TBase<ReceiveMessage
    * User-defined attributes attached to message
    * 
    */
-  public Map<String,com.xiaomi.infra.galaxy.emq.thrift.MessageAttribute> getMessageAttributes() {
+  public Map<String,MessageAttribute> getMessageAttributes() {
     return this.messageAttributes;
   }
 
@@ -444,7 +444,7 @@ public class ReceiveMessageResponse implements libthrift091.TBase<ReceiveMessage
    * User-defined attributes attached to message
    * 
    */
-  public ReceiveMessageResponse setMessageAttributes(Map<String,com.xiaomi.infra.galaxy.emq.thrift.MessageAttribute> messageAttributes) {
+  public ReceiveMessageResponse setMessageAttributes(Map<String,MessageAttribute> messageAttributes) {
     this.messageAttributes = messageAttributes;
     return this;
   }
@@ -502,7 +502,7 @@ public class ReceiveMessageResponse implements libthrift091.TBase<ReceiveMessage
       if (value == null) {
         unsetMessageAttributes();
       } else {
-        setMessageAttributes((Map<String,com.xiaomi.infra.galaxy.emq.thrift.MessageAttribute>)value);
+        setMessageAttributes((Map<String,MessageAttribute>)value);
       }
       break;
 
@@ -865,13 +865,13 @@ public class ReceiveMessageResponse implements libthrift091.TBase<ReceiveMessage
             if (schemeField.type == libthrift091.protocol.TType.MAP) {
               {
                 libthrift091.protocol.TMap _map48 = iprot.readMapBegin();
-                struct.messageAttributes = new HashMap<String,com.xiaomi.infra.galaxy.emq.thrift.MessageAttribute>(2*_map48.size);
+                struct.messageAttributes = new HashMap<String,MessageAttribute>(2*_map48.size);
                 String _key49;
-                com.xiaomi.infra.galaxy.emq.thrift.MessageAttribute _val50;
+                MessageAttribute _val50;
                 for (int _i51 = 0; _i51 < _map48.size; ++_i51)
                 {
                   _key49 = iprot.readString();
-                  _val50 = new com.xiaomi.infra.galaxy.emq.thrift.MessageAttribute();
+                  _val50 = new MessageAttribute();
                   _val50.read(iprot);
                   struct.messageAttributes.put(_key49, _val50);
                 }
@@ -932,7 +932,7 @@ public class ReceiveMessageResponse implements libthrift091.TBase<ReceiveMessage
           oprot.writeFieldBegin(MESSAGE_ATTRIBUTES_FIELD_DESC);
           {
             oprot.writeMapBegin(new libthrift091.protocol.TMap(libthrift091.protocol.TType.STRING, libthrift091.protocol.TType.STRUCT, struct.messageAttributes.size()));
-            for (Map.Entry<String, com.xiaomi.infra.galaxy.emq.thrift.MessageAttribute> _iter53 : struct.messageAttributes.entrySet())
+            for (Map.Entry<String, MessageAttribute> _iter53 : struct.messageAttributes.entrySet())
             {
               oprot.writeString(_iter53.getKey());
               _iter53.getValue().write(oprot);
@@ -983,7 +983,7 @@ public class ReceiveMessageResponse implements libthrift091.TBase<ReceiveMessage
       if (struct.isSetMessageAttributes()) {
         {
           oprot.writeI32(struct.messageAttributes.size());
-          for (Map.Entry<String, com.xiaomi.infra.galaxy.emq.thrift.MessageAttribute> _iter55 : struct.messageAttributes.entrySet())
+          for (Map.Entry<String, MessageAttribute> _iter55 : struct.messageAttributes.entrySet())
           {
             oprot.writeString(_iter55.getKey());
             _iter55.getValue().write(oprot);
@@ -1020,13 +1020,13 @@ public class ReceiveMessageResponse implements libthrift091.TBase<ReceiveMessage
       if (incoming.get(1)) {
         {
           libthrift091.protocol.TMap _map60 = new libthrift091.protocol.TMap(libthrift091.protocol.TType.STRING, libthrift091.protocol.TType.STRUCT, iprot.readI32());
-          struct.messageAttributes = new HashMap<String,com.xiaomi.infra.galaxy.emq.thrift.MessageAttribute>(2*_map60.size);
+          struct.messageAttributes = new HashMap<String,MessageAttribute>(2*_map60.size);
           String _key61;
-          com.xiaomi.infra.galaxy.emq.thrift.MessageAttribute _val62;
+          MessageAttribute _val62;
           for (int _i63 = 0; _i63 < _map60.size; ++_i63)
           {
             _key61 = iprot.readString();
-            _val62 = new com.xiaomi.infra.galaxy.emq.thrift.MessageAttribute();
+            _val62 = new MessageAttribute();
             _val62.read(iprot);
             struct.messageAttributes.put(_key61, _val62);
           }

@@ -77,7 +77,7 @@ public class ReceiveMessageRequest implements libthrift091.TBase<ReceiveMessageR
    * case-sensitive
    * 
    */
-  public com.xiaomi.infra.galaxy.emq.thrift.MessageAttribute attributeValue; // optional
+  public MessageAttribute attributeValue; // optional
   /**
    * If this field is not_set/null/empty, default queue tag will be used
    * 
@@ -200,7 +200,7 @@ public class ReceiveMessageRequest implements libthrift091.TBase<ReceiveMessageR
     tmpMap.put(_Fields.ATTRIBUTE_NAME, new libthrift091.meta_data.FieldMetaData("attributeName", libthrift091.TFieldRequirementType.OPTIONAL, 
         new libthrift091.meta_data.FieldValueMetaData(libthrift091.protocol.TType.STRING)));
     tmpMap.put(_Fields.ATTRIBUTE_VALUE, new libthrift091.meta_data.FieldMetaData("attributeValue", libthrift091.TFieldRequirementType.OPTIONAL, 
-        new libthrift091.meta_data.StructMetaData(libthrift091.protocol.TType.STRUCT, com.xiaomi.infra.galaxy.emq.thrift.MessageAttribute.class)));
+        new libthrift091.meta_data.StructMetaData(libthrift091.protocol.TType.STRUCT, MessageAttribute.class)));
     tmpMap.put(_Fields.TAG_NAME, new libthrift091.meta_data.FieldMetaData("tagName", libthrift091.TFieldRequirementType.OPTIONAL, 
         new libthrift091.meta_data.FieldValueMetaData(libthrift091.protocol.TType.STRING)));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
@@ -235,7 +235,7 @@ public class ReceiveMessageRequest implements libthrift091.TBase<ReceiveMessageR
       this.attributeName = other.attributeName;
     }
     if (other.isSetAttributeValue()) {
-      this.attributeValue = new com.xiaomi.infra.galaxy.emq.thrift.MessageAttribute(other.attributeValue);
+      this.attributeValue = new MessageAttribute(other.attributeValue);
     }
     if (other.isSetTagName()) {
       this.tagName = other.tagName;
@@ -391,7 +391,7 @@ public class ReceiveMessageRequest implements libthrift091.TBase<ReceiveMessageR
    * case-sensitive
    * 
    */
-  public com.xiaomi.infra.galaxy.emq.thrift.MessageAttribute getAttributeValue() {
+  public MessageAttribute getAttributeValue() {
     return this.attributeValue;
   }
 
@@ -400,7 +400,7 @@ public class ReceiveMessageRequest implements libthrift091.TBase<ReceiveMessageR
    * case-sensitive
    * 
    */
-  public ReceiveMessageRequest setAttributeValue(com.xiaomi.infra.galaxy.emq.thrift.MessageAttribute attributeValue) {
+  public ReceiveMessageRequest setAttributeValue(MessageAttribute attributeValue) {
     this.attributeValue = attributeValue;
     return this;
   }
@@ -490,7 +490,7 @@ public class ReceiveMessageRequest implements libthrift091.TBase<ReceiveMessageR
       if (value == null) {
         unsetAttributeValue();
       } else {
-        setAttributeValue((com.xiaomi.infra.galaxy.emq.thrift.MessageAttribute)value);
+        setAttributeValue((MessageAttribute)value);
       }
       break;
 
@@ -881,7 +881,7 @@ public class ReceiveMessageRequest implements libthrift091.TBase<ReceiveMessageR
             break;
           case 5: // ATTRIBUTE_VALUE
             if (schemeField.type == libthrift091.protocol.TType.STRUCT) {
-              struct.attributeValue = new com.xiaomi.infra.galaxy.emq.thrift.MessageAttribute();
+              struct.attributeValue = new MessageAttribute();
               struct.attributeValue.read(iprot);
               struct.setAttributeValueIsSet(true);
             } else { 
@@ -1018,7 +1018,7 @@ public class ReceiveMessageRequest implements libthrift091.TBase<ReceiveMessageR
         struct.setAttributeNameIsSet(true);
       }
       if (incoming.get(3)) {
-        struct.attributeValue = new com.xiaomi.infra.galaxy.emq.thrift.MessageAttribute();
+        struct.attributeValue = new MessageAttribute();
         struct.attributeValue.read(iprot);
         struct.setAttributeValueIsSet(true);
       }

@@ -11,6 +11,25 @@ namespace go emq.message
  * Author: shenyuannan@xiaomi.com
  */
 
+struct MessageAttribute {
+  /**
+  * must start with "STRING" or "BINARY", with an optional "." and a user-defined sub-type
+  * like "STRING.INTEGER" or "BINARY.JPEG"
+  * do not contain characters excepts alphabets, digits or "."
+  **/
+  1: required string type;
+
+  /**
+  * must be set if type is "STRING"
+  **/
+  2: optional string stringValue;
+
+  /**
+  * must be set if type is "BINARY"
+  **/
+  3: optional binary binaryValue;
+}
+
 struct SendMessageRequest {
   /**
   * Queue name;
@@ -37,7 +56,7 @@ struct SendMessageRequest {
   /**
   * User-defined attributes attached to message
   **/
-  5: optional map<string, Common.MessageAttribute> messageAttributes;
+  5: optional map<string, MessageAttribute> messageAttributes;
 }
 
 struct SendMessageResponse {
@@ -92,7 +111,7 @@ struct SendMessageBatchRequestEntry {
   /**
   * User-defined attributes attached to message
   **/
-  5: optional map<string, Common.MessageAttribute> messageAttributes;
+  5: optional map<string, MessageAttribute> messageAttributes;
 }
 
 struct SendMessageBatchRequest {
@@ -185,7 +204,7 @@ struct ReceiveMessageRequest {
   * Attribute value to match, corresponding to attributeName
   * case-sensitive
   **/
-  5: optional Common.MessageAttribute attributeValue;
+  5: optional MessageAttribute attributeValue;
 
   /**
   * If this field is not_set/null/empty, default queue tag will be used
@@ -225,7 +244,7 @@ struct ReceiveMessageResponse {
   /**
   * User-defined attributes attached to message
   **/
-  5: optional map<string, Common.MessageAttribute> messageAttributes;
+  5: optional map<string, MessageAttribute> messageAttributes;
 }
 
 struct ChangeMessageVisibilityRequest {
