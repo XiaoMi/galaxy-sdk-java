@@ -1,21 +1,29 @@
 package com.xiaomi.infra.galaxy.emq.client;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import com.xiaomi.infra.galaxy.emq.thrift.ChangeMessageVisibilityBatchRequest;
 import com.xiaomi.infra.galaxy.emq.thrift.ChangeMessageVisibilityBatchRequestEntry;
 import com.xiaomi.infra.galaxy.emq.thrift.ChangeMessageVisibilityRequest;
 import com.xiaomi.infra.galaxy.emq.thrift.CreateQueueRequest;
+import com.xiaomi.infra.galaxy.emq.thrift.CreateTagRequest;
 import com.xiaomi.infra.galaxy.emq.thrift.DeleteMessageBatchRequest;
 import com.xiaomi.infra.galaxy.emq.thrift.DeleteMessageBatchRequestEntry;
 import com.xiaomi.infra.galaxy.emq.thrift.DeleteMessageRequest;
 import com.xiaomi.infra.galaxy.emq.thrift.DeleteQueueRequest;
+import com.xiaomi.infra.galaxy.emq.thrift.DeleteTagRequest;
 import com.xiaomi.infra.galaxy.emq.thrift.GalaxyEmqServiceException;
 import com.xiaomi.infra.galaxy.emq.thrift.GetQueueInfoRequest;
+import com.xiaomi.infra.galaxy.emq.thrift.GetTagInfoRequest;
 import com.xiaomi.infra.galaxy.emq.thrift.ListPermissionsRequest;
 import com.xiaomi.infra.galaxy.emq.thrift.ListQueueRequest;
+import com.xiaomi.infra.galaxy.emq.thrift.ListTagRequest;
 import com.xiaomi.infra.galaxy.emq.thrift.MessageAttribute;
 import com.xiaomi.infra.galaxy.emq.thrift.PurgeQueueRequest;
 import com.xiaomi.infra.galaxy.emq.thrift.QueryPermissionForIdRequest;
@@ -40,52 +48,32 @@ import com.xiaomi.infra.galaxy.emq.thrift.Version;
  */
 
 public class EMQRequestCheckUtils {
+  public static Map<String, Method> checkMethodMap;
+  static {
+    checkMethodMap = new HashMap<String, Method>();
+    for (Method method : EMQRequestCheckUtils.class.getMethods()) {
+      if (method.getName().equals("check")) {
+        checkMethodMap.put(method.getParameterTypes()[0].getName(), method);
+      }
+    }
+  }
   public static void checkRequest(Object[] objects)
-      throws GalaxyEmqServiceException {
+      throws Throwable {
     if (objects.length == 1) {
-      if (objects[0] instanceof CreateQueueRequest) {
-        check((CreateQueueRequest) objects[0]);
-      } else if (objects[0] instanceof DeleteQueueRequest) {
-        check((DeleteQueueRequest) objects[0]);
-      } else if (objects[0] instanceof PurgeQueueRequest) {
-        check((PurgeQueueRequest) objects[0]);
-      } else if (objects[0] instanceof SetQueueAttributesRequest) {
-        check((SetQueueAttributesRequest) objects[0]);
-      } else if (objects[0] instanceof SetQueueQuotaRequest) {
-        check((SetQueueQuotaRequest) objects[0]);
-      } else if (objects[0] instanceof GetQueueInfoRequest) {
-        check((GetQueueInfoRequest) objects[0]);
-      } else if (objects[0] instanceof ListQueueRequest) {
-        check((ListQueueRequest) objects[0]);
-      } else if (objects[0] instanceof SetPermissionRequest) {
-        check((SetPermissionRequest) objects[0]);
-      } else if (objects[0] instanceof RevokePermissionRequest) {
-        check((RevokePermissionRequest) objects[0]);
-      } else if (objects[0] instanceof QueryPermissionForIdRequest) {
-        check((QueryPermissionForIdRequest) objects[0]);
-      } else if (objects[0] instanceof QueryPermissionRequest) {
-        check((QueryPermissionRequest) objects[0]);
-      } else if (objects[0] instanceof ListPermissionsRequest) {
-        check((ListPermissionsRequest) objects[0]);
-      } else if (objects[0] instanceof SendMessageRequest) {
-        check((SendMessageRequest) objects[0]);
-      } else if (objects[0] instanceof ReceiveMessageRequest) {
-        check((ReceiveMessageRequest) objects[0]);
-      } else if (objects[0] instanceof ChangeMessageVisibilityRequest) {
-        check((ChangeMessageVisibilityRequest) objects[0]);
-      } else if (objects[0] instanceof DeleteMessageRequest) {
-        check((DeleteMessageRequest) objects[0]);
-      } else if (objects[0] instanceof SendMessageBatchRequest) {
-        check((SendMessageBatchRequest) objects[0]);
-      } else if (objects[0] instanceof DeleteMessageBatchRequest) {
-        check((DeleteMessageBatchRequest) objects[0]);
-      } else if (objects[0] instanceof ChangeMessageVisibilityBatchRequest) {
-        check((ChangeMessageVisibilityBatchRequest) objects[0]);
-      } else if (!(objects[0] instanceof Version)) {
-        throw new GalaxyEmqServiceException().setErrMsg("Unknown Request");
+      Method method = checkMethodMap.get(objects[0].getClass().getName());
+      if (method != null) {
+        try {
+          method.invoke(null, objects[0]);
+        } catch (InvocationTargetException e) {
+          throw e.getTargetException();
+        }
+      } else {
+        throw new GalaxyEmqServiceException().setErrMsg("Unknown request class:"
+            + objects[0].getClass().getName());
       }
     } else if (objects.length > 1) {
-      throw new GalaxyEmqServiceException().setErrMsg("Unknown Request");
+      throw new GalaxyEmqServiceException().setErrMsg("Number of request" +
+          " parameters is more than one:" + objects.length);
     }
   }
 
@@ -278,6 +266,10 @@ public class EMQRequestCheckUtils {
       checkNotEmpty(request.getAttributeName(), "attribute name");
       check(request.getAttributeValue());
     }
+
+    if (request.isSetTagName()) {
+      validateTagName(request.getTagName());
+    }
   }
 
   public static void check(ChangeMessageVisibilityRequest request)
@@ -332,6 +324,47 @@ public class EMQRequestCheckUtils {
     }
   }
 
+  public static void check(Version version) {
+    // empty
+  }
+  public static void check(ListTagRequest request)
+      throws GalaxyEmqServiceException {
+    validateQueueName(request.getQueueName());
+  }
+
+  public static void check(GetTagInfoRequest request)
+      throws GalaxyEmqServiceException {
+    validateQueueName(request.getQueueName());
+    if (request.isSetTagName()) {
+      validateTagName(request.getTagName());
+    }
+  }
+
+  public static void check(DeleteTagRequest request)
+      throws GalaxyEmqServiceException {
+    validateQueueName(request.getQueueName());
+    validateTagName(request.getTagName());
+  }
+
+  public static void check(CreateTagRequest request)
+      throws GalaxyEmqServiceException {
+    validateQueueName(request.getQueueName());
+    validateTagName(request.getTagName());
+
+    if (request.isSetAttributeName()) {
+      checkNotEmpty(request.getAttributeName(), "attribute name");
+      check(request.getAttributeValue());
+    }
+
+    if (request.isSetUserAttributes()) {
+      validateUserAttributes(request.getUserAttributes());
+    }
+
+    checkParameterRange("tagReadQPS", request.getReadQPSQuota(),
+        RangeConstants.GALAXY_EMQ_QUEUE_READ_QPS_MINIMAL,
+        RangeConstants.GALAXY_EMQ_QUEUE_READ_QPS_MAXIMAL);
+  }
+
   public static void validateQueueAttribute(QueueAttribute attribute)
       throws GalaxyEmqServiceException {
     if (attribute.isSetDelaySeconds()) {
@@ -374,6 +407,10 @@ public class EMQRequestCheckUtils {
           RangeConstants.GALAXY_EMQ_QUEUE_PARTITION_NUMBER_MINIMAL,
           RangeConstants.GALAXY_EMQ_QUEUE_PARTITION_NUMBER_MAXIMAL);
     }
+
+    if (attribute.isSetUserAttributes()) {
+      validateUserAttributes(attribute.getUserAttributes());
+    }
   }
 
   public static void validateQueueQuota(QueueQuota queueQuota)
@@ -412,6 +449,25 @@ public class EMQRequestCheckUtils {
     if (queueName.split("/").length != 2) {
       throw new GalaxyEmqServiceException().setErrMsg("Invalid Queue Name").
           setDetails("allowed exactly one '/' in queue name " + queueName);
+    }
+  }
+
+  public static void validateTagName(String tagName)
+      throws GalaxyEmqServiceException {
+    checkNotEmpty(tagName, "tag name");
+    for (char c : tagName.toCharArray()) {
+      if (!Character.isJavaIdentifierPart(c)) {
+        throw new GalaxyEmqServiceException().setErrMsg("Invalid Tag Name").
+            setDetails("invalid characters in tag name");
+      }
+    }
+  }
+
+  public static void validateUserAttributes(Map<String, String> attribute)
+      throws GalaxyEmqServiceException {
+    for (Map.Entry<String, String> entry : attribute.entrySet()) {
+      checkNotEmpty(entry.getKey(), "user attribute name");
+      checkNotEmpty(entry.getValue(), "user attribute value for " + entry.getKey());
     }
   }
 

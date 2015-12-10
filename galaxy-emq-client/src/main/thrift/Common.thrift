@@ -221,6 +221,26 @@ struct Version {
   5: optional string details = "";
 }
 
+
+struct MessageAttribute {
+  /**
+  * must start with "STRING" or "BINARY", with an optional "." and a user-defined sub-type
+  * like "STRING.INTEGER" or "BINARY.JPEG"
+  * do not contain characters excepts alphabets, digits or "."
+  **/
+  1: required string type;
+
+  /**
+  * must be set if type is "STRING"
+  **/
+  2: optional string stringValue;
+
+  /**
+  * must be set if type is "BINARY"
+  **/
+  3: optional binary binaryValue;
+}
+
 service EMQBaseService {
   /**
   * Get EMQ service version;

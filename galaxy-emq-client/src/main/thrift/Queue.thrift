@@ -308,6 +308,53 @@ struct ListPermissionsResponse {
   1: map<string, Permission> permissionList;
 }
 
+struct CreateTagRequest {
+  1: required string queueName;
+  2: required string tagName;
+  3: optional i64 startTimestamp;
+  4: optional i64 readQPSQuota;
+  5: optional string attributeName;
+  6: optional Common.MessageAttribute attributeValue;
+  7: optional map<string, string> userAttributes;
+}
+
+struct CreateTagResponse {
+  1: required string queueName;
+  2: required string tagName;
+  3: required i64 startTimestamp;
+  4: optional i64 readQPSQuota;
+}
+
+struct DeleteTagRequest {
+  1: required string queueName;
+  2: required string tagName;
+}
+
+struct GetTagInfoRequest {
+  1: required string queueName;
+  2: optional string tagName;
+}
+
+struct GetTagInfoResponse {
+  1: required string queueName;
+  2: optional string tagName;
+  3: required QueueState tagState;
+  4: required i64 startTimestamp;
+  5: optional i64 readQPSQuota;
+  6: optional string attributeName;
+  7: optional Common.MessageAttribute attributeValue;
+  8: optional map<string, string> userAttributes;
+}
+
+struct ListTagRequest {
+  1: required string queueName;
+}
+
+struct ListTagResponse {
+  1: required string queueName;
+  2: required list<string> tagName;
+}
+
 struct QueryMetricRequest {
   1: optional string queueName;
   2: optional i64 startTime;
@@ -429,6 +476,34 @@ service QueueService extends Common.EMQBaseService {
   **/
   ListPermissionsResponse listPermissions(1: ListPermissionsRequest request)
       throws (1: Common.GalaxyEmqServiceException e);
+  
+  /**
+  * create tag for queue
+  * ADMIN_QUEUE required to use this method
+  **/
+  CreateTagResponse createTag(1: CreateTagRequest request)
+      throws (1: Common.GalaxyEmqServiceException e);
+ 
+  /**
+  * delete tag for queue
+  * ADMIN_QUEUE required to use this method
+  **/
+  void deleteTag(1: DeleteTagRequest request)
+      throws (1: Common.GalaxyEmqServiceException e);
+
+  /**
+  * get info of tag
+  * ADMIN_QUEUE required to use this method
+  **/
+  GetTagInfoResponse getTagInfo(1: GetTagInfoRequest request)
+      throws (1: Common.GalaxyEmqServiceException e);
+
+  /**
+  * list names of all tag of queue
+  * ADMIN_QUEUE required to use this method
+  **/
+  ListTagResponse listTag(1: ListTagRequest request)
+      throws (1: Common.GalaxyEmqServiceException e);
 
   /**
   * query metrics
@@ -436,5 +511,4 @@ service QueueService extends Common.EMQBaseService {
   **/
   TimeSeriesData queryMetric(1: QueryMetricRequest request)
       throws(1: Common.GalaxyEmqServiceException e);
-
 }

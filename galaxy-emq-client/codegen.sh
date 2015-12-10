@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 THRIFT_ROOT_PATH=./src/main/thrift
 THRIFT_JAVA_PATH=./src/main/java
 THRIFT_PYTHON_PATH=../../galaxy-sdk-python
