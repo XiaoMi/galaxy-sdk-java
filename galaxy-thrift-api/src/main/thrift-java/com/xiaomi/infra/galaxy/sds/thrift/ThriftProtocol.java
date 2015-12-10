@@ -26,7 +26,11 @@ public enum ThriftProtocol implements libthrift091.TEnum {
   /**
    * TBINARYProtocol
    */
-  TBINARY(2);
+  TBINARY(2),
+  /**
+   * TBINARYProtocolAccelerated, 优化PHP/Python客户端thrift序列化性能
+   */
+  TBINARYACCELERATED(3);
 
   private final int value;
 
@@ -53,6 +57,8 @@ public enum ThriftProtocol implements libthrift091.TEnum {
         return TJSON;
       case 2:
         return TBINARY;
+      case 3:
+        return TBINARYACCELERATED;
       default:
         return null;
     }

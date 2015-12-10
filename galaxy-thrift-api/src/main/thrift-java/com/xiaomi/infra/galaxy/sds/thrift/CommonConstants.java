@@ -108,18 +108,14 @@ public class CommonConstants {
 
   public static final String THRIFT_COMPACT_PROTOCOL_CLASS = "TCompactProtocol";
 
+  public static final String THRIFT_BINARY_PROTOCOL_ACCELERATED_CLASS = "TBinaryProtocolAccelerated";
+
   public static final Map<ThriftProtocol,String> THRIFT_HEADER_MAP = new HashMap<ThriftProtocol,String>();
   static {
     THRIFT_HEADER_MAP.put(com.xiaomi.infra.galaxy.sds.thrift.ThriftProtocol.TCOMPACT, "application/x-thrift-compact");
     THRIFT_HEADER_MAP.put(com.xiaomi.infra.galaxy.sds.thrift.ThriftProtocol.TJSON, "application/x-thrift-json");
     THRIFT_HEADER_MAP.put(com.xiaomi.infra.galaxy.sds.thrift.ThriftProtocol.TBINARY, "application/x-thrift-binary");
-  }
-
-  public static final Map<ThriftProtocol,String> THRIFT_PROTOCOL_MAP = new HashMap<ThriftProtocol,String>();
-  static {
-    THRIFT_PROTOCOL_MAP.put(com.xiaomi.infra.galaxy.sds.thrift.ThriftProtocol.TCOMPACT, "TCompactProtocol");
-    THRIFT_PROTOCOL_MAP.put(com.xiaomi.infra.galaxy.sds.thrift.ThriftProtocol.TJSON, "TJSONProtocol");
-    THRIFT_PROTOCOL_MAP.put(com.xiaomi.infra.galaxy.sds.thrift.ThriftProtocol.TBINARY, "TBinaryProtocol");
+    THRIFT_HEADER_MAP.put(com.xiaomi.infra.galaxy.sds.thrift.ThriftProtocol.TBINARYACCELERATED, "application/x-thrift-binary");
   }
 
   public static final Map<String,ThriftProtocol> HEADER_THRIFT_MAP = new HashMap<String,ThriftProtocol>();
@@ -128,6 +124,14 @@ public class CommonConstants {
     HEADER_THRIFT_MAP.put("application/x-thrift-json", com.xiaomi.infra.galaxy.sds.thrift.ThriftProtocol.TJSON);
     HEADER_THRIFT_MAP.put("application/x-thrift-binary", com.xiaomi.infra.galaxy.sds.thrift.ThriftProtocol.TBINARY);
     HEADER_THRIFT_MAP.put("application/x-thrift", com.xiaomi.infra.galaxy.sds.thrift.ThriftProtocol.TJSON);
+  }
+
+  public static final Map<ThriftProtocol,String> THRIFT_PROTOCOL_MAP = new HashMap<ThriftProtocol,String>();
+  static {
+    THRIFT_PROTOCOL_MAP.put(com.xiaomi.infra.galaxy.sds.thrift.ThriftProtocol.TCOMPACT, "TCompactProtocol");
+    THRIFT_PROTOCOL_MAP.put(com.xiaomi.infra.galaxy.sds.thrift.ThriftProtocol.TJSON, "TJSONProtocol");
+    THRIFT_PROTOCOL_MAP.put(com.xiaomi.infra.galaxy.sds.thrift.ThriftProtocol.TBINARY, "TBinaryProtocol");
+    THRIFT_PROTOCOL_MAP.put(com.xiaomi.infra.galaxy.sds.thrift.ThriftProtocol.TBINARYACCELERATED, "TBinaryProtocolAccelerated");
   }
 
   /**
