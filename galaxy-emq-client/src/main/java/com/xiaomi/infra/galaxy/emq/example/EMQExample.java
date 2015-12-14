@@ -1,16 +1,22 @@
 package com.xiaomi.infra.galaxy.emq.example;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import libthrift091.TException;
 
 import com.xiaomi.infra.galaxy.emq.client.EMQClientFactory;
+import com.xiaomi.infra.galaxy.emq.thrift.ChangeMessageVisibilityBatchRequest;
+import com.xiaomi.infra.galaxy.emq.thrift.ChangeMessageVisibilityBatchRequestEntry;
 import com.xiaomi.infra.galaxy.emq.thrift.ChangeMessageVisibilityRequest;
 import com.xiaomi.infra.galaxy.emq.thrift.CreateQueueRequest;
 import com.xiaomi.infra.galaxy.emq.thrift.CreateQueueResponse;
+import com.xiaomi.infra.galaxy.emq.thrift.CreateTagRequest;
 import com.xiaomi.infra.galaxy.emq.thrift.DeleteMessageBatchRequest;
 import com.xiaomi.infra.galaxy.emq.thrift.DeleteMessageBatchRequestEntry;
 import com.xiaomi.infra.galaxy.emq.thrift.DeleteQueueRequest;
+import com.xiaomi.infra.galaxy.emq.thrift.DeleteTagRequest;
+import com.xiaomi.infra.galaxy.emq.thrift.GalaxyEmqServiceException;
 import com.xiaomi.infra.galaxy.emq.thrift.MessageService;
 import com.xiaomi.infra.galaxy.emq.thrift.QueueService;
 import com.xiaomi.infra.galaxy.emq.thrift.ReceiveMessageRequest;
@@ -44,6 +50,10 @@ public class EMQExample {
           createQueueRequest);
       String queueName = createQueueResponse.getQueueName();
 
+      String tagName = "tagTest";
+      CreateTagRequest createTagRequest = new CreateTagRequest(queueName, tagName);
+      queueClient.createTag(createTagRequest);
+
       String messageBody = "EMQExample";
       SendMessageRequest sendMessageRequest =
           new SendMessageRequest(queueName, messageBody);
@@ -55,37 +65,60 @@ public class EMQExample {
       ReceiveMessageRequest receiveMessageRequest =
           new ReceiveMessageRequest(queueName);
       List<ReceiveMessageResponse> receiveMessageResponse =
-          messageClient.receiveMessage(receiveMessageRequest);
+          new ArrayList<ReceiveMessageResponse>();
+      while (receiveMessageResponse.isEmpty()) {
+        receiveMessageResponse =
+            messageClient.receiveMessage(receiveMessageRequest);
+      }
+      DeleteMessageBatchRequest deleteMessageBatchRequest =
+          new DeleteMessageBatchRequest();
+      deleteMessageBatchRequest.setQueueName(queueName);
       for (ReceiveMessageResponse response : receiveMessageResponse) {
         System.out.printf(
-            "Receive:\n  MessageBody: %s  MessageId: %s ReceiptHandle: %s\n\n",
+            "Receive from default:\n  MessageBody: %s  MessageId: %s " +
+                "ReceiptHandle: %s\n\n",
             response.getMessageBody(), response.getMessageID(),
             response.getReceiptHandle());
+        deleteMessageBatchRequest.addToDeleteMessageBatchRequestEntryList(
+            new DeleteMessageBatchRequestEntry(response.getReceiptHandle()));
+      }
+      messageClient.deleteMessageBatch(deleteMessageBatchRequest);
+
+      receiveMessageRequest = new ReceiveMessageRequest(queueName);
+      receiveMessageRequest.setTagName(tagName);
+      receiveMessageResponse.clear();
+      while (receiveMessageResponse.isEmpty()) {
+        receiveMessageResponse =
+            messageClient.receiveMessage(receiveMessageRequest);
+      }
+      ChangeMessageVisibilityBatchRequest changeRequest =
+          new ChangeMessageVisibilityBatchRequest();
+      changeRequest.setQueueName(queueName);
+      for (ReceiveMessageResponse response : receiveMessageResponse) {
+        System.out.printf(
+            "Receive from tag:\n  MessageBody: %s  MessageId: %s " +
+                "ReceiptHandle: %s\n\n",
+            response.getMessageBody(), response.getMessageID(),
+            response.getReceiptHandle());
+        changeRequest.addToChangeMessageVisibilityRequestEntryList(
+            new ChangeMessageVisibilityBatchRequestEntry(
+                response.getReceiptHandle(), 0));
       }
 
-      if (!receiveMessageResponse.isEmpty()) {
-        ChangeMessageVisibilityRequest changeMessageVisibilityRequest =
-            new ChangeMessageVisibilityRequest(queueName,
-                receiveMessageResponse.get(0).getReceiptHandle(), 0);
-        messageClient.changeMessageVisibilitySeconds(changeMessageVisibilityRequest);
-        System.out.printf("Change Visibility\n  ReceiptHandle: %s " +
-                "Time: %s seconds\n\n",
-            changeMessageVisibilityRequest.getReceiptHandle(),
-            changeMessageVisibilityRequest.getInvisibilitySeconds());
-      }
+      messageClient.changeMessageVisibilitySecondsBatch(changeRequest);
+      System.out.printf("Change Visibility.\n\n");
 
       receiveMessageRequest.setMaxReceiveMessageWaitSeconds(5);
       receiveMessageResponse = messageClient.receiveMessage(receiveMessageRequest);
       for (ReceiveMessageResponse response : receiveMessageResponse) {
         System.out.printf(
-            "Receive:\n  MessageBody: %s  MessageId: %s ReceiptHandle: %s\n\n",
+            "Receive from tag:\n  MessageBody: %s  MessageId: %s ReceiptHandle: %s\n\n",
             response.getMessageBody(), response.getMessageID(),
             response.getReceiptHandle());
       }
 
       if (!receiveMessageResponse.isEmpty()) {
-        DeleteMessageBatchRequest deleteMessageBatchRequest =
-            new DeleteMessageBatchRequest();
+        deleteMessageBatchRequest = new DeleteMessageBatchRequest();
         deleteMessageBatchRequest.setQueueName(queueName);
         for (ReceiveMessageResponse response : receiveMessageResponse) {
           deleteMessageBatchRequest.addToDeleteMessageBatchRequestEntryList(
@@ -95,10 +128,19 @@ public class EMQExample {
         System.out.print("Delete Messages.\n\n");
       }
 
+      DeleteTagRequest deleteTagRequest = new DeleteTagRequest(queueName, tagName);
+      queueClient.deleteTag(deleteTagRequest);
+
       DeleteQueueRequest deleteQueueRequest = new DeleteQueueRequest(queueName);
       queueClient.deleteQueue(deleteQueueRequest);
     } catch (TException e) {
-      System.out.printf("Failed." + e.getMessage() + "\n\n");
+      if (e instanceof GalaxyEmqServiceException) {
+        GalaxyEmqServiceException ex = (GalaxyEmqServiceException) e;
+        System.out.printf("Failed. Reason:" + ex.getErrMsg() + "\n" +
+            ex.getDetails() + " requestId=" + ex.getRequestId() + "\n\n");
+      } else {
+        System.out.printf("Failed." + e.getMessage() + "\n\n");
+      }
     }
   }
 }
