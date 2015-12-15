@@ -21,6 +21,7 @@ public class TalosProducerConfig extends TalosClientConfig {
   private int checkPartitionInterval;
   private long updatePartitionIdInterval;
   private long waitPartitionWorkingTime;
+  private long updatePartitionMsgNum;
 
   public TalosProducerConfig(Configuration configuration) {
     super(configuration);
@@ -51,6 +52,9 @@ public class TalosProducerConfig extends TalosClientConfig {
     waitPartitionWorkingTime = configuration.getLong(
         TalosClientConfigKeys.GALAXY_TALOS_PRODUCER_WAIT_PARTITION_WORKING_TIME,
         TalosClientConfigKeys.GALAXY_TALOS_PRODUCER_WAIT_PARTITION_WORKING_TIME_DEFAULT);
+    updatePartitionMsgNum = configuration.getLong(
+        TalosClientConfigKeys.GALAXY_TALOS_PRODUCER_UPDATE_PARTITION_MSGNUMBER,
+        TalosClientConfigKeys.GALAXY_TALOS_PRODUCER_UPDATE_PARTITION_MSGNUMBER_DEFAULT);
   }
 
   public int getMaxBufferedMsgNumber() {
@@ -87,5 +91,9 @@ public class TalosProducerConfig extends TalosClientConfig {
 
   public long getWaitPartitionWorkingTime() {
     return waitPartitionWorkingTime;
+  }
+
+  public long getUpdatePartitionMsgNum() {
+    return updatePartitionMsgNum;
   }
 }

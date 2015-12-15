@@ -141,6 +141,15 @@ public class TalosClientConfigKeys {
       10000;
 
   /**
+   * The producer update partitionId
+   * when message number added one partition enough large
+   */
+  public static final String GALAXY_TALOS_PRODUCER_UPDATE_PARTITION_MSGNUMBER =
+      "galaxy.talos.producer.update.partition.msgnumber";
+  public static final long GALAXY_TALOS_PRODUCER_UPDATE_PARTITION_MSGNUMBER_DEFAULT =
+      1000;
+
+  /**
    * The producer partitionSender sleep/delay time when partitionNotServing
    */
   public static final String GALAXY_TALOS_PRODUCER_WAIT_PARTITION_WORKING_TIME =

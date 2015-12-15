@@ -97,6 +97,8 @@ public class TalosProducer {
   private TalosProducerConfig talosProducerConfig;
   private long updatePartitionIdInterval;
   private long lastUpdatePartitionIdTime;
+  private long updatePartitionIdMsgNumber;
+  private long lastAddMsgNumber;
   private Random random;
   private int maxBufferedMsgNumber;
   private int maxBufferedMsgBytes;
@@ -145,6 +147,8 @@ public class TalosProducer {
     talosProducerConfig = producerConfig;
     updatePartitionIdInterval = talosProducerConfig.getUpdatePartitionIdInterval();
     lastUpdatePartitionIdTime = System.currentTimeMillis();
+    updatePartitionIdMsgNumber = talosProducerConfig.getUpdatePartitionMsgNum();
+    lastAddMsgNumber = 0;
     random = new Random();
     maxBufferedMsgNumber = talosProducerConfig.getMaxBufferedMsgNumber();
     maxBufferedMsgBytes = talosProducerConfig.getMaxBufferedMsgBytes();
@@ -178,6 +182,8 @@ public class TalosProducer {
     this.talosProducerConfig = producerConfig;
     updatePartitionIdInterval = talosProducerConfig.getUpdatePartitionIdInterval();
     lastUpdatePartitionIdTime = System.currentTimeMillis();
+    updatePartitionIdMsgNumber = talosProducerConfig.getUpdatePartitionMsgNum();
+    lastAddMsgNumber = 0;
     random = new Random();
     maxBufferedMsgNumber = talosProducerConfig.getMaxBufferedMsgNumber();
     maxBufferedMsgBytes = talosProducerConfig.getMaxBufferedMsgBytes();
@@ -223,14 +229,20 @@ public class TalosProducer {
     // user can optionally set 'partitionKey' and 'sequenceNumber' when construct Message
     Map<Integer, List<UserMessage>> partitionBufferMap =
         new HashMap<Integer, List<UserMessage>>();
+    int currentPartitionId;
 
     // check/update curPartitionId
-    if (System.currentTimeMillis() - lastUpdatePartitionIdTime >=
-        updatePartitionIdInterval) {
-      curPartitionId = (curPartitionId + 1) % partitionNumber;
-      lastUpdatePartitionIdTime = System.currentTimeMillis();
+    synchronized (this) {
+      if (shouldUpdatePartition()) {
+        curPartitionId = (curPartitionId + 1) % partitionNumber;
+        lastUpdatePartitionIdTime = System.currentTimeMillis();
+        lastAddMsgNumber = 0;
+      }
+      currentPartitionId = curPartitionId;
+      lastAddMsgNumber += msgList.size();
     }
-    partitionBufferMap.put(curPartitionId, new ArrayList<UserMessage>());
+
+    partitionBufferMap.put(currentPartitionId, new ArrayList<UserMessage>());
 
     for (Message message : msgList) {
       // check data validity
@@ -239,7 +251,7 @@ public class TalosProducer {
       // check partitionKey setting and validity
       if (!message.isSetPartitionKey()) {
         // straightforward put to cur partitionId queue
-        partitionBufferMap.get(curPartitionId).add(new UserMessage(message));
+        partitionBufferMap.get(currentPartitionId).add(new UserMessage(message));
       } else {
         checkMessagePartitionKeyValidity(message.getPartitionKey());
         // construct UserMessage and dispatch to buffer by partitionId
@@ -274,6 +286,12 @@ public class TalosProducer {
     partitionCheckFuture.cancel(true);
     partitionCheckExecutor.shutdownNow();
     messageCallbackExecutors.shutdownNow();
+  }
+
+  private synchronized boolean shouldUpdatePartition() {
+    return (System.currentTimeMillis() - lastUpdatePartitionIdTime >=
+        updatePartitionIdInterval) || (lastAddMsgNumber >=
+        updatePartitionIdMsgNumber);
   }
 
   private synchronized PRODUCER_STATE getProducerState() {
