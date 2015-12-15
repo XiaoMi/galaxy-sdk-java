@@ -228,6 +228,7 @@ public class TalosProducer {
     if (System.currentTimeMillis() - lastUpdatePartitionIdTime >=
         updatePartitionIdInterval) {
       curPartitionId = (curPartitionId + 1) % partitionNumber;
+      lastUpdatePartitionIdTime = System.currentTimeMillis();
     }
     partitionBufferMap.put(curPartitionId, new ArrayList<UserMessage>());
 

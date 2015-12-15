@@ -57,10 +57,8 @@ public class PartitionMessageQueue {
     while (!shouldPut()) {
       try {
         long waitTime = getWaitTime();
-        if (LOG.isDebugEnabled()) {
-          LOG.debug("getUserMessageList waiting: " + waitTime +
-              " to return msgList in partition: " + partitionId);
-        }
+        LOG.info("getUserMessageList waiting: " + waitTime +
+            " to return msgList in partition: " + partitionId);
         wait(waitTime);
       } catch (InterruptedException e) {
         LOG.error("getUserMessageList for partition: " + partitionId +
@@ -89,8 +87,8 @@ public class PartitionMessageQueue {
   }
 
   private synchronized boolean shouldPut() {
-    return curMessageBytes > maxPutMsgBytes ||
-        userMessageList.size() > maxPutMsgNumber ||
+    return curMessageBytes >= maxPutMsgBytes ||
+        userMessageList.size() >= maxPutMsgNumber ||
         (userMessageList.size() > 0 && (System.currentTimeMillis()
             - userMessageList.peekLast().getTimestamp() >= maxBufferedTime));
   }
