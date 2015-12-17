@@ -36,4 +36,9 @@ public class EMQConstants {
    * Message操作RPC路径
    */
   public static final String MESSAGE_SERVICE_PATH = "/v1/api/message";
+
+  /**
+   * Statistics操作RPC路径
+   */
+  public static final String STATISTICS_SERVICE_PATH = "/v1/api/statistics";
 }

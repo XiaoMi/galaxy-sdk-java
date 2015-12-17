@@ -99,23 +99,11 @@ struct Throughput {
   2: optional i64 writeQps;
 }
 
-struct SpaceQuota {
-  /**
-   * Queue read qps;
-   **/
-  1: optional i64 size;
-}
-
 struct QueueQuota {
-  /**
-   * Queue space quota;
-   **/
-  1: optional SpaceQuota spaceQuota;
-
   /**
    * Queue read and qps;
    **/
-  2: optional Throughput throughput;
+  1: optional Throughput throughput;
 }
 
 struct CreateQueueRequest {

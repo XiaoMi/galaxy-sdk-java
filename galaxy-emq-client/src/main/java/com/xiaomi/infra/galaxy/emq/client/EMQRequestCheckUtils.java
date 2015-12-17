@@ -8,20 +8,26 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import com.xiaomi.infra.galaxy.emq.thrift.AddAlertPolicyRequest;
 import com.xiaomi.infra.galaxy.emq.thrift.ChangeMessageVisibilityBatchRequest;
 import com.xiaomi.infra.galaxy.emq.thrift.ChangeMessageVisibilityBatchRequestEntry;
 import com.xiaomi.infra.galaxy.emq.thrift.ChangeMessageVisibilityRequest;
 import com.xiaomi.infra.galaxy.emq.thrift.CreateQueueRequest;
 import com.xiaomi.infra.galaxy.emq.thrift.CreateTagRequest;
+import com.xiaomi.infra.galaxy.emq.thrift.DeleteAlertPolicyRequest;
 import com.xiaomi.infra.galaxy.emq.thrift.DeleteMessageBatchRequest;
 import com.xiaomi.infra.galaxy.emq.thrift.DeleteMessageBatchRequestEntry;
 import com.xiaomi.infra.galaxy.emq.thrift.DeleteMessageRequest;
 import com.xiaomi.infra.galaxy.emq.thrift.DeleteQueueRequest;
 import com.xiaomi.infra.galaxy.emq.thrift.DeleteTagRequest;
 import com.xiaomi.infra.galaxy.emq.thrift.GalaxyEmqServiceException;
+import com.xiaomi.infra.galaxy.emq.thrift.GetQueueDailyStatisticsStateRequest;
 import com.xiaomi.infra.galaxy.emq.thrift.GetQueueInfoRequest;
 import com.xiaomi.infra.galaxy.emq.thrift.GetTagInfoRequest;
+import com.xiaomi.infra.galaxy.emq.thrift.GetUserInfoRequest;
+import com.xiaomi.infra.galaxy.emq.thrift.GetUserQuotaRequest;
 import com.xiaomi.infra.galaxy.emq.thrift.ListPermissionsRequest;
+import com.xiaomi.infra.galaxy.emq.thrift.ListQueueAlertPoliciesRequest;
 import com.xiaomi.infra.galaxy.emq.thrift.ListQueueRequest;
 import com.xiaomi.infra.galaxy.emq.thrift.ListTagRequest;
 import com.xiaomi.infra.galaxy.emq.thrift.MessageAttribute;
@@ -38,7 +44,10 @@ import com.xiaomi.infra.galaxy.emq.thrift.SendMessageBatchRequestEntry;
 import com.xiaomi.infra.galaxy.emq.thrift.SendMessageRequest;
 import com.xiaomi.infra.galaxy.emq.thrift.SetPermissionRequest;
 import com.xiaomi.infra.galaxy.emq.thrift.SetQueueAttributesRequest;
+import com.xiaomi.infra.galaxy.emq.thrift.SetQueueDailyStatisticsStateRequest;
 import com.xiaomi.infra.galaxy.emq.thrift.SetQueueQuotaRequest;
+import com.xiaomi.infra.galaxy.emq.thrift.SetUserInfoRequest;
+import com.xiaomi.infra.galaxy.emq.thrift.SetUserQuotaRequest;
 import com.xiaomi.infra.galaxy.emq.thrift.Version;
 
 /**
@@ -49,6 +58,7 @@ import com.xiaomi.infra.galaxy.emq.thrift.Version;
 
 public class EMQRequestCheckUtils {
   public static Map<String, Method> checkMethodMap;
+
   static {
     checkMethodMap = new HashMap<String, Method>();
     for (Method method : EMQRequestCheckUtils.class.getMethods()) {
@@ -57,10 +67,12 @@ public class EMQRequestCheckUtils {
       }
     }
   }
+
   public static void checkRequest(Object[] objects)
       throws Throwable {
+    String requestName = objects[0].getClass().getName();
     if (objects.length == 1) {
-      Method method = checkMethodMap.get(objects[0].getClass().getName());
+      Method method = checkMethodMap.get(requestName);
       if (method != null) {
         try {
           method.invoke(null, objects[0]);
@@ -70,6 +82,7 @@ public class EMQRequestCheckUtils {
       } else {
         throw new GalaxyEmqServiceException().setErrMsg("Unknown request class:"
             + objects[0].getClass().getName());
+
       }
     } else if (objects.length > 1) {
       throw new GalaxyEmqServiceException().setErrMsg("Number of request" +
@@ -324,9 +337,6 @@ public class EMQRequestCheckUtils {
     }
   }
 
-  public static void check(Version version) {
-    // empty
-  }
   public static void check(ListTagRequest request)
       throws GalaxyEmqServiceException {
     validateQueueName(request.getQueueName());
@@ -365,6 +375,37 @@ public class EMQRequestCheckUtils {
         RangeConstants.GALAXY_EMQ_QUEUE_READ_QPS_MAXIMAL);
   }
 
+  public static void check(AddAlertPolicyRequest request)
+      throws GalaxyEmqServiceException {
+    validateQueueName(request.getQueueName());
+  }
+
+  public static void check(DeleteAlertPolicyRequest request)
+      throws GalaxyEmqServiceException {
+    validateQueueName(request.getQueueName());
+  }
+
+  public static void check(ListQueueAlertPoliciesRequest request)
+      throws GalaxyEmqServiceException {
+    validateQueueName(request.getQueueName());
+  }
+
+  public static void check(SetQueueDailyStatisticsStateRequest request)
+      throws GalaxyEmqServiceException {
+    validateQueueName(request.getQueueName());
+  }
+
+  public static void check(GetQueueDailyStatisticsStateRequest request)
+      throws GalaxyEmqServiceException {
+    validateQueueName(request.getQueueName());
+  }
+
+  public static void check(Version request){}
+  public static void check(SetUserQuotaRequest request){}
+  public static void check(GetUserQuotaRequest request){}
+  public static void check(SetUserInfoRequest request){}
+  public static void check(GetUserInfoRequest request){}
+  
   public static void validateQueueAttribute(QueueAttribute attribute)
       throws GalaxyEmqServiceException {
     if (attribute.isSetDelaySeconds()) {
@@ -415,13 +456,6 @@ public class EMQRequestCheckUtils {
 
   public static void validateQueueQuota(QueueQuota queueQuota)
       throws GalaxyEmqServiceException {
-    if (queueQuota.isSetSpaceQuota()) {
-      if (queueQuota.getSpaceQuota().isSetSize()) {
-        checkParameterRange("queueSpaceQuota", queueQuota.getSpaceQuota().getSize(),
-            RangeConstants.GALAXY_EMQ_QUEUE_MAX_SPACE_QUOTA_MINIMAL,
-            RangeConstants.GALAXY_EMQ_QUEUE_MAX_SPACE_QUOTA_MAXIMAL);
-      }
-    }
     if (queueQuota.isSetThroughput()) {
       if (queueQuota.getThroughput().isSetReadQps()) {
         checkParameterRange("queueReadQps", queueQuota.getThroughput().getReadQps(),
@@ -511,4 +545,5 @@ public class EMQRequestCheckUtils {
       throw new GalaxyEmqServiceException().setErrMsg("empty " + name);
     }
   }
+
 }
