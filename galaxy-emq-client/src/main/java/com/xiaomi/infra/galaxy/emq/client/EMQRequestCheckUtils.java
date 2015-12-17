@@ -26,6 +26,7 @@ import com.xiaomi.infra.galaxy.emq.thrift.GetQueueInfoRequest;
 import com.xiaomi.infra.galaxy.emq.thrift.GetTagInfoRequest;
 import com.xiaomi.infra.galaxy.emq.thrift.GetUserInfoRequest;
 import com.xiaomi.infra.galaxy.emq.thrift.GetUserQuotaRequest;
+import com.xiaomi.infra.galaxy.emq.thrift.GetUserUsedQuotaRequest;
 import com.xiaomi.infra.galaxy.emq.thrift.ListPermissionsRequest;
 import com.xiaomi.infra.galaxy.emq.thrift.ListQueueAlertPoliciesRequest;
 import com.xiaomi.infra.galaxy.emq.thrift.ListQueueRequest;
@@ -403,6 +404,7 @@ public class EMQRequestCheckUtils {
   public static void check(Version request){}
   public static void check(SetUserQuotaRequest request){}
   public static void check(GetUserQuotaRequest request){}
+  public static void check(GetUserUsedQuotaRequest request){}
   public static void check(SetUserInfoRequest request){}
   public static void check(GetUserInfoRequest request){}
   

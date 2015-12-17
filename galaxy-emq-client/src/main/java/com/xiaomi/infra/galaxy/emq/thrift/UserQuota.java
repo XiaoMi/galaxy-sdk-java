@@ -44,7 +44,7 @@ public class UserQuota implements libthrift091.TBase<UserQuota, UserQuota._Field
   private static final libthrift091.protocol.TStruct STRUCT_DESC = new libthrift091.protocol.TStruct("UserQuota");
 
   private static final libthrift091.protocol.TField THROUGHPUT_FIELD_DESC = new libthrift091.protocol.TField("throughput", libthrift091.protocol.TType.STRUCT, (short)1);
-  private static final libthrift091.protocol.TField MAX_QUEUE_NUMBER_FIELD_DESC = new libthrift091.protocol.TField("maxQueueNumber", libthrift091.protocol.TType.I64, (short)2);
+  private static final libthrift091.protocol.TField QUEUE_NUMBER_FIELD_DESC = new libthrift091.protocol.TField("queueNumber", libthrift091.protocol.TType.I64, (short)2);
 
   private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
   static {
@@ -58,10 +58,10 @@ public class UserQuota implements libthrift091.TBase<UserQuota, UserQuota._Field
    */
   public com.xiaomi.infra.galaxy.emq.thrift.Throughput throughput; // optional
   /**
-   * The maximum number of queues owned by one user;
+   * The number of queues owned by one user;
    *  
    */
-  public long maxQueueNumber; // optional
+  public long queueNumber; // optional
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements libthrift091.TFieldIdEnum {
@@ -71,10 +71,10 @@ public class UserQuota implements libthrift091.TBase<UserQuota, UserQuota._Field
      */
     THROUGHPUT((short)1, "throughput"),
     /**
-     * The maximum number of queues owned by one user;
+     * The number of queues owned by one user;
      *  
      */
-    MAX_QUEUE_NUMBER((short)2, "maxQueueNumber");
+    QUEUE_NUMBER((short)2, "queueNumber");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -91,8 +91,8 @@ public class UserQuota implements libthrift091.TBase<UserQuota, UserQuota._Field
       switch(fieldId) {
         case 1: // THROUGHPUT
           return THROUGHPUT;
-        case 2: // MAX_QUEUE_NUMBER
-          return MAX_QUEUE_NUMBER;
+        case 2: // QUEUE_NUMBER
+          return QUEUE_NUMBER;
         default:
           return null;
       }
@@ -133,15 +133,15 @@ public class UserQuota implements libthrift091.TBase<UserQuota, UserQuota._Field
   }
 
   // isset id assignments
-  private static final int __MAXQUEUENUMBER_ISSET_ID = 0;
+  private static final int __QUEUENUMBER_ISSET_ID = 0;
   private byte __isset_bitfield = 0;
-  private static final _Fields optionals[] = {_Fields.THROUGHPUT,_Fields.MAX_QUEUE_NUMBER};
+  private static final _Fields optionals[] = {_Fields.THROUGHPUT,_Fields.QUEUE_NUMBER};
   public static final Map<_Fields, libthrift091.meta_data.FieldMetaData> metaDataMap;
   static {
     Map<_Fields, libthrift091.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, libthrift091.meta_data.FieldMetaData>(_Fields.class);
     tmpMap.put(_Fields.THROUGHPUT, new libthrift091.meta_data.FieldMetaData("throughput", libthrift091.TFieldRequirementType.OPTIONAL, 
         new libthrift091.meta_data.StructMetaData(libthrift091.protocol.TType.STRUCT, com.xiaomi.infra.galaxy.emq.thrift.Throughput.class)));
-    tmpMap.put(_Fields.MAX_QUEUE_NUMBER, new libthrift091.meta_data.FieldMetaData("maxQueueNumber", libthrift091.TFieldRequirementType.OPTIONAL, 
+    tmpMap.put(_Fields.QUEUE_NUMBER, new libthrift091.meta_data.FieldMetaData("queueNumber", libthrift091.TFieldRequirementType.OPTIONAL, 
         new libthrift091.meta_data.FieldValueMetaData(libthrift091.protocol.TType.I64)));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
     libthrift091.meta_data.FieldMetaData.addStructMetaDataMap(UserQuota.class, metaDataMap);
@@ -158,7 +158,7 @@ public class UserQuota implements libthrift091.TBase<UserQuota, UserQuota._Field
     if (other.isSetThroughput()) {
       this.throughput = new com.xiaomi.infra.galaxy.emq.thrift.Throughput(other.throughput);
     }
-    this.maxQueueNumber = other.maxQueueNumber;
+    this.queueNumber = other.queueNumber;
   }
 
   public UserQuota deepCopy() {
@@ -168,8 +168,8 @@ public class UserQuota implements libthrift091.TBase<UserQuota, UserQuota._Field
   @Override
   public void clear() {
     this.throughput = null;
-    setMaxQueueNumberIsSet(false);
-    this.maxQueueNumber = 0;
+    setQueueNumberIsSet(false);
+    this.queueNumber = 0;
   }
 
   /**
@@ -205,34 +205,34 @@ public class UserQuota implements libthrift091.TBase<UserQuota, UserQuota._Field
   }
 
   /**
-   * The maximum number of queues owned by one user;
+   * The number of queues owned by one user;
    *  
    */
-  public long getMaxQueueNumber() {
-    return this.maxQueueNumber;
+  public long getQueueNumber() {
+    return this.queueNumber;
   }
 
   /**
-   * The maximum number of queues owned by one user;
+   * The number of queues owned by one user;
    *  
    */
-  public UserQuota setMaxQueueNumber(long maxQueueNumber) {
-    this.maxQueueNumber = maxQueueNumber;
-    setMaxQueueNumberIsSet(true);
+  public UserQuota setQueueNumber(long queueNumber) {
+    this.queueNumber = queueNumber;
+    setQueueNumberIsSet(true);
     return this;
   }
 
-  public void unsetMaxQueueNumber() {
-    __isset_bitfield = EncodingUtils.clearBit(__isset_bitfield, __MAXQUEUENUMBER_ISSET_ID);
+  public void unsetQueueNumber() {
+    __isset_bitfield = EncodingUtils.clearBit(__isset_bitfield, __QUEUENUMBER_ISSET_ID);
   }
 
-  /** Returns true if field maxQueueNumber is set (has been assigned a value) and false otherwise */
-  public boolean isSetMaxQueueNumber() {
-    return EncodingUtils.testBit(__isset_bitfield, __MAXQUEUENUMBER_ISSET_ID);
+  /** Returns true if field queueNumber is set (has been assigned a value) and false otherwise */
+  public boolean isSetQueueNumber() {
+    return EncodingUtils.testBit(__isset_bitfield, __QUEUENUMBER_ISSET_ID);
   }
 
-  public void setMaxQueueNumberIsSet(boolean value) {
-    __isset_bitfield = EncodingUtils.setBit(__isset_bitfield, __MAXQUEUENUMBER_ISSET_ID, value);
+  public void setQueueNumberIsSet(boolean value) {
+    __isset_bitfield = EncodingUtils.setBit(__isset_bitfield, __QUEUENUMBER_ISSET_ID, value);
   }
 
   public void setFieldValue(_Fields field, Object value) {
@@ -245,11 +245,11 @@ public class UserQuota implements libthrift091.TBase<UserQuota, UserQuota._Field
       }
       break;
 
-    case MAX_QUEUE_NUMBER:
+    case QUEUE_NUMBER:
       if (value == null) {
-        unsetMaxQueueNumber();
+        unsetQueueNumber();
       } else {
-        setMaxQueueNumber((Long)value);
+        setQueueNumber((Long)value);
       }
       break;
 
@@ -261,8 +261,8 @@ public class UserQuota implements libthrift091.TBase<UserQuota, UserQuota._Field
     case THROUGHPUT:
       return getThroughput();
 
-    case MAX_QUEUE_NUMBER:
-      return Long.valueOf(getMaxQueueNumber());
+    case QUEUE_NUMBER:
+      return Long.valueOf(getQueueNumber());
 
     }
     throw new IllegalStateException();
@@ -277,8 +277,8 @@ public class UserQuota implements libthrift091.TBase<UserQuota, UserQuota._Field
     switch (field) {
     case THROUGHPUT:
       return isSetThroughput();
-    case MAX_QUEUE_NUMBER:
-      return isSetMaxQueueNumber();
+    case QUEUE_NUMBER:
+      return isSetQueueNumber();
     }
     throw new IllegalStateException();
   }
@@ -305,12 +305,12 @@ public class UserQuota implements libthrift091.TBase<UserQuota, UserQuota._Field
         return false;
     }
 
-    boolean this_present_maxQueueNumber = true && this.isSetMaxQueueNumber();
-    boolean that_present_maxQueueNumber = true && that.isSetMaxQueueNumber();
-    if (this_present_maxQueueNumber || that_present_maxQueueNumber) {
-      if (!(this_present_maxQueueNumber && that_present_maxQueueNumber))
+    boolean this_present_queueNumber = true && this.isSetQueueNumber();
+    boolean that_present_queueNumber = true && that.isSetQueueNumber();
+    if (this_present_queueNumber || that_present_queueNumber) {
+      if (!(this_present_queueNumber && that_present_queueNumber))
         return false;
-      if (this.maxQueueNumber != that.maxQueueNumber)
+      if (this.queueNumber != that.queueNumber)
         return false;
     }
 
@@ -326,10 +326,10 @@ public class UserQuota implements libthrift091.TBase<UserQuota, UserQuota._Field
     if (present_throughput)
       list.add(throughput);
 
-    boolean present_maxQueueNumber = true && (isSetMaxQueueNumber());
-    list.add(present_maxQueueNumber);
-    if (present_maxQueueNumber)
-      list.add(maxQueueNumber);
+    boolean present_queueNumber = true && (isSetQueueNumber());
+    list.add(present_queueNumber);
+    if (present_queueNumber)
+      list.add(queueNumber);
 
     return list.hashCode();
   }
@@ -352,12 +352,12 @@ public class UserQuota implements libthrift091.TBase<UserQuota, UserQuota._Field
         return lastComparison;
       }
     }
-    lastComparison = Boolean.valueOf(isSetMaxQueueNumber()).compareTo(other.isSetMaxQueueNumber());
+    lastComparison = Boolean.valueOf(isSetQueueNumber()).compareTo(other.isSetQueueNumber());
     if (lastComparison != 0) {
       return lastComparison;
     }
-    if (isSetMaxQueueNumber()) {
-      lastComparison = libthrift091.TBaseHelper.compareTo(this.maxQueueNumber, other.maxQueueNumber);
+    if (isSetQueueNumber()) {
+      lastComparison = libthrift091.TBaseHelper.compareTo(this.queueNumber, other.queueNumber);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -391,10 +391,10 @@ public class UserQuota implements libthrift091.TBase<UserQuota, UserQuota._Field
       }
       first = false;
     }
-    if (isSetMaxQueueNumber()) {
+    if (isSetQueueNumber()) {
       if (!first) sb.append(", ");
-      sb.append("maxQueueNumber:");
-      sb.append(this.maxQueueNumber);
+      sb.append("queueNumber:");
+      sb.append(this.queueNumber);
       first = false;
     }
     sb.append(")");
@@ -454,10 +454,10 @@ public class UserQuota implements libthrift091.TBase<UserQuota, UserQuota._Field
               libthrift091.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
-          case 2: // MAX_QUEUE_NUMBER
+          case 2: // QUEUE_NUMBER
             if (schemeField.type == libthrift091.protocol.TType.I64) {
-              struct.maxQueueNumber = iprot.readI64();
-              struct.setMaxQueueNumberIsSet(true);
+              struct.queueNumber = iprot.readI64();
+              struct.setQueueNumberIsSet(true);
             } else { 
               libthrift091.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
@@ -484,9 +484,9 @@ public class UserQuota implements libthrift091.TBase<UserQuota, UserQuota._Field
           oprot.writeFieldEnd();
         }
       }
-      if (struct.isSetMaxQueueNumber()) {
-        oprot.writeFieldBegin(MAX_QUEUE_NUMBER_FIELD_DESC);
-        oprot.writeI64(struct.maxQueueNumber);
+      if (struct.isSetQueueNumber()) {
+        oprot.writeFieldBegin(QUEUE_NUMBER_FIELD_DESC);
+        oprot.writeI64(struct.queueNumber);
         oprot.writeFieldEnd();
       }
       oprot.writeFieldStop();
@@ -510,15 +510,15 @@ public class UserQuota implements libthrift091.TBase<UserQuota, UserQuota._Field
       if (struct.isSetThroughput()) {
         optionals.set(0);
       }
-      if (struct.isSetMaxQueueNumber()) {
+      if (struct.isSetQueueNumber()) {
         optionals.set(1);
       }
       oprot.writeBitSet(optionals, 2);
       if (struct.isSetThroughput()) {
         struct.throughput.write(oprot);
       }
-      if (struct.isSetMaxQueueNumber()) {
-        oprot.writeI64(struct.maxQueueNumber);
+      if (struct.isSetQueueNumber()) {
+        oprot.writeI64(struct.queueNumber);
       }
     }
 
@@ -532,8 +532,8 @@ public class UserQuota implements libthrift091.TBase<UserQuota, UserQuota._Field
         struct.setThroughputIsSet(true);
       }
       if (incoming.get(1)) {
-        struct.maxQueueNumber = iprot.readI64();
-        struct.setMaxQueueNumberIsSet(true);
+        struct.queueNumber = iprot.readI64();
+        struct.setQueueNumberIsSet(true);
       }
     }
   }

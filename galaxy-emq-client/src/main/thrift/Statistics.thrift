@@ -17,9 +17,9 @@ struct UserQuota {
   1: optional Queue.Throughput throughput;
 
   /**
-  *The maximum number of queues owned by one user;
+  *The number of queues owned by one user;
   **/
-  2: optional i64 maxQueueNumber;
+  2: optional i64 queueNumber;
 
 }
 
@@ -54,6 +54,13 @@ struct GetUserQuotaResponse {
   **/
   2: required UserQuota userQuota;
 
+}
+
+struct GetUserUsedQuotaRequest{
+  /**
+  *The developerId of an EMQ user;
+  **/
+  1: optional string developerId;
 }
 
 struct SetUserInfoRequest {
@@ -232,6 +239,11 @@ service StatisticsService extends Common.EMQBaseService {
   * Get user quota;
   **/
   GetUserQuotaResponse getUserQuota(1: GetUserQuotaRequest request) throws (1: Common.GalaxyEmqServiceException e);
+
+  /**
+  * Get user used quota;
+  **/
+  GetUserQuotaResponse getUserUsedQuota(1: GetUserUsedQuotaRequest request) throws (1: Common.GalaxyEmqServiceException e);
 
   /**
   * Set user info;
