@@ -202,7 +202,7 @@ public class EMQRequestCheckUtils {
     if (request.isSetMessageAttributes()) {
       for (MessageAttribute messageAttribute :
           request.getMessageAttributes().values()) {
-        check(messageAttribute);
+        check(messageAttribute, false);
       }
     }
   }
@@ -224,12 +224,12 @@ public class EMQRequestCheckUtils {
     if (request.isSetMessageAttributes()) {
       for (MessageAttribute messageAttribute :
           request.getMessageAttributes().values()) {
-        check(messageAttribute);
+        check(messageAttribute, false);
       }
     }
   }
 
-  public static void check(MessageAttribute attribute)
+  public static void check(MessageAttribute attribute, boolean allowEmpty)
       throws GalaxyEmqServiceException {
     if (attribute == null) {
       throw new GalaxyEmqServiceException()
@@ -247,6 +247,8 @@ public class EMQRequestCheckUtils {
             .setErrMsg("Invalid user-defined attributes")
             .setDetails("binaryValue cannot be null when type is BINARY");
       }
+    } else if (allowEmpty && attribute.getType().equalsIgnoreCase("empty")) {
+      return;
     } else {
       throw new GalaxyEmqServiceException()
           .setErrMsg("Invalid user-defined attributes")
@@ -278,7 +280,7 @@ public class EMQRequestCheckUtils {
     }
     if (request.isSetAttributeName()) {
       checkNotEmpty(request.getAttributeName(), "attribute name");
-      check(request.getAttributeValue());
+      check(request.getAttributeValue(), true);
     }
 
     if (request.isSetTagName()) {
@@ -364,7 +366,7 @@ public class EMQRequestCheckUtils {
 
     if (request.isSetAttributeName()) {
       checkNotEmpty(request.getAttributeName(), "attribute name");
-      check(request.getAttributeValue());
+      check(request.getAttributeValue(), true);
     }
 
     if (request.isSetUserAttributes()) {
