@@ -103,7 +103,7 @@ struct QueueQuota {
   /**
    * Queue read and qps;
    **/
-  1: optional Throughput throughput;
+  2: optional Throughput throughput;
 }
 
 struct CreateQueueRequest {

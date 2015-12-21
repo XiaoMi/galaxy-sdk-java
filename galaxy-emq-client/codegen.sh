@@ -5,7 +5,7 @@ THRIFT_PYTHON_PATH=../../galaxy-sdk-python
 THRIFT_PHP_PATH=../../galaxy-sdk-php
 THRIFT_JS_PATH=../../galaxy-sdk-javascript
 
-THRIFT_FILES=(Statistics.thrift)
+THRIFT_FILES=(Queue.thrift)
 
 if [ $# -ne 1 ]
 then echo "Please input sdk language!";
