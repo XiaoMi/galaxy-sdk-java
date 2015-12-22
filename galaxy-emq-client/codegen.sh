@@ -5,7 +5,7 @@ THRIFT_PYTHON_PATH=../../galaxy-sdk-python
 THRIFT_PHP_PATH=../../galaxy-sdk-php
 THRIFT_JS_PATH=../../galaxy-sdk-javascript
 
-THRIFT_FILES=(Queue.thrift)
+THRIFT_FILES=(Common.thrift Range.thrift Queue.thrift Message.thrift Statistics.thrift)
 
 if [ $# -ne 1 ]
 then echo "Please input sdk language!";
@@ -40,9 +40,9 @@ then
         f=${THRIFT_ROOT_PATH}/${f}
         echo "Compiling $f to Python"
         thrift -out ${THRIFT_PYTHON_PATH}/lib -gen py:new_style $f
+        # Add utf8 encoding in generated python source
+        find ${THRIFT_PYTHON_PATH}/lib/emq/${dir} -name "*.py" -type f | xargs sed -i -e "1i # encoding: utf-8"
     done
-    # Add utf8 encoding in generated python source
-    find ${THRIFT_PYTHON_PATH}/lib/emq/${dir} -name "*.py" -type f | xargs sed -i -e "1i # encoding: utf-8"
 fi
 
 if [ "$1" = "php" ] || [ "$1" = "all" ]
