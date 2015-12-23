@@ -22,7 +22,6 @@ import org.slf4j.LoggerFactory;
 import com.xiaomi.infra.galaxy.talos.admin.TalosAdmin;
 import com.xiaomi.infra.galaxy.talos.client.SimpleTopicAbnormalCallback;
 import com.xiaomi.infra.galaxy.talos.client.TalosClientConfigKeys;
-import com.xiaomi.infra.galaxy.talos.client.TalosClientConfigurationLoader;
 import com.xiaomi.infra.galaxy.talos.client.Utils;
 import com.xiaomi.infra.galaxy.talos.thrift.ConsumerService;
 import com.xiaomi.infra.galaxy.talos.thrift.DescribeTopicRequest;
@@ -102,7 +101,7 @@ public class TalosConsumerTest {
 
   @Before
   public void setUp() throws Exception {
-    Configuration configuration = TalosClientConfigurationLoader.getConfiguration();
+    Configuration configuration = new Configuration();
     // check partition number interval 200 ms
     configuration.setInt(
         TalosClientConfigKeys.GALAXY_TALOS_CONSUMER_CHECK_PARTITION_INTERVAL, 200);

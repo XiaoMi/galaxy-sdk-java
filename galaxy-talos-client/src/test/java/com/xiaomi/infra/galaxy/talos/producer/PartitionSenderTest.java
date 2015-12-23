@@ -20,7 +20,6 @@ import org.junit.Test;
 import org.mockito.Mockito;
 
 import com.xiaomi.infra.galaxy.talos.client.TalosClientConfigKeys;
-import com.xiaomi.infra.galaxy.talos.client.TalosClientConfigurationLoader;
 import com.xiaomi.infra.galaxy.talos.client.Utils;
 import com.xiaomi.infra.galaxy.talos.thrift.ErrorCode;
 import com.xiaomi.infra.galaxy.talos.thrift.GalaxyTalosException;
@@ -80,7 +79,7 @@ public class PartitionSenderTest {
 
   @Before
   public void setUp() {
-    Configuration configuration = TalosClientConfigurationLoader.getConfiguration();
+    Configuration configuration = new Configuration();
     configuration.setInt(
         TalosClientConfigKeys.GALAXY_TALOS_PRODUCER_MAX_BUFFERED_MILLI_SECS,
         producerMaxBufferedMillSecs);

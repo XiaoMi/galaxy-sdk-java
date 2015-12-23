@@ -17,7 +17,6 @@ import org.junit.Test;
 import org.mockito.InOrder;
 import org.mockito.Mockito;
 
-import com.xiaomi.infra.galaxy.talos.client.TalosClientConfigurationLoader;
 import com.xiaomi.infra.galaxy.talos.thrift.GetMessageRequest;
 import com.xiaomi.infra.galaxy.talos.thrift.GetMessageResponse;
 import com.xiaomi.infra.galaxy.talos.thrift.Message;
@@ -46,7 +45,7 @@ public class SimpleConsumerTest {
 
   @Before
   public void setUp() {
-    Configuration configuration = TalosClientConfigurationLoader.getConfiguration();
+    Configuration configuration = new Configuration();
     consumerConfig = new TalosConsumerConfig(configuration, false);
     topicAndPartition = new TopicAndPartition(topicName,
         new TopicTalosResourceName(resourceName), partitionId);

@@ -18,7 +18,6 @@ import org.mockito.InOrder;
 import org.mockito.Mockito;
 
 import com.xiaomi.infra.galaxy.talos.client.TalosClientConfigKeys;
-import com.xiaomi.infra.galaxy.talos.client.TalosClientConfigurationLoader;
 import com.xiaomi.infra.galaxy.talos.thrift.Message;
 
 import static org.junit.Assert.assertEquals;
@@ -45,7 +44,7 @@ public class PartitionMessageQueueTest {
 
   @Before
   public void setUp() {
-    Configuration configuration = TalosClientConfigurationLoader.getConfiguration();
+    Configuration configuration = new Configuration();
     configuration.setInt(
         TalosClientConfigKeys.GALAXY_TALOS_PRODUCER_MAX_PUT_MESSAGE_NUMBER,
         maxPutMsgNumber);

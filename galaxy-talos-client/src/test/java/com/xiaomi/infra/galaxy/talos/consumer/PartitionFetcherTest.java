@@ -18,7 +18,6 @@ import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.xiaomi.infra.galaxy.talos.client.TalosClientConfigurationLoader;
 import com.xiaomi.infra.galaxy.talos.thrift.ConsumerService;
 import com.xiaomi.infra.galaxy.talos.thrift.ErrorCode;
 import com.xiaomi.infra.galaxy.talos.thrift.GalaxyTalosException;
@@ -75,7 +74,7 @@ public class PartitionFetcherTest {
 
   @Before
   public void setUp() throws Exception {
-    Configuration configuration = TalosClientConfigurationLoader.getConfiguration();
+    Configuration configuration = new Configuration();
     consumerConfig = new TalosConsumerConfig(configuration, false);
     messageAndOffsetList = new ArrayList<MessageAndOffset>();
     messageAndOffsetList2 = new ArrayList<MessageAndOffset>();

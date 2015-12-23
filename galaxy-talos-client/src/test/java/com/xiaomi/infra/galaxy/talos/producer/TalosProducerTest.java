@@ -22,7 +22,6 @@ import com.xiaomi.infra.galaxy.talos.admin.TalosAdmin;
 import com.xiaomi.infra.galaxy.talos.client.Constants;
 import com.xiaomi.infra.galaxy.talos.client.SimpleTopicAbnormalCallback;
 import com.xiaomi.infra.galaxy.talos.client.TalosClientConfigKeys;
-import com.xiaomi.infra.galaxy.talos.client.TalosClientConfigurationLoader;
 import com.xiaomi.infra.galaxy.talos.thrift.DescribeTopicRequest;
 import com.xiaomi.infra.galaxy.talos.thrift.ErrorCode;
 import com.xiaomi.infra.galaxy.talos.thrift.GalaxyTalosException;
@@ -100,7 +99,7 @@ public class TalosProducerTest {
   @Before
   public void setUp() throws TException {
     // set configuration
-    Configuration configuration = TalosClientConfigurationLoader.getConfiguration();
+    Configuration configuration = new Configuration();
     configuration.setInt(
         TalosClientConfigKeys.GALAXY_TALOS_PRODUCER_MAX_BUFFERED_MILLI_SECS,
         producerMaxBufferedMillSecs);
