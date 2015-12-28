@@ -58,7 +58,8 @@ public class PartitionMessageQueue {
       try {
         long waitTime = getWaitTime();
         LOG.info("getUserMessageList waiting: " + waitTime +
-            " to return msgList in partition: " + partitionId);
+            " to return msgList in partition: " + partitionId +
+            " and queue size: " + userMessageList.size());
         wait(waitTime);
       } catch (InterruptedException e) {
         LOG.error("getUserMessageList for partition: " + partitionId +

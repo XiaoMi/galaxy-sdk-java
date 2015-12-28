@@ -23,7 +23,7 @@ public class Constants {
    * Constants for producer
    */
   public static final int TALOS_SINGLE_MESSAGE_BYTES_MINIMAL = 1;
-  public static final int TALOS_SINGLE_MESSAGE_BYTES_MAXIMAL = 1024 * 1024;
+  public static final int TALOS_SINGLE_MESSAGE_BYTES_MAXIMAL = 2 * 1024 * 1024;
 
   public static final int TALOS_PARTITION_KEY_LENGTH_MINIMAL = 1;
   public static final int TALOS_PARTITION_KEY_LENGTH_MAXIMAL = 256;
