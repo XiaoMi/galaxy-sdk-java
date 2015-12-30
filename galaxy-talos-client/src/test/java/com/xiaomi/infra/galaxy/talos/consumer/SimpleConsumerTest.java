@@ -17,10 +17,14 @@ import org.junit.Test;
 import org.mockito.InOrder;
 import org.mockito.Mockito;
 
+import com.xiaomi.infra.galaxy.talos.client.compression.Compression;
+import com.xiaomi.infra.galaxy.talos.producer.TalosProducerConfig;
 import com.xiaomi.infra.galaxy.talos.thrift.GetMessageRequest;
 import com.xiaomi.infra.galaxy.talos.thrift.GetMessageResponse;
 import com.xiaomi.infra.galaxy.talos.thrift.Message;
 import com.xiaomi.infra.galaxy.talos.thrift.MessageAndOffset;
+import com.xiaomi.infra.galaxy.talos.thrift.MessageBlock;
+import com.xiaomi.infra.galaxy.talos.thrift.MessageCompressionType;
 import com.xiaomi.infra.galaxy.talos.thrift.MessageService;
 import com.xiaomi.infra.galaxy.talos.thrift.TopicAndPartition;
 import com.xiaomi.infra.galaxy.talos.thrift.TopicTalosResourceName;
@@ -37,8 +41,10 @@ public class SimpleConsumerTest {
   private static final long startOffset = 0;
 
   private static TopicAndPartition topicAndPartition;
+  private static TalosProducerConfig producerConfig;
   private static TalosConsumerConfig consumerConfig;
   private static MessageService.Iface messageClientMock;
+  private static List<Message> messageList;
   private static List<MessageAndOffset> messageAndOffsetList;
 
   private static SimpleConsumer simpleConsumer;
@@ -46,12 +52,14 @@ public class SimpleConsumerTest {
   @Before
   public void setUp() {
     Configuration configuration = new Configuration();
+    producerConfig = new TalosProducerConfig(configuration);
     consumerConfig = new TalosConsumerConfig(configuration, false);
     topicAndPartition = new TopicAndPartition(topicName,
         new TopicTalosResourceName(resourceName), partitionId);
     messageClientMock = Mockito.mock(MessageService.Iface.class);
     simpleConsumer = new SimpleConsumer(consumerConfig,
         topicAndPartition, messageClientMock);
+    messageList = new ArrayList<Message>();
     messageAndOffsetList = new ArrayList<MessageAndOffset>();
   }
 
@@ -78,17 +86,25 @@ public class SimpleConsumerTest {
 
   @Test
   public void testFetchMessage() throws Exception {
-    MessageAndOffset messageAndOffset1 = new MessageAndOffset(new Message(
-        ByteBuffer.wrap("message1".getBytes())), 1);
-    MessageAndOffset messageAndOffset2 = new MessageAndOffset(new Message(
-        ByteBuffer.wrap("message2".getBytes())), 2);
-    MessageAndOffset messageAndOffset3 = new MessageAndOffset(new Message(
-        ByteBuffer.wrap("message3".getBytes())), 3);
+    Message message1 = new Message(ByteBuffer.wrap("message1".getBytes()));
+    Message message2 = new Message(ByteBuffer.wrap("message2".getBytes()));
+    Message message3 = new Message(ByteBuffer.wrap("message3".getBytes()));
+    messageList.add(message1);
+    messageList.add(message2);
+    messageList.add(message3);
+    MessageBlock messageBlock = Compression.compress(messageList, producerConfig.getCompressionType());
+    messageBlock.setStartMessageOffset(1);
+    List<MessageBlock> messageBlockList = new ArrayList<MessageBlock>(1);
+    messageBlockList.add(messageBlock);
+
+    MessageAndOffset messageAndOffset1 = new MessageAndOffset(message1, 1);
+    MessageAndOffset messageAndOffset2 = new MessageAndOffset(message2, 2);
+    MessageAndOffset messageAndOffset3 = new MessageAndOffset(message3, 3);
     messageAndOffsetList.add(messageAndOffset1);
     messageAndOffsetList.add(messageAndOffset2);
     messageAndOffsetList.add(messageAndOffset3);
 
-    GetMessageResponse response = new GetMessageResponse(messageAndOffsetList,
+    GetMessageResponse response = new GetMessageResponse(messageBlockList, 3,
         "testFetchMessageSequenceId");
     when(messageClientMock.getMessage(any(GetMessageRequest.class)))
         .thenReturn(response);

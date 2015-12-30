@@ -6,6 +6,8 @@
 
 package com.xiaomi.infra.galaxy.talos.consumer;
 
+import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -14,6 +16,7 @@ import libthrift091.TException;
 import com.xiaomi.infra.galaxy.rpc.thrift.Credential;
 import com.xiaomi.infra.galaxy.talos.client.TalosClientFactory;
 import com.xiaomi.infra.galaxy.talos.client.Utils;
+import com.xiaomi.infra.galaxy.talos.client.compression.Compression;
 import com.xiaomi.infra.galaxy.talos.thrift.GetMessageRequest;
 import com.xiaomi.infra.galaxy.talos.thrift.GetMessageResponse;
 import com.xiaomi.infra.galaxy.talos.thrift.MessageAndOffset;
@@ -61,17 +64,17 @@ public class SimpleConsumer {
     return topicAndPartition;
   }
 
-  public List<MessageAndOffset> fetchMessage(long startOffset) throws TException {
+  public List<MessageAndOffset> fetchMessage(long startOffset) throws TException, IOException {
     return fetchMessage(startOffset, consumerConfig.getMaxFetchRecords());
   }
 
   public List<MessageAndOffset> fetchMessage(long startOffset,
-      int maxFetchedNumber) throws TException {
+      int maxFetchedNumber) throws TException, IOException {
     String requestSequenceId = Utils.generateRequestSequenceId(
         simpleConsumerId, requestId);
     GetMessageRequest getMessageRequest = new GetMessageRequest(topicAndPartition,
         startOffset, requestSequenceId).setMaxGetMessageNumber(maxFetchedNumber);
     GetMessageResponse getMessageResponse = messageClient.getMessage(getMessageRequest);
-    return getMessageResponse.getMessages();
+    return Compression.decompress(getMessageResponse.getMessageBlocks());
   }
 }

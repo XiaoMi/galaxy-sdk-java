@@ -34,11 +34,12 @@ public enum ErrorCode implements libthrift091.TEnum {
   HBASE_OPERATION_FAILED(19),
   ZOOKEEPER_OPERATION_FAILED(20),
   PARTITION_NOT_SERVING(21),
-  ZK_NODE_EXIST(22),
-  ZK_NODE_NOT_EXIST(23),
-  REST_SERVER_INIT_ERROR(24),
-  INTERNAL_SERVER_ERROR(25),
-  EXCESSIVE_PENDING_MESSAGE(26);
+  PARTITION_NOT_EXIST(22),
+  ZK_NODE_EXIST(23),
+  ZK_NODE_NOT_EXIST(24),
+  REST_SERVER_INIT_ERROR(25),
+  INTERNAL_SERVER_ERROR(26),
+  EXCESSIVE_PENDING_MESSAGE(27);
 
   private final int value;
 
@@ -104,14 +105,16 @@ public enum ErrorCode implements libthrift091.TEnum {
       case 21:
         return PARTITION_NOT_SERVING;
       case 22:
-        return ZK_NODE_EXIST;
+        return PARTITION_NOT_EXIST;
       case 23:
-        return ZK_NODE_NOT_EXIST;
+        return ZK_NODE_EXIST;
       case 24:
-        return REST_SERVER_INIT_ERROR;
+        return ZK_NODE_NOT_EXIST;
       case 25:
-        return INTERNAL_SERVER_ERROR;
+        return REST_SERVER_INIT_ERROR;
       case 26:
+        return INTERNAL_SERVER_ERROR;
+      case 27:
         return EXCESSIVE_PENDING_MESSAGE;
       default:
         return null;

@@ -6,10 +6,12 @@
 
 package com.xiaomi.infra.galaxy.talos.producer;
 
+import com.google.common.base.Preconditions;
 import org.apache.hadoop.conf.Configuration;
 
 import com.xiaomi.infra.galaxy.talos.client.TalosClientConfig;
 import com.xiaomi.infra.galaxy.talos.client.TalosClientConfigKeys;
+import com.xiaomi.infra.galaxy.talos.thrift.MessageCompressionType;
 
 public class TalosProducerConfig extends TalosClientConfig {
   private int maxBufferedMsgNumber;
@@ -22,6 +24,7 @@ public class TalosProducerConfig extends TalosClientConfig {
   private long updatePartitionIdInterval;
   private long waitPartitionWorkingTime;
   private long updatePartitionMsgNum;
+  private String compressionType;
 
   public TalosProducerConfig(Configuration configuration) {
     super(configuration);
@@ -55,6 +58,14 @@ public class TalosProducerConfig extends TalosClientConfig {
     updatePartitionMsgNum = configuration.getLong(
         TalosClientConfigKeys.GALAXY_TALOS_PRODUCER_UPDATE_PARTITION_MSGNUMBER,
         TalosClientConfigKeys.GALAXY_TALOS_PRODUCER_UPDATE_PARTITION_MSGNUMBER_DEFAULT);
+    compressionType = configuration.get(
+        TalosClientConfigKeys.GALAXY_TALOS_PRODUCER_COMPRESSION_TYPE,
+        TalosClientConfigKeys.GALAXY_TALOS_PRODUCER_COMPRESSION_TYPE_DEFAULT);
+
+    if (!compressionType.equals("NONE") && !compressionType.equals("SNAPPY")
+        && !compressionType.equals("GZIP")) {
+      throw new RuntimeException("Unsupported Compression Type: " + compressionType);
+    }
   }
 
   public int getMaxBufferedMsgNumber() {
@@ -95,5 +106,16 @@ public class TalosProducerConfig extends TalosClientConfig {
 
   public long getUpdatePartitionMsgNum() {
     return updatePartitionMsgNum;
+  }
+
+  public MessageCompressionType getCompressionType() {
+    if (compressionType.equals("NONE")) {
+      return MessageCompressionType.NONE;
+    } else if (compressionType.equals("SNAPPY")) {
+      return MessageCompressionType.SNAPPY;
+    } else {
+      Preconditions.checkArgument(compressionType.equals("GZIP"));
+      return MessageCompressionType.GZIP;
+    }
   }
 }
