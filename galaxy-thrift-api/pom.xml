@@ -55,11 +55,6 @@
       <version>${httpcomponents.version}</version>
     </dependency>
     <dependency>
-      <groupId>com.xiaomi.infra.galaxy</groupId>
-      <artifactId>galaxy-authorization</artifactId>
-      <version>${galaxy.version}</version>
-    </dependency>
-    <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
       <version>${junit.version}</version>
