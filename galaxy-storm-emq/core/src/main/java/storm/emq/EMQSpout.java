@@ -73,7 +73,8 @@ public class EMQSpout extends BaseRichSpout {
         deleteMessageThread = new DeleteMessageThread();
         fetchMessageThread = new FetchMessageThread();
         ackedMessagesQueue = new LinkedBlockingQueue<String>();
-        fetchedMessageQueue = new LinkedBlockingQueue<ReceiveMessageResponse>();
+        int capacity = emqConfig.emqCoordinator.newReceiveMessageRequest().getMaxReceiveMessageNumber();
+        fetchedMessageQueue = new LinkedBlockingQueue<ReceiveMessageResponse>(capacity);
 
         fetchMessageThread.start();
         deleteMessageThread.start();
@@ -125,14 +126,12 @@ public class EMQSpout extends BaseRichSpout {
         public void run() {
             while (running) {
                 try {
-                    if (fetchedMessageQueue.isEmpty()) {
-                        List<ReceiveMessageResponse> messageResponseList = messageClient.receiveMessage(
-                                new ReceiveMessageRequest(emqConfig.emqCoordinator.newReceiveMessageRequest()));
-                        if (messageResponseList != null && !messageResponseList.isEmpty()) {
-                            fetchedMessageQueue.addAll(messageResponseList);
+                    List<ReceiveMessageResponse> messageResponseList = messageClient.receiveMessage(
+                            new ReceiveMessageRequest(emqConfig.emqCoordinator.newReceiveMessageRequest()));
+                    if (messageResponseList != null && !messageResponseList.isEmpty()) {
+                        for (ReceiveMessageResponse response : messageResponseList) {
+                            fetchedMessageQueue.put(response);
                         }
-                    } else {
-                        Thread.sleep(emqConfig.generateTupleTimeoutMs / 2);
                     }
                 } catch (Exception e) {
                     LOG.warn("Fetch messages exception: " + e);
