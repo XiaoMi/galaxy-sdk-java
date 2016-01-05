@@ -21,7 +21,6 @@ import com.xiaomi.infra.galaxy.talos.client.Utils;
 import com.xiaomi.infra.galaxy.talos.client.compression.Compression;
 import com.xiaomi.infra.galaxy.talos.thrift.Message;
 import com.xiaomi.infra.galaxy.talos.thrift.MessageBlock;
-import com.xiaomi.infra.galaxy.talos.thrift.MessageCompressionType;
 import com.xiaomi.infra.galaxy.talos.thrift.MessageService;
 import com.xiaomi.infra.galaxy.talos.thrift.PutMessageRequest;
 import com.xiaomi.infra.galaxy.talos.thrift.TopicAndPartition;

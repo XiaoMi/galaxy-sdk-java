@@ -57,9 +57,6 @@ public class PartitionMessageQueue {
     while (!shouldPut()) {
       try {
         long waitTime = getWaitTime();
-        LOG.info("getUserMessageList waiting: " + waitTime +
-            " to return msgList in partition: " + partitionId +
-            " and queue size: " + userMessageList.size());
         wait(waitTime);
       } catch (InterruptedException e) {
         LOG.error("getUserMessageList for partition: " + partitionId +
@@ -84,6 +81,8 @@ public class PartitionMessageQueue {
 
     // update total buffered count when poll messageList
     producer.decreaseBufferedCount(returnMsgNumber, returnMsgBytes);
+    LOG.info("Queue size: " + userMessageList.size() + " and curBytes: " +
+        curMessageBytes + " for partition: " + partitionId);
     return returnList;
   }
 

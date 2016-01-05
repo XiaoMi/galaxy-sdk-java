@@ -220,6 +220,8 @@ public class TalosProducer {
       synchronized (globalLock) {
         try {
           globalLock.wait();
+          LOG.info("too many buffered messages, globalLock is active." +
+              " message number: " + bufferedCount.get().getBufferedMsgNumber());
         } catch (InterruptedException e) {
           LOG.error("addUserMessage global lock wait is interrupt.");
         }
