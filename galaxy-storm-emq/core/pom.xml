@@ -11,6 +11,9 @@
 
     <artifactId>galaxy-storm-emq</artifactId>
     <packaging>jar</packaging>
+    <properties>
+        <skipTests>true</skipTests>
+    </properties>
     <dependencies>
         <dependency>
             <groupId>junit</groupId>
@@ -42,4 +45,14 @@
             <artifactId>slf4j-simple</artifactId>
         </dependency>
     </dependencies>
+    <build>
+        <plugins>
+            <plugin>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <skipTests>${skipTests}</skipTests>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
 </project>
