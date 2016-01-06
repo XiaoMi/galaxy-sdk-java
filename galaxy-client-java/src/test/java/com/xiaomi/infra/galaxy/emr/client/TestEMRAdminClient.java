@@ -20,8 +20,8 @@ public class TestEMRAdminClient {
   private EMRClientFactory clientFactory;
   private EMRAdminService.Iface client;
   private String endpoint = "http://lg-hadoop-open1-tst-emr01.bj:19400";
-  private static String secretId = "5911733121553"; // your secretId
-  private static String secretKey = "5i9ODNhs7X85JNf3t+rpHg=="; // your secretKey
+  private static String secretId = ""; // your secretId
+  private static String secretKey = ""; // your secretKey
   @Before
   public void init() {
     Credential credential = new Credential().setSecretKeyId(secretId)
