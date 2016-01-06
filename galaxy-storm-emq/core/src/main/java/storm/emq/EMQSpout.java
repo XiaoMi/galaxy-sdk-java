@@ -135,6 +135,10 @@ public class EMQSpout extends BaseRichSpout {
                     }
                 } catch (Exception e) {
                     LOG.warn("Fetch messages exception: " + e);
+                    try {
+                        Thread.sleep(100);
+                    } catch (InterruptedException e1) {
+                    }
                 }
             }
         }
