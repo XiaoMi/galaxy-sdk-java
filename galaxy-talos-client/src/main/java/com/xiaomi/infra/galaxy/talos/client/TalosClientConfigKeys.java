@@ -27,11 +27,12 @@ public class TalosClientConfigKeys {
    */
   public static final String GALAXY_TALOS_HTTP_MAX_TOTAL_CONNECTION =
       "galaxy.talos.http.max.total.connection";
-  public static final int GALAXY_TALOS_HTTP_MAX_TOTAL_CONNECTION_DEFAULT = 2;
+  public static final int GALAXY_TALOS_HTTP_MAX_TOTAL_CONNECTION_DEFAULT = 160;
 
   public static final String GALAXY_TALOS_HTTP_MAX_TOTAL_CONNECTION_PER_ROUTE =
       "galaxy.talos.http.max.total.connection.per.route";
-  public static final int GALAXY_TALOS_HTTP_MAX_TOTAL_CONNECTION_PER_ROUTE_DEFAULT = 2;
+  public static final int GALAXY_TALOS_HTTP_MAX_TOTAL_CONNECTION_PER_ROUTE_DEFAULT =
+      160;
 
   /**
    * The client whether to retry
@@ -98,7 +99,7 @@ public class TalosClientConfigKeys {
    */
   public static final String GALAXY_TALOS_PRODUCER_MAX_BUFFERED_MILLI_SECS =
       "galaxy.talos.producer.max.buffered.milli.secs";
-  public static final int GALAXY_TALOS_PRODUCER_MAX_BUFFERED_MILLI_SECS_DEFAULT = 1000;
+  public static final int GALAXY_TALOS_PRODUCER_MAX_BUFFERED_MILLI_SECS_DEFAULT = 200;
 
   /**
    * The producer max number of message in each putMessage batch
@@ -133,12 +134,12 @@ public class TalosClientConfigKeys {
 
   /**
    * The producer update partitionId time interval when calling addMessage
-   * 10 secs by default
+   * 100 million secs by default
    */
   public static final String GALAXY_TALOS_PRODUCER_UPDATE_PARTITIONID_INTERVAL =
       "galaxy.talos.producer.update.partition.id.interval.milli";
   public static final long GALAXY_TALOS_PRODUCER_UPDATE_PARTITIONID_INTERVAL_DEFAULT =
-      10000;
+      100;
 
   /**
    * The producer update partitionId

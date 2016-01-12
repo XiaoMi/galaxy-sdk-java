@@ -81,7 +81,8 @@ public class PartitionMessageQueue {
 
     // update total buffered count when poll messageList
     producer.decreaseBufferedCount(returnMsgNumber, returnMsgBytes);
-    LOG.info("Queue size: " + userMessageList.size() + " and curBytes: " +
+    LOG.info("Ready to put message batch: " + returnList.size() +
+        " queue size: " + userMessageList.size() + " and curBytes: " +
         curMessageBytes + " for partition: " + partitionId);
     return returnList;
   }
