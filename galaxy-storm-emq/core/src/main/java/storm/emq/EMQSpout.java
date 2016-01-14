@@ -165,8 +165,11 @@ public class EMQSpout extends BaseRichSpout {
                     int count = 0;
 
                     while (System.currentTimeMillis() - lastSend <= emqConfig.deleteMessageMaxDelayMs && count <= emqConfig.deleteMessageMaxNumPerBatch) {
-                        deleteRequest.addToDeleteMessageBatchRequestEntryList(new DeleteMessageBatchRequestEntry(ackedMessagesQueue.take()));
-                        count++;
+                        String ackedMessage = ackedMessagesQueue.poll();
+                        if (ackedMessage != null) {
+                            deleteRequest.addToDeleteMessageBatchRequestEntryList(new DeleteMessageBatchRequestEntry(ackedMessage));
+                            count++;
+                        }
                     }
                     if (count > 0)
                         messageClient.deleteMessageBatch(deleteRequest);
