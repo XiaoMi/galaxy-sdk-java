@@ -1,0 +1,18 @@
+# topology name, must set;
+storm.topology.name: emq_test_topology
+# nimbus hostname, can't be ip, must set;
+storm.nimbus.hostname: 10.2.201.166
+# worker number, must set;
+storm.worker.number: 10
+# storm cluster mode, local or remote, must set;
+storm.cluster.mode: remote
+
+emq.queue.name: 167019/StormEMQTest
+
+emq.queue.endpoint: http://staging.emq.api.xiaomi.com
+
+emq.queue.tag: StormEMQTag
+
+secret.key.id:
+
+secret.key:

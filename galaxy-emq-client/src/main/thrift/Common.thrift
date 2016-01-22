@@ -78,6 +78,7 @@ enum ErrorCode {
    * Permission denied.
    */
   PERMISSION_DENIED = 13,
+
   /**
    * Bad request.
    */
@@ -110,6 +111,18 @@ enum ErrorCode {
    * TTransport error, connect server error.
    */
   TTRANSPORT_ERROR = 19,
+  /**
+   * Quota exceeded exception.
+   */
+  QUOTA_EXCEEDED = 20,
+  /**
+   * Quota not exist exception.
+   */
+  QUOTA_NOT_EXIST = 21,
+  /**
+    * Quota lock failed exception.
+    */
+  QUOTA_LOCK_FAILED = 22,
   /**
    * Unknown exception.
    */

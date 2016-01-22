@@ -3,6 +3,7 @@ package com.xiaomi.infra.galaxy.emr.client;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.xiaomi.infra.galaxy.emr.thrift.EMRAdminService;
 import com.xiaomi.infra.galaxy.emr.thrift.EMRMasterService;
 import com.xiaomi.infra.galaxy.emr.thrift.EMRSchedulerService;
 import com.xiaomi.infra.galaxy.emr.thrift.EMRServiceConstants;
@@ -107,6 +108,26 @@ public class EMRClientFactory extends BaseClientFactory {
       int maxRetry,
       boolean supportAccountKey) {
     return createClient(EMRMasterService.Iface.class, EMRMasterService.Client.class,
+        url, socketTimeout, connTimeout, isRetry, maxRetry, supportAccountKey);
+  }
+
+  public EMRAdminService.Iface newEMRAdminService(String endpoint) {
+    return newEMRAdminService(endpoint, false, ErrorsConstants.MAX_RETRY);
+  }
+
+  public EMRAdminService.Iface newEMRAdminService(String endpoint, boolean isRetry, int maxRetry) {
+    String url = endpoint + "/v1/api/metrics";
+    return newEMRAdminService(url,
+        (int)CommonConstants.DEFAULT_CLIENT_TIMEOUT,
+        (int)CommonConstants.DEFAULT_CLIENT_CONN_TIMEOUT,
+        isRetry,
+        maxRetry,
+        false);
+  }
+
+  private EMRAdminService.Iface newEMRAdminService(String url,
+      int socketTimeout, int connTimeout, boolean isRetry, int maxRetry, boolean supportAccountKey) {
+    return createClient(EMRAdminService.Iface.class, EMRAdminService.Client.class,
         url, socketTimeout, connTimeout, isRetry, maxRetry, supportAccountKey);
   }
 }

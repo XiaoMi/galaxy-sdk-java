@@ -23,6 +23,7 @@ import org.slf4j.LoggerFactory;
 import com.xiaomi.infra.galaxy.emq.thrift.CommonConstants;
 import com.xiaomi.infra.galaxy.emq.thrift.MessageService;
 import com.xiaomi.infra.galaxy.emq.thrift.QueueService;
+import com.xiaomi.infra.galaxy.emq.thrift.StatisticsService;
 import com.xiaomi.infra.galaxy.emq.thrift.Version;
 import com.xiaomi.infra.galaxy.rpc.client.ThreadSafeClient;
 import com.xiaomi.infra.galaxy.rpc.thrift.Credential;
@@ -223,6 +224,41 @@ public class EMQClientFactory {
         endpoint + EMQConstants.MESSAGE_SERVICE_PATH, socketTimeout,
         connTimeout, isRetry, maxRetry);
   }
+
+  public StatisticsService.Iface newStatisticsClient() {
+    if (credential == null) {
+      throw new IllegalArgumentException("Credential is not set");
+    }
+    return newStatisticsClient(EMQConstants.DEFAULT_SECURE_SERVICE_ENDPOINT);
+  }
+
+  public StatisticsService.Iface newStatisticsClient(String endpoint) {
+    return newStatisticsClient(endpoint, EMQConstants.DEFAULT_CLIENT_TIMEOUT,
+        EMQConstants.DEFAULT_CLIENT_CONN_TIMEOUT);
+  }
+
+  public StatisticsService.Iface newStatisticsClient(String endpoint, int socketTimeout,
+      int connTimeout) {
+    return createClient(StatisticsService.Iface.class, StatisticsService.Client.class,
+        endpoint + EMQConstants.STATISTICS_SERVICE_PATH, socketTimeout, connTimeout,
+        false, CommonConstants.MAX_RETRY);
+  }
+
+  public StatisticsService.Iface newStatisticsClient(String endpoint, boolean isRetry,
+      int maxRetry) {
+    return createClient(StatisticsService.Iface.class, StatisticsService.Client.class,
+        endpoint + EMQConstants.STATISTICS_SERVICE_PATH,
+        EMQConstants.DEFAULT_CLIENT_TIMEOUT,
+        EMQConstants.DEFAULT_CLIENT_CONN_TIMEOUT, isRetry, maxRetry);
+  }
+
+  public StatisticsService.Iface newStatisticsClient(String endpoint, int socketTimeout,
+      int connTimeout, boolean isRetry, int maxRetry) {
+    return createClient(StatisticsService.Iface.class, StatisticsService.Client.class,
+        endpoint + EMQConstants.STATISTICS_SERVICE_PATH,
+        socketTimeout, connTimeout, isRetry, maxRetry);
+  }
+
 
   private <IFace, Impl> IFace createClient(Class<IFace> ifaceClass,
       Class<Impl> implClass, String url, int socketTimeout, int connTimeout,

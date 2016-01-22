@@ -123,6 +123,7 @@ public class Basic {
         tableClient.put(putRequest);
         System.out.println("put record #" + i);
       }
+
       // get data
       GetRequest getRequest = new GetRequest();
       getRequest.setTableName(tableName);

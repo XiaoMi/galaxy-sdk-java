@@ -19,11 +19,6 @@
     </dependency>
     <dependency>
       <groupId>com.xiaomi.infra.galaxy</groupId>
-      <artifactId>galaxy-authentication</artifactId>
-      <version>1.2.10</version>
-    </dependency>
-    <dependency>
-      <groupId>com.xiaomi.infra.galaxy</groupId>
       <artifactId>galaxy-thrift-api</artifactId>
       <version>${galaxy-sdk.version}</version>
     </dependency>

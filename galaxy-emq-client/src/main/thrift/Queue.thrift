@@ -1,4 +1,5 @@
 include "Common.thrift"
+include "Message.thrift"
 
 namespace java com.xiaomi.infra.galaxy.emq.thrift
 namespace php EMQ.Queue
@@ -52,7 +53,7 @@ struct QueueAttribute {
   7: optional i32 partitionNumber;
 
   /**
-  * User-defined attributes
+  * User-defined attributes;
   **/
   8: optional map<string, string> userAttributes;
 }
@@ -75,10 +76,10 @@ struct QueueState {
 
   /**
   * The available message number in this queue, this is for message that could
-  * be get using receivedMesasge
+  * be get using receivedMessage
   **/
   4: required i64 approximateAvailableMessageNumber;
-  
+
   /**
   * The invisibility message number in this queue, this is for received message
   * that in invisibilitySeconds and not deleted;
@@ -86,23 +87,47 @@ struct QueueState {
   5: required i64 approximateInvisibilityMessageNumber;
 }
 
+struct Throughput {
+  /**
+   * Queue read qps;
+   **/
+  1: optional i64 readQps;
+
+  /**
+   * Queue write qps;
+   **/
+  2: optional i64 writeQps;
+}
+
+struct QueueQuota {
+  /**
+   * Queue read and qps;
+   **/
+  2: optional Throughput throughput;
+}
+
 struct CreateQueueRequest {
   /**
-  * The queue name
+  * The queue name;
   **/
   1: required string queueName;
 
   /**
-  * The queue attribute
+  * The queue attribute;
   **/
   2: optional QueueAttribute queueAttribute;
+
+  /**
+   * The queue quota, including space quota, read qps, and write qps;
+   **/
+  3: optional QueueQuota queueQuota;
 }
 
 struct CreateQueueResponse {
   /**
-  * The queue name
-  * The name returned here may be a little different from user set in request (with developerId as prefix). 
-  * So the user should use the name returned by this response for those following operations 
+  * The queue name;
+  * The name returned here may be a little different from user set in request (with developerId as prefix).
+  * So the user should use the name returned by this response for those following operations
   **/
   1: required string queueName;
 
@@ -110,6 +135,11 @@ struct CreateQueueResponse {
   * The queue attribute;
   **/
   2: required QueueAttribute queueAttribute;
+
+  /**
+   * The queue quota;
+   **/
+  3: optional QueueQuota queueQuota;
 }
 
 struct DeleteQueueRequest {
@@ -128,19 +158,19 @@ struct PurgeQueueRequest {
 
 struct SetQueueAttributesRequest {
   /**
-  * The queue name
+  * The queue name;
   **/
   1: required string queueName;
 
   /**
-  * The queue attribute
+  * The queue attribute;
   **/
   2: optional QueueAttribute queueAttribute;
 }
 
 struct SetQueueAttributesResponse {
   /**
-  * The queue name
+  * The queue name;
   **/
   1: required string queueName;
 
@@ -150,6 +180,29 @@ struct SetQueueAttributesResponse {
   2: required QueueAttribute queueAttribute;
 }
 
+struct SetQueueQuotaRequest {
+  /**
+  * The queue name;
+  **/
+  1: required string queueName;
+
+  /**
+  * The queue quota;
+  **/
+  2: optional QueueQuota queueQuota;
+}
+
+struct SetQueueQuotaResponse {
+  /**
+  * The queue name;
+  **/
+  1: required string queueName;
+
+  /**
+  * The queue quota;
+  **/
+  2: optional QueueQuota queueQuota;
+}
 
 struct GetQueueInfoRequest {
   /**
@@ -160,7 +213,7 @@ struct GetQueueInfoRequest {
 
 struct GetQueueInfoResponse {
   /**
-  * The queue name
+  * The queue name;
   **/
   1: required string queueName;
 
@@ -173,6 +226,11 @@ struct GetQueueInfoResponse {
   * The queue state;
   **/
   3: required QueueState queueState;
+
+  /**
+   * The queue quota;
+   **/
+  4: optional QueueQuota queueQuota;
 }
 
 struct ListQueueRequest {
@@ -239,6 +297,103 @@ struct ListPermissionsResponse {
   1: map<string, Permission> permissionList;
 }
 
+struct CreateTagRequest {
+  1: required string queueName;
+  2: required string tagName;
+  3: optional i64 startTimestamp;
+  4: optional i64 readQPSQuota;
+  5: optional string attributeName;
+  6: optional Message.MessageAttribute attributeValue;
+  7: optional map<string, string> userAttributes;
+}
+
+struct CreateTagResponse {
+  1: required string queueName;
+  2: required string tagName;
+  3: required i64 startTimestamp;
+  4: optional i64 readQPSQuota;
+}
+
+struct DeleteTagRequest {
+  1: required string queueName;
+  2: required string tagName;
+}
+
+struct GetTagInfoRequest {
+  1: required string queueName;
+  2: optional string tagName;
+}
+
+struct GetTagInfoResponse {
+  1: required string queueName;
+  2: optional string tagName;
+  3: required QueueState tagState;
+  4: required i64 startTimestamp;
+  5: optional i64 readQPSQuota;
+  6: optional string attributeName;
+  7: optional Message.MessageAttribute attributeValue;
+  8: optional map<string, string> userAttributes;
+}
+
+struct ListTagRequest {
+  1: required string queueName;
+}
+
+struct ListTagResponse {
+  1: required string queueName;
+  2: required list<string> tagName;
+}
+
+struct QueryMetricRequest {
+  1: optional string queueName;
+  2: optional i64 startTime;
+  3: optional i64 endTime;
+  /**
+  * metric name
+  **/
+  4: optional string metrics;
+  /**
+  * tags, reference to opentsdb,
+  * e.g. <"type", "">
+  **/
+  5: optional map<string, string> tags;
+  /**
+  * data aggregator, reference to opentsdb,
+  * e.g. max, avg, min
+  **/
+  6: optional string aggregator;
+  /**
+  * similar to aggregator above
+  **/
+  7: optional string downsampleAggregator;
+  8: optional i32 downsampleInterval;
+  /**
+  * downsample interval unit, reference to opentsdb,
+  * e.g. ms(milliseconds), s(seconds), d(day)
+  **/
+  9: optional string downsampleTimeUnit;
+  10: optional bool calRate;
+
+}
+
+/**
+ * metrics time series data
+ */
+struct TimeSeriesData {
+  /**
+   * metric name
+   */
+  1: optional string metric,
+  /**
+   * tags
+   */
+  2: optional map<string, string> tags,
+  /**
+   * data, {timestamp => value}
+   */
+  3: optional map<i64, double> data,
+}
+
 service QueueService extends Common.EMQBaseService {
   /**
   * Create queue;
@@ -261,7 +416,12 @@ service QueueService extends Common.EMQBaseService {
   SetQueueAttributesResponse setQueueAttribute(1: SetQueueAttributesRequest request) throws (1: Common.GalaxyEmqServiceException e);
 
   /**
-  * Get queue info, incloud QueueAttribute and QueueState;
+  * Set queue quota;
+  **/
+  SetQueueQuotaResponse setQueueQuota(1: SetQueueQuotaRequest request) throws (1: Common.GalaxyEmqServiceException e);
+
+  /**
+  * Get queue info, include QueueAttribute, QueueState and QueueQuota;
   **/
   GetQueueInfoResponse getQueueInfo(1: GetQueueInfoRequest request) throws (1: Common.GalaxyEmqServiceException e);
 
@@ -271,10 +431,10 @@ service QueueService extends Common.EMQBaseService {
   ListQueueResponse listQueue(1: ListQueueRequest request) throws (1: Common.GalaxyEmqServiceException e);
 
   /**
-  * Set permisson for developer
+  * Set permission for developer
   * FULL_CONTROL required to use this method
   **/
-  void setPermission(1: SetPermissionRequest request) 
+  void setPermission(1: SetPermissionRequest request)
       throws (1: Common.GalaxyEmqServiceException e);
 
   /**
@@ -305,4 +465,39 @@ service QueueService extends Common.EMQBaseService {
   **/
   ListPermissionsResponse listPermissions(1: ListPermissionsRequest request)
       throws (1: Common.GalaxyEmqServiceException e);
+  
+  /**
+  * create tag for queue
+  * ADMIN_QUEUE required to use this method
+  **/
+  CreateTagResponse createTag(1: CreateTagRequest request)
+      throws (1: Common.GalaxyEmqServiceException e);
+ 
+  /**
+  * delete tag for queue
+  * ADMIN_QUEUE required to use this method
+  **/
+  void deleteTag(1: DeleteTagRequest request)
+      throws (1: Common.GalaxyEmqServiceException e);
+
+  /**
+  * get info of tag
+  * ADMIN_QUEUE required to use this method
+  **/
+  GetTagInfoResponse getTagInfo(1: GetTagInfoRequest request)
+      throws (1: Common.GalaxyEmqServiceException e);
+
+  /**
+  * list names of all tag of queue
+  * ADMIN_QUEUE required to use this method
+  **/
+  ListTagResponse listTag(1: ListTagRequest request)
+      throws (1: Common.GalaxyEmqServiceException e);
+
+  /**
+  * query metrics
+  * FULL_CONTROL required to use this method
+  **/
+  TimeSeriesData queryMetric(1: QueryMetricRequest request)
+      throws(1: Common.GalaxyEmqServiceException e);
 }
