@@ -43,7 +43,7 @@ public enum Permission implements libthrift091.TEnum {
    */
   CHANGE_TOPIC(8),
   /**
-   * CHECK_TOPIC and CHANGE_TOPIC;
+   * DESCRIBE_TOPIC and CHANGE_TOPIC;
    * 
    */
   FULL_TOPIC_CONTROL(12),
@@ -53,10 +53,10 @@ public enum Permission implements libthrift091.TEnum {
    */
   FULL_CONTROL(15),
   /**
-   * setPermission, revokePermission, addPermission and deletePermission, only
-   * owner of the topic and Talos admin has CHANGE_PERMISSION permission by
-   * default, and you can't add CHANGE_PERMISSION to a developerId, or you can't
-   * revoke CHANGE_PERMISSION from the topic owner;
+   * setPermission, revokePermission, only owner of the topic and Talos admin
+   * has CHANGE_PERMISSION/CHANGE_TOPIC permission by default;
+   * One can't add CHANGE_PERMISSION/CHANGE_TOPIC to a developerId, or you can't
+   * revoke CHANGE_PERMISSION/CHANGE_TOPIC from the topic owner;
    * 
    */
   CHANGE_PERMISSION(16),
