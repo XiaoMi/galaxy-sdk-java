@@ -1,3 +1,4 @@
+
 include "Common.thrift"
 
 namespace java com.xiaomi.infra.galaxy.emq.thrift
@@ -238,6 +239,13 @@ struct ReceiveMessageResponse {
   * - receiveTimestamp
   * - firstReceiveTimestamp
   * - receiveCount
+  *
+  * If the message is received from a dead letter queue,
+  * it has another three attributes:
+  * - sourceQueueName
+  * - deadTimestamp
+  * - originalMessageID
+  *
   **/
   4: optional map<string, string> attributes;
 

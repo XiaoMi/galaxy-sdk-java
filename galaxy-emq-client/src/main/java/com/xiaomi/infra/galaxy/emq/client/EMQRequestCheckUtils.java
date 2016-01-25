@@ -80,11 +80,12 @@ public class EMQRequestCheckUtils {
         } catch (InvocationTargetException e) {
           throw e.getTargetException();
         }
-      } else {
-        throw new GalaxyEmqServiceException().setErrMsg("Unknown request class:"
-            + objects[0].getClass().getName());
-
       }
+//      else {
+//        throw new GalaxyEmqServiceException().setErrMsg("Unknown request class:"
+//            + objects[0].getClass().getName());
+//
+//      }
     } else if (objects.length > 1) {
       throw new GalaxyEmqServiceException().setErrMsg("Number of request" +
           " parameters is more than one:" + objects.length);
