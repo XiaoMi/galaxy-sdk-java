@@ -25,11 +25,12 @@ import java.util.Map;
 import java.util.UUID;
 
 import com.google.common.collect.LinkedListMultimap;
-import com.xiaomi.infra.galaxy.auth.authentication.HttpKeys;
-import com.xiaomi.infra.galaxy.auth.authentication.HttpMethod;
-import com.xiaomi.infra.galaxy.auth.authentication.HttpUtils;
-import com.xiaomi.infra.galaxy.auth.authentication.signature.SignAlgorithm;
-import com.xiaomi.infra.galaxy.auth.authentication.signature.Signer;
+
+import com.xiaomi.infra.galaxy.client.authentication.HttpKeys;
+import com.xiaomi.infra.galaxy.client.authentication.HttpMethod;
+import com.xiaomi.infra.galaxy.client.authentication.HttpUtils;
+import com.xiaomi.infra.galaxy.client.authentication.signature.SignAlgorithm;
+import com.xiaomi.infra.galaxy.client.authentication.signature.Signer;
 import com.xiaomi.infra.galaxy.sds.thrift.CommonConstants;
 import com.xiaomi.infra.galaxy.sds.thrift.ThriftProtocol;
 import com.xiaomi.infra.galaxy.sds.thrift.UserType;
