@@ -241,8 +241,9 @@ struct ReceiveMessageResponse {
   * - receiveCount
   *
   * If the message is received from a dead letter queue,
-  * it has another three attributes:
+  * it has another four attributes:
   * - sourceQueueName
+  * - sourceTag
   * - deadTimestamp
   * - originalMessageID
   *

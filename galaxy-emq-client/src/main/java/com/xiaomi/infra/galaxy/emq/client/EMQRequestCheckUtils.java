@@ -27,6 +27,7 @@ import com.xiaomi.infra.galaxy.emq.thrift.GetTagInfoRequest;
 import com.xiaomi.infra.galaxy.emq.thrift.GetUserInfoRequest;
 import com.xiaomi.infra.galaxy.emq.thrift.GetUserQuotaRequest;
 import com.xiaomi.infra.galaxy.emq.thrift.GetUserUsedQuotaRequest;
+import com.xiaomi.infra.galaxy.emq.thrift.ListDeadLetterSourceQueuesRequest;
 import com.xiaomi.infra.galaxy.emq.thrift.ListPermissionsRequest;
 import com.xiaomi.infra.galaxy.emq.thrift.ListQueueAlertPoliciesRequest;
 import com.xiaomi.infra.galaxy.emq.thrift.ListQueueRequest;
@@ -39,6 +40,7 @@ import com.xiaomi.infra.galaxy.emq.thrift.QueueAttribute;
 import com.xiaomi.infra.galaxy.emq.thrift.QueueQuota;
 import com.xiaomi.infra.galaxy.emq.thrift.RangeConstants;
 import com.xiaomi.infra.galaxy.emq.thrift.ReceiveMessageRequest;
+import com.xiaomi.infra.galaxy.emq.thrift.RemoveQueueRedrivePolicyRequest;
 import com.xiaomi.infra.galaxy.emq.thrift.RevokePermissionRequest;
 import com.xiaomi.infra.galaxy.emq.thrift.SendMessageBatchRequest;
 import com.xiaomi.infra.galaxy.emq.thrift.SendMessageBatchRequestEntry;
@@ -47,6 +49,7 @@ import com.xiaomi.infra.galaxy.emq.thrift.SetPermissionRequest;
 import com.xiaomi.infra.galaxy.emq.thrift.SetQueueAttributesRequest;
 import com.xiaomi.infra.galaxy.emq.thrift.SetQueueDailyStatisticsStateRequest;
 import com.xiaomi.infra.galaxy.emq.thrift.SetQueueQuotaRequest;
+import com.xiaomi.infra.galaxy.emq.thrift.SetQueueRedrivePolicyRequest;
 import com.xiaomi.infra.galaxy.emq.thrift.SetUserInfoRequest;
 import com.xiaomi.infra.galaxy.emq.thrift.SetUserQuotaRequest;
 import com.xiaomi.infra.galaxy.emq.thrift.Version;
@@ -80,12 +83,10 @@ public class EMQRequestCheckUtils {
         } catch (InvocationTargetException e) {
           throw e.getTargetException();
         }
+      } else {
+        throw new GalaxyEmqServiceException().setErrMsg("Unknown request class:"
+            + objects[0].getClass().getName());
       }
-//      else {
-//        throw new GalaxyEmqServiceException().setErrMsg("Unknown request class:"
-//            + objects[0].getClass().getName());
-//
-//      }
     } else if (objects.length > 1) {
       throw new GalaxyEmqServiceException().setErrMsg("Number of request" +
           " parameters is more than one:" + objects.length);
@@ -404,13 +405,44 @@ public class EMQRequestCheckUtils {
     validateQueueName(request.getQueueName());
   }
 
-  public static void check(Version request){}
-  public static void check(SetUserQuotaRequest request){}
-  public static void check(GetUserQuotaRequest request){}
-  public static void check(GetUserUsedQuotaRequest request){}
-  public static void check(SetUserInfoRequest request){}
-  public static void check(GetUserInfoRequest request){}
-  
+  public static void check(SetQueueRedrivePolicyRequest request)
+      throws GalaxyEmqServiceException {
+    validateQueueName(request.getQueueName());
+    validateQueueName(request.getRedrivePolicy().getDlqName());
+    checkParameterRange("redrivePolicy maxReceiveTime",
+        request.getRedrivePolicy().getMaxReceiveTime(),
+        RangeConstants.GALAXY_EMQ_QUEUE_REDRIVE_POLICY_MAX_RECEIVE_TIME_MINIMAL,
+        RangeConstants.GALAXY_EMQ_QUEUE_REDRIVE_POLICY_MAX_RECEIVE_TIME_MAXIMAL);
+  }
+
+  public static void check(RemoveQueueRedrivePolicyRequest request)
+      throws GalaxyEmqServiceException {
+    validateQueueName(request.getQueueName());
+  }
+
+  public static void check(ListDeadLetterSourceQueuesRequest request)
+      throws GalaxyEmqServiceException {
+    validateQueueName(request.getDlqName());
+  }
+
+  public static void check(Version request) {
+  }
+
+  public static void check(SetUserQuotaRequest request) {
+  }
+
+  public static void check(GetUserQuotaRequest request) {
+  }
+
+  public static void check(GetUserUsedQuotaRequest request) {
+  }
+
+  public static void check(SetUserInfoRequest request) {
+  }
+
+  public static void check(GetUserInfoRequest request) {
+  }
+
   public static void validateQueueAttribute(QueueAttribute attribute)
       throws GalaxyEmqServiceException {
     if (attribute.isSetDelaySeconds()) {
