@@ -13,7 +13,8 @@ import libthrift091.TEnum;
 
 public enum MEASUREMENT implements libthrift091.TEnum {
   LATENCY(0),
-  LATENCY_P999(1);
+  LATENCY_P999(1),
+  COUNT(2);
 
   private final int value;
 
@@ -38,6 +39,8 @@ public enum MEASUREMENT implements libthrift091.TEnum {
         return LATENCY;
       case 1:
         return LATENCY_P999;
+      case 2:
+        return COUNT;
       default:
         return null;
     }
