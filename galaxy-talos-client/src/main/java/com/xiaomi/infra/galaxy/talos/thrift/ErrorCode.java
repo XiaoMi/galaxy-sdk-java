@@ -28,7 +28,7 @@ public enum ErrorCode implements libthrift091.TEnum {
   MESSAGE_INDEX_NOT_EXIST(13),
   MESSAGE_OFFSET_OUT_OF_RANGE(14),
   INVALID_TOPIC_NAME(15),
-  INVALID_TOPIC_ATTRIBUTE(16),
+  INVALID_TOPIC_PARAMS(16),
   OPERATION_FAILED(17),
   HDFS_OPERATION_FAILED(18),
   HBASE_OPERATION_FAILED(19),
@@ -39,7 +39,8 @@ public enum ErrorCode implements libthrift091.TEnum {
   ZK_NODE_NOT_EXIST(24),
   REST_SERVER_INIT_ERROR(25),
   INTERNAL_SERVER_ERROR(26),
-  EXCESSIVE_PENDING_MESSAGE(27);
+  EXCESSIVE_PENDING_MESSAGE(27),
+  PERMISSION_DENIED_ERROR(28);
 
   private final int value;
 
@@ -93,7 +94,7 @@ public enum ErrorCode implements libthrift091.TEnum {
       case 15:
         return INVALID_TOPIC_NAME;
       case 16:
-        return INVALID_TOPIC_ATTRIBUTE;
+        return INVALID_TOPIC_PARAMS;
       case 17:
         return OPERATION_FAILED;
       case 18:
@@ -116,6 +117,8 @@ public enum ErrorCode implements libthrift091.TEnum {
         return INTERNAL_SERVER_ERROR;
       case 27:
         return EXCESSIVE_PENDING_MESSAGE;
+      case 28:
+        return PERMISSION_DENIED_ERROR;
       default:
         return null;
     }
