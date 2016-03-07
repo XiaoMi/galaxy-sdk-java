@@ -35,7 +35,6 @@ import com.xiaomi.infra.galaxy.talos.thrift.GetTopicOffsetRequest;
 import com.xiaomi.infra.galaxy.talos.thrift.GetTopicOffsetResponse;
 import com.xiaomi.infra.galaxy.talos.thrift.ListPermissionRequest;
 import com.xiaomi.infra.galaxy.talos.thrift.ListPermissionResponse;
-import com.xiaomi.infra.galaxy.talos.thrift.ListTopicsRequest;
 import com.xiaomi.infra.galaxy.talos.thrift.ListTopicsResponse;
 import com.xiaomi.infra.galaxy.talos.thrift.MessageService;
 import com.xiaomi.infra.galaxy.talos.thrift.OffsetInfo;
@@ -123,9 +122,8 @@ public class TalosAdmin {
         topicTalosResourceName, topicAttribute));
   }
 
-  public List<TopicInfo> listTopic(ListTopicsRequest request)
-      throws GalaxyTalosException, TException {
-    ListTopicsResponse listTopicsResponse = topicClient.listTopics(request);
+  public List<TopicInfo> listTopic() throws GalaxyTalosException, TException {
+    ListTopicsResponse listTopicsResponse = topicClient.listTopics();
     return listTopicsResponse.getTopicInfos();
   }
 
@@ -198,9 +196,5 @@ public class TalosAdmin {
   public void deleteTopicQuota(DeleteTopicQuotaRequest request)
       throws GalaxyTalosException, TException {
     topicClient.deleteTopicQuota(request);
-  }
-
-  public String getDeveloperId() throws GalaxyTalosException, TException {
-    return topicClient.getDeveloperId().getDeveloperId();
   }
 }
