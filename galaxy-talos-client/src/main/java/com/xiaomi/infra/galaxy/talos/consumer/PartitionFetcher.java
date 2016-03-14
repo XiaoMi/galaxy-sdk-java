@@ -11,29 +11,19 @@ import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
-import java.util.concurrent.atomic.AtomicLong;
 
 import com.google.common.base.Preconditions;
-import libthrift091.TException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.xiaomi.infra.galaxy.talos.client.Utils;
-import com.xiaomi.infra.galaxy.talos.thrift.CheckPoint;
 import com.xiaomi.infra.galaxy.talos.thrift.ConsumeUnit;
 import com.xiaomi.infra.galaxy.talos.thrift.ConsumerService;
 import com.xiaomi.infra.galaxy.talos.thrift.LockPartitionRequest;
 import com.xiaomi.infra.galaxy.talos.thrift.LockPartitionResponse;
-import com.xiaomi.infra.galaxy.talos.thrift.MessageAndOffset;
-import com.xiaomi.infra.galaxy.talos.thrift.MessageOffset;
 import com.xiaomi.infra.galaxy.talos.thrift.MessageService;
-import com.xiaomi.infra.galaxy.talos.thrift.QueryOffsetRequest;
-import com.xiaomi.infra.galaxy.talos.thrift.QueryOffsetResponse;
 import com.xiaomi.infra.galaxy.talos.thrift.TopicAndPartition;
 import com.xiaomi.infra.galaxy.talos.thrift.TopicTalosResourceName;
 import com.xiaomi.infra.galaxy.talos.thrift.UnlockPartitionRequest;
-import com.xiaomi.infra.galaxy.talos.thrift.UpdateOffsetRequest;
-import com.xiaomi.infra.galaxy.talos.thrift.UpdateOffsetResponse;
 
 /**
  * PartitionFetcher
@@ -42,7 +32,7 @@ import com.xiaomi.infra.galaxy.talos.thrift.UpdateOffsetResponse;
  *
  * PartitionFetcher as the message process task for one partition, which has four state:
  * INIT, LOCKED, UNLOCKING, UNLOCKED
- * Every PartitionFetcher has one runnable messageReader to fetch messages continuously.
+ * Every PartitionFetcher has one runnable FetcherStateMachine to fetch messages continuously.
  *
  * when standing be LOCKED, it continuously reading messages by SimpleConsumer.fetchMessage;
  * when standing be UNLOCKING, it stop to read, commit offset and release the partition lock;
@@ -68,51 +58,12 @@ public class PartitionFetcher {
     UNLOCKED,
   }
 
-  private class MessageReader implements Runnable {
-    private final int commitThreshold = talosConsumerConfig.getCommitOffsetThreshold();
-    private final int commitInterval = talosConsumerConfig.getCommitOffsetInterval();
-    private final int fetchInterval = talosConsumerConfig.getFetchMessageInterval();
+  private class FetcherStateMachine implements Runnable {
+    private MessageReader messageReader;
 
-    private AtomicLong startOffset;
-    private long finishedOffset;
-    private MessageProcessor messageProcessor;
-    private long lastCommitTime;
-    private long lastCommitOffset;
-    private long lastFetchTime;
-
-    private MessageReader(MessageProcessor messageProcessor) {
-      this.messageProcessor = messageProcessor;
-      lastCommitTime = lastFetchTime = System.currentTimeMillis();
-      lastCommitOffset = finishedOffset = -1;
-      startOffset = new AtomicLong(-1);
-      LOG.info("initialize message reader for partition: " + partitionId);
-    }
-
-    private boolean shoudCommit() {
-      return (System.currentTimeMillis() - lastCommitTime >= commitInterval) ||
-          (finishedOffset - lastCommitOffset >= commitThreshold);
-    }
-
-    // commit the last processed offset and update the startOffset
-    private void commitOffset() throws TException {
-      CheckPoint checkPoint = new CheckPoint(consumerGroup, topicAndPartition,
-          finishedOffset, workerId);
-      // check whether to check last commit offset
-      if (talosConsumerConfig.isCheckLastCommitOffset()) {
-        checkPoint.setLastCommitOffset(lastCommitOffset);
-      }
-
-      UpdateOffsetRequest updateOffsetRequest = new UpdateOffsetRequest(checkPoint);
-      UpdateOffsetResponse updateOffsetResponse = consumerClient.updateOffset(
-          updateOffsetRequest);
-      // update startOffset as next message
-      if (updateOffsetResponse.isSuccess()) {
-        lastCommitOffset = finishedOffset;
-        lastCommitTime = System.currentTimeMillis();
-      }
-
-      LOG.info("Worker: " + workerId + " commit offset: " +
-          lastCommitOffset + " for partition: " + partitionId);
+    private FetcherStateMachine(MessageReader messageReader) {
+      this.messageReader = messageReader;
+      LOG.info("initialize FetcherStateMachine for partition: " + partitionId);
     }
 
     @Override
@@ -125,9 +76,7 @@ public class PartitionFetcher {
 
       // query start offset to read, if failed, clean and return;
       try {
-        startOffset.set(getStartOffset());
-        // guarantee lastCommitOffset and finishedOffset correct
-        lastCommitOffset = finishedOffset = startOffset.get() - 1;
+        messageReader.initStartOffset();
       } catch (Throwable e) {
         LOG.error("Worker: " + workerId + " query partition offset error: " +
             e.toString() + " skip this partition");
@@ -137,118 +86,43 @@ public class PartitionFetcher {
 
       // reading data
       LOG.info("The workerId: " + workerId + " is serving partition: " +
-          partitionId + " from offset: " + startOffset.get());
+          partitionId + " from offset: " + messageReader.getStartOffset().get());
       while (getCurState() == TASK_STATE.LOCKED) {
-        // control fetch qps
-        if (System.currentTimeMillis() - lastFetchTime < fetchInterval) {
-          try {
-            Thread.sleep(lastFetchTime + fetchInterval - System.currentTimeMillis());
-          } catch (InterruptedException e) {
-            // do nothing
-          }
-        }
-
-        try {
-          if (LOG.isDebugEnabled()) {
-            LOG.debug("Reading message from offset: " + startOffset.get() +
-                " of partition: " + partitionId);
-          }
-          List<MessageAndOffset> messageList = simpleConsumer.fetchMessage(
-              startOffset.get());
-          lastFetchTime = System.currentTimeMillis();
-          if (messageList == null || messageList.size() == 0) {
-            continue;
-          }
-
-          /**
-           * Note: We guarantee the committed offset must be the messages that
-           * have been processed by user's MessageProcessor;
-           */
-          messageProcessor.process(messageList);
-          finishedOffset = messageList.get(messageList.size() - 1).getMessageOffset();
-          startOffset.set(finishedOffset + 1);
-          if (shoudCommit()) {
-            commitOffset();
-          }
-        } catch (Throwable e) {
-          LOG.error("Error: " + e.toString() + " when getting messages from topic: " +
-              topicTalosResourceName + " partition: " + partitionId);
-
-          // delay when partitionNotServing
-          if (Utils.isPartitionNotServing(e)) {
-            LOG.warn("Partition: " + partitionId +
-                " is not serving state, sleep a while for waiting it work.");
-            try {
-              Thread.sleep(talosConsumerConfig.getWaitPartitionWorkingTime());
-            } catch (InterruptedException e1) {
-              e1.printStackTrace();
-            }
-          } // if
-
-          // process message offset out of range, reset start offset
-          if (Utils.isOffsetOutOfRange(e)) {
-            if (talosConsumerConfig.isResetLatestOffset()) {
-              LOG.warn("Got PartitionOutOfRange error, " +
-                  " offset by current latest offset");
-              startOffset.set(MessageOffset.LATEST_OFFSET.getValue());
-              lastCommitOffset = finishedOffset = startOffset.get() - 1;
-              lastCommitTime = System.currentTimeMillis();
-            } else {
-              LOG.warn("Got PartitionOutOfRange error," +
-                  " reset offset by current start offset");
-              startOffset.set(MessageOffset.START_OFFSET.getValue());
-              lastCommitOffset = finishedOffset = startOffset.get() - 1;
-              lastCommitTime = System.currentTimeMillis();
-            }
-          } // if
-
-          lastFetchTime = System.currentTimeMillis();
-        } // catch
-      } // while
-
-      // wait task quit gracefully: stop reading, commit offset, clean and shutdown
-      if (finishedOffset > lastCommitOffset) {
-        try {
-          commitOffset();
-        } catch (TException e) {
-          LOG.error("Error: " + e.toString() + " when commit offset for topic: " +
-              topicTalosResourceName + " partition: " + partitionId);
-        }
+        messageReader.fetchData();
       }
 
+      // wait task quit gracefully: stop reading, commit offset, clean and shutdown
+      messageReader.cleanReader();
       clean();
       LOG.info("The MessageProcessTask for topic: " + topicTalosResourceName +
           " partition: " + partitionId + " is finished");
     }
-  } // MessageReader
+  } // FetcherStateMachine
 
   private static final Logger LOG = LoggerFactory.getLogger(PartitionFetcher.class);
   private String consumerGroup;
   private TopicTalosResourceName topicTalosResourceName;
   private int partitionId;
-  private TalosConsumerConfig talosConsumerConfig;
   private String workerId;
   private ConsumerService.Iface consumerClient;
-  private MessageProcessor messageProcessor;
   private TASK_STATE curState;
   private ExecutorService singleExecutor;
   private Future fetcherFuture;
 
   private TopicAndPartition topicAndPartition;
   private SimpleConsumer simpleConsumer;
+  private MessageReader messageReader;
 
   public PartitionFetcher(String consumerGroup, String topicName,
       TopicTalosResourceName topicTalosResourceName, int partitionId,
       TalosConsumerConfig talosConsumerConfig, String workerId,
       ConsumerService.Iface consumerClient, MessageService.Iface messageClient,
-      MessageProcessor messageProcessor) {
+      MessageProcessor messageProcessor, MessageReader messageReader) {
     this.consumerGroup = consumerGroup;
     this.topicTalosResourceName = topicTalosResourceName;
     this.partitionId = partitionId;
-    this.talosConsumerConfig = talosConsumerConfig;
     this.workerId = workerId;
     this.consumerClient = consumerClient;
-    this.messageProcessor = messageProcessor;
     curState = TASK_STATE.INIT;
     singleExecutor = Executors.newSingleThreadExecutor();
     fetcherFuture = null;
@@ -257,6 +131,16 @@ public class PartitionFetcher {
         topicTalosResourceName, partitionId);
     simpleConsumer = new SimpleConsumer(talosConsumerConfig, topicAndPartition,
         messageClient);
+
+    // set MessageReader
+    messageReader.setWorkerId(workerId)
+        .setConsumerGroup(consumerGroup)
+        .setTopicAndPartition(topicAndPartition)
+        .setSimpleConsumer(simpleConsumer)
+        .setMessageProcessor(messageProcessor)
+        .setConsumerClient(consumerClient);
+    this.messageReader = messageReader;
+
     LOG.info("The PartitionFetcher for topic: " + topicTalosResourceName +
         " partition: " + partitionId + " init.");
   }
@@ -264,16 +148,14 @@ public class PartitionFetcher {
   // for test
   public PartitionFetcher(String consumerGroup, String topicName,
       TopicTalosResourceName topicTalosResourceName, int partitionId,
-      TalosConsumerConfig talosConsumerConfig, String workerId,
-      ConsumerService.Iface consumerClient, SimpleConsumer simpleConsumer,
-      MessageProcessor messageProcessor) {
+      String workerId, ConsumerService.Iface consumerClient,
+      SimpleConsumer simpleConsumer,MessageReader messageReader) {
     this.consumerGroup = consumerGroup;
     this.topicTalosResourceName = topicTalosResourceName;
     this.partitionId = partitionId;
-    this.talosConsumerConfig = talosConsumerConfig;
     this.workerId = workerId;
     this.consumerClient = consumerClient;
-    this.messageProcessor = messageProcessor;
+    this.messageReader = messageReader;
     curState = TASK_STATE.INIT;
     singleExecutor = Executors.newSingleThreadExecutor();
     fetcherFuture = null;
@@ -304,8 +186,9 @@ public class PartitionFetcher {
   // used for invoke this partition fetcher
   public void lock() {
     if (updateState(TASK_STATE.LOCKED)) {
-      MessageReader messageReader = new MessageReader(messageProcessor);
-      fetcherFuture = singleExecutor.submit(messageReader);
+      FetcherStateMachine fetcherStateMachine = new FetcherStateMachine(
+          messageReader);
+      fetcherFuture = singleExecutor.submit(fetcherStateMachine);
       LOG.info("Worker: " + workerId + " invoke partition: " +
           partitionId + " to 'LOCKED', try to serve it.");
     }
@@ -424,15 +307,6 @@ public class PartitionFetcher {
     }
     LOG.error("Worker: " + workerId + " failed to lock partitions: " + partitionId);
     return false;
-  }
-
-  private long getStartOffset() throws TException {
-    QueryOffsetRequest queryOffsetRequest = new QueryOffsetRequest(
-        consumerGroup, topicAndPartition);
-    QueryOffsetResponse queryOffsetResponse = consumerClient.queryOffset(
-        queryOffsetRequest);
-    // startOffset = queryOffset + 1
-    return queryOffsetResponse.getMsgOffset() + 1;
   }
 
   // unlock partitionLock, then revoke this task and set it to 'UNLOCKED'

@@ -10,7 +10,6 @@ import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.hadoop.conf.Configuration;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -47,35 +46,17 @@ public class PartitionFetcherTest {
   private static final String consumerGroup = "MyConsumerGroup";
   private static final String workerId = "workerId";
 
-  private static TalosConsumerConfig consumerConfig;
   private static List<MessageAndOffset> messageAndOffsetList;
   private static List<MessageAndOffset> messageAndOffsetList2;
 
   private static ConsumerService.Iface consumerClientMock;
   private static SimpleConsumer simpleConsumerMock;
+  private static MessageReader messageReaderMock;
 
-  private static MessageProcessor messageProcessor;
-  private static MessageProcessorFactory messageProcessorFactory;
   private static PartitionFetcher partitionFetcher;
-
-  private static class MyMessageProcessor implements MessageProcessor {
-    @Override
-    public void process(List<MessageAndOffset> messages) {
-      LOG.info("[MyMessageProcessor] Get messages number: " + messages.size());
-    }
-  }
-
-  private static class MyMessageProcessorFactory implements MessageProcessorFactory {
-    @Override
-    public MessageProcessor createProcessor() {
-      return new MyMessageProcessor();
-    }
-  }
 
   @Before
   public void setUp() throws Exception {
-    Configuration configuration = new Configuration();
-    consumerConfig = new TalosConsumerConfig(configuration, false);
     messageAndOffsetList = new ArrayList<MessageAndOffset>();
     messageAndOffsetList2 = new ArrayList<MessageAndOffset>();
 
@@ -95,15 +76,13 @@ public class PartitionFetcherTest {
     messageAndOffsetList2.add(messageAndOffset4);
     messageAndOffsetList2.add(messageAndOffset5);
 
-    messageProcessorFactory = new MyMessageProcessorFactory();
-    messageProcessor = messageProcessorFactory.createProcessor();
-
     consumerClientMock = Mockito.mock(ConsumerService.Iface.class);
     simpleConsumerMock = Mockito.mock(SimpleConsumer.class);
+    messageReaderMock = Mockito.mock(MessageReader.class);
 
     partitionFetcher = new PartitionFetcher(consumerGroup, topicName,
-        new TopicTalosResourceName(resourceName), partitionId, consumerConfig,
-        workerId, consumerClientMock, simpleConsumerMock, messageProcessor);
+        new TopicTalosResourceName(resourceName), partitionId, workerId,
+        consumerClientMock, simpleConsumerMock, messageReaderMock);
 
     // mock value for simpleConsumerMock and consumerClientMock
     when(simpleConsumerMock.fetchMessage(anyLong()))
@@ -156,8 +135,8 @@ public class PartitionFetcherTest {
 
   @Test
   public void testLockFailedWhenGetStartOffset() throws Exception {
-    doThrow(new GalaxyTalosException()).when(consumerClientMock)
-        .queryOffset(any(QueryOffsetRequest.class));
+    doThrow(new GalaxyTalosException()).when(messageReaderMock)
+        .initStartOffset();
 
     partitionFetcher.lock();
     Thread.sleep(50);
