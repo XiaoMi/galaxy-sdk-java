@@ -154,7 +154,7 @@ struct AlertPolicy{
 
 }
 
-struct AddAlertPolicyRequest{
+struct AddQueueAlertPolicyRequest{
  /**
   *Queue name;
   **/
@@ -167,7 +167,7 @@ struct AddAlertPolicyRequest{
 
 }
 
-struct DeleteAlertPolicyRequest{
+struct DeleteQueueAlertPolicyRequest{
  /**
   *Queue name;
   **/
@@ -260,12 +260,12 @@ service StatisticsService extends Common.EMQBaseService {
   /**
   * Add an alert policy for queue;
   **/
-  void addQueueAlertPolicy(1: AddAlertPolicyRequest request) throws (1: Common.GalaxyEmqServiceException e);
+  void addQueueAlertPolicy(1: AddQueueAlertPolicyRequest request) throws (1: Common.GalaxyEmqServiceException e);
 
   /**
   * Delete an alert policy for queue;
   **/
-  void deleteQueueAlertPolicy(1: DeleteAlertPolicyRequest request) throws (1: Common.GalaxyEmqServiceException e);
+  void deleteQueueAlertPolicy(1: DeleteQueueAlertPolicyRequest request) throws (1: Common.GalaxyEmqServiceException e);
 
   /**
   * Clear alert policies for queue;

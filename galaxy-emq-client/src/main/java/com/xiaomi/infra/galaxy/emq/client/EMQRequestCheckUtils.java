@@ -8,16 +8,16 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import com.xiaomi.infra.galaxy.emq.thrift.AddAlertPolicyRequest;
+import com.xiaomi.infra.galaxy.emq.thrift.AddQueueAlertPolicyRequest;
 import com.xiaomi.infra.galaxy.emq.thrift.ChangeMessageVisibilityBatchRequest;
 import com.xiaomi.infra.galaxy.emq.thrift.ChangeMessageVisibilityBatchRequestEntry;
 import com.xiaomi.infra.galaxy.emq.thrift.ChangeMessageVisibilityRequest;
 import com.xiaomi.infra.galaxy.emq.thrift.CreateQueueRequest;
 import com.xiaomi.infra.galaxy.emq.thrift.CreateTagRequest;
-import com.xiaomi.infra.galaxy.emq.thrift.DeleteAlertPolicyRequest;
 import com.xiaomi.infra.galaxy.emq.thrift.DeleteMessageBatchRequest;
 import com.xiaomi.infra.galaxy.emq.thrift.DeleteMessageBatchRequestEntry;
 import com.xiaomi.infra.galaxy.emq.thrift.DeleteMessageRequest;
+import com.xiaomi.infra.galaxy.emq.thrift.DeleteQueueAlertPolicyRequest;
 import com.xiaomi.infra.galaxy.emq.thrift.DeleteQueueRequest;
 import com.xiaomi.infra.galaxy.emq.thrift.DeleteTagRequest;
 import com.xiaomi.infra.galaxy.emq.thrift.GalaxyEmqServiceException;
@@ -380,12 +380,12 @@ public class EMQRequestCheckUtils {
         RangeConstants.GALAXY_EMQ_QUEUE_READ_QPS_MAXIMAL);
   }
 
-  public static void check(AddAlertPolicyRequest request)
+  public static void check(AddQueueAlertPolicyRequest request)
       throws GalaxyEmqServiceException {
     validateQueueName(request.getQueueName());
   }
 
-  public static void check(DeleteAlertPolicyRequest request)
+  public static void check(DeleteQueueAlertPolicyRequest request)
       throws GalaxyEmqServiceException {
     validateQueueName(request.getQueueName());
   }
