@@ -246,6 +246,7 @@ struct ReceiveMessageResponse {
   * - sourceTag
   * - deadTimestamp
   * - originalMessageID
+  * - originalReceiveCount
   *
   **/
   4: optional map<string, string> attributes;
@@ -356,6 +357,51 @@ struct DeleteMessageBatchResponse {
   2: list<MessageBatchErrorEntry> failed;
 }
 
+struct DeadMessageRequest {
+  /**
+  * Queue name;
+  **/
+  1: required string queueName;
+
+  /**
+  * receipt handle of message to die;
+  **/
+  2: required string receiptHandle;
+}
+
+struct DeadMessageBatchRequestEntry {
+
+  /**
+  * receipt handle of message to die;
+  **/
+  1: required string receiptHandle;
+}
+
+struct DeadMessageBatchRequest {
+  /**
+  * Queue name;
+  **/
+  1: required string queueName;
+
+  /**
+  * List of DeadMessageBatchRequestEntry;
+  **/
+  2: required list<DeadMessageBatchRequestEntry> deadMessageBatchRequestEntryList;
+}
+
+struct DeadMessageBatchResponse {
+  /**
+  * The successful receipt handle;
+  **/
+  1: list<string> successful;
+
+  /**
+  * Failed results list;
+  * Using receipt handle to index
+  **/
+  2: list<MessageBatchErrorEntry> failed;
+}
+
 service MessageService extends Common.EMQBaseService {
   /**
   * Send message;
@@ -391,4 +437,14 @@ service MessageService extends Common.EMQBaseService {
   * Delete message batch;
   **/
   DeleteMessageBatchResponse deleteMessageBatch(1: DeleteMessageBatchRequest deleteMessageBatchRequest) throws(1: Common.GalaxyEmqServiceException e),
+
+  /**
+  * Dead message;
+  **/
+  void deadMessage(1: DeadMessageRequest deadMessageRequest) throws (1: Common.GalaxyEmqServiceException e),
+
+  /**
+  * Dead message batch;
+  **/
+  DeadMessageBatchResponse deadMessageBatch(1: DeadMessageBatchRequest deadMessageBatchRequest) throws(1: Common.GalaxyEmqServiceException e),
 }

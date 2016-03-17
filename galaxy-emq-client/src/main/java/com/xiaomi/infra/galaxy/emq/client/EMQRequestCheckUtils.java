@@ -14,6 +14,9 @@ import com.xiaomi.infra.galaxy.emq.thrift.ChangeMessageVisibilityBatchRequestEnt
 import com.xiaomi.infra.galaxy.emq.thrift.ChangeMessageVisibilityRequest;
 import com.xiaomi.infra.galaxy.emq.thrift.CreateQueueRequest;
 import com.xiaomi.infra.galaxy.emq.thrift.CreateTagRequest;
+import com.xiaomi.infra.galaxy.emq.thrift.DeadMessageBatchRequest;
+import com.xiaomi.infra.galaxy.emq.thrift.DeadMessageBatchRequestEntry;
+import com.xiaomi.infra.galaxy.emq.thrift.DeadMessageRequest;
 import com.xiaomi.infra.galaxy.emq.thrift.DeleteMessageBatchRequest;
 import com.xiaomi.infra.galaxy.emq.thrift.DeleteMessageBatchRequestEntry;
 import com.xiaomi.infra.galaxy.emq.thrift.DeleteMessageRequest;
@@ -332,6 +335,30 @@ public class EMQRequestCheckUtils {
     checkNotEmpty(entryList);
     Set<String> receiptHandleSet = new HashSet<String>(entryList.size());
     for (DeleteMessageBatchRequestEntry entry : entryList) {
+      String receiptHandle = entry.getReceiptHandle();
+      checkNotEmpty(receiptHandle, "receipt handle");
+      boolean notExist = receiptHandleSet.add(receiptHandle);
+      if (!notExist) {
+        throw new GalaxyEmqServiceException().setErrMsg("Not Unique ReceiptHandle").
+            setDetails("Duplicate receiptHandle:" + receiptHandle);
+      }
+    }
+  }
+
+  public static void check(DeadMessageRequest request)
+      throws GalaxyEmqServiceException {
+    validateQueueName(request.getQueueName());
+    checkNotEmpty(request.getReceiptHandle(), "receipt handle");
+  }
+
+  public static void check(DeadMessageBatchRequest request)
+      throws GalaxyEmqServiceException {
+    validateQueueName(request.getQueueName());
+    List<DeadMessageBatchRequestEntry> entryList =
+        request.getDeadMessageBatchRequestEntryList();
+    checkNotEmpty(entryList);
+    Set<String> receiptHandleSet = new HashSet<String>(entryList.size());
+    for (DeadMessageBatchRequestEntry entry : entryList) {
       String receiptHandle = entry.getReceiptHandle();
       checkNotEmpty(receiptHandle, "receipt handle");
       boolean notExist = receiptHandleSet.add(receiptHandle);
