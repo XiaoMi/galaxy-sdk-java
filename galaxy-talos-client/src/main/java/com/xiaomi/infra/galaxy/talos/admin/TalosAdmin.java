@@ -18,36 +18,32 @@ import com.xiaomi.infra.galaxy.rpc.thrift.Credential;
 import com.xiaomi.infra.galaxy.talos.client.TalosClientConfig;
 import com.xiaomi.infra.galaxy.talos.client.TalosClientFactory;
 import com.xiaomi.infra.galaxy.talos.client.Utils;
-import com.xiaomi.infra.galaxy.talos.thrift.AddPermissionRequest;
-import com.xiaomi.infra.galaxy.talos.thrift.AddPermissionResponse;
 import com.xiaomi.infra.galaxy.talos.thrift.ChangeTopicAttributeRequest;
 import com.xiaomi.infra.galaxy.talos.thrift.CreateTopicRequest;
 import com.xiaomi.infra.galaxy.talos.thrift.CreateTopicResponse;
-import com.xiaomi.infra.galaxy.talos.thrift.DeletePermissionRequest;
-import com.xiaomi.infra.galaxy.talos.thrift.DeletePermissionResponse;
-import com.xiaomi.infra.galaxy.talos.thrift.DeleteQuotaRequest;
+import com.xiaomi.infra.galaxy.talos.thrift.DeleteTopicQuotaRequest;
 import com.xiaomi.infra.galaxy.talos.thrift.DeleteTopicRequest;
+import com.xiaomi.infra.galaxy.talos.thrift.DeleteUserQuotaRequest;
 import com.xiaomi.infra.galaxy.talos.thrift.DescribeTopicRequest;
 import com.xiaomi.infra.galaxy.talos.thrift.DescribeTopicResponse;
 import com.xiaomi.infra.galaxy.talos.thrift.GalaxyTalosException;
 import com.xiaomi.infra.galaxy.talos.thrift.GetPartitionOffsetRequest;
 import com.xiaomi.infra.galaxy.talos.thrift.GetPartitionOffsetResponse;
+import com.xiaomi.infra.galaxy.talos.thrift.GetPermissionRequest;
+import com.xiaomi.infra.galaxy.talos.thrift.GetPermissionResponse;
 import com.xiaomi.infra.galaxy.talos.thrift.GetTopicOffsetRequest;
 import com.xiaomi.infra.galaxy.talos.thrift.GetTopicOffsetResponse;
 import com.xiaomi.infra.galaxy.talos.thrift.ListPermissionRequest;
 import com.xiaomi.infra.galaxy.talos.thrift.ListPermissionResponse;
-import com.xiaomi.infra.galaxy.talos.thrift.ListQuotaResponse;
-import com.xiaomi.infra.galaxy.talos.thrift.ListTopicsRequest;
 import com.xiaomi.infra.galaxy.talos.thrift.ListTopicsResponse;
 import com.xiaomi.infra.galaxy.talos.thrift.MessageService;
 import com.xiaomi.infra.galaxy.talos.thrift.OffsetInfo;
-import com.xiaomi.infra.galaxy.talos.thrift.QueryPermissionRequest;
-import com.xiaomi.infra.galaxy.talos.thrift.QueryPermissionResponse;
-import com.xiaomi.infra.galaxy.talos.thrift.QueryQuotaResponse;
+import com.xiaomi.infra.galaxy.talos.thrift.QueryTopicQuotaRequest;
 import com.xiaomi.infra.galaxy.talos.thrift.QuotaService;
 import com.xiaomi.infra.galaxy.talos.thrift.RevokePermissionRequest;
 import com.xiaomi.infra.galaxy.talos.thrift.SetPermissionRequest;
-import com.xiaomi.infra.galaxy.talos.thrift.SetQuotaRequest;
+import com.xiaomi.infra.galaxy.talos.thrift.SetTopicQuotaRequest;
+import com.xiaomi.infra.galaxy.talos.thrift.SetUserQuotaRequest;
 import com.xiaomi.infra.galaxy.talos.thrift.Topic;
 import com.xiaomi.infra.galaxy.talos.thrift.TopicAttribute;
 import com.xiaomi.infra.galaxy.talos.thrift.TopicInfo;
@@ -90,7 +86,9 @@ public class TalosAdmin {
         topicClient.describeTopic(request);
     return new Topic(describeTopicResponse.getTopicInfo(),
         describeTopicResponse.getTopicAttribute(),
-        describeTopicResponse.getTopicState());
+        describeTopicResponse.getTopicState())
+        .setTopicQuota(describeTopicResponse.getTopicQuota())
+        .setTopicAcl(describeTopicResponse.getAclMap());
   }
 
   public void deleteTopic(DeleteTopicRequest request)
@@ -124,9 +122,8 @@ public class TalosAdmin {
         topicTalosResourceName, topicAttribute));
   }
 
-  public List<TopicInfo> listTopic(ListTopicsRequest request)
-      throws GalaxyTalosException, TException {
-    ListTopicsResponse listTopicsResponse = topicClient.listTopics(request);
+  public List<TopicInfo> listTopic() throws GalaxyTalosException, TException {
+    ListTopicsResponse listTopicsResponse = topicClient.listTopics();
     return listTopicsResponse.getTopicInfos();
   }
 
@@ -142,128 +139,62 @@ public class TalosAdmin {
     return response.getOffsetInfo();
   }
 
-  public void setPermission(TopicInfo topicInfo, String developerId,
-      long permission) throws GalaxyTalosException, TException {
-    Preconditions.checkNotNull(topicInfo);
-    Preconditions.checkNotNull(developerId);
-    Preconditions.checkArgument(permission > 0);
-    SetPermissionRequest setPermissionRequest = new SetPermissionRequest(
-        topicInfo, developerId, permission);
-    topicClient.setPermission(setPermissionRequest);
-  }
-
-  public void revokePermission(TopicInfo topicInfo, String developerId)
+  public void setPermission(SetPermissionRequest request)
       throws GalaxyTalosException, TException {
-    Preconditions.checkNotNull(topicInfo);
-    Preconditions.checkNotNull(developerId);
-    RevokePermissionRequest revokePermissionRequest =
-        new RevokePermissionRequest(topicInfo, developerId);
-    topicClient.revokePermission(revokePermissionRequest);
-    LOG.info("Revoke permission success for: " + developerId);
+    Preconditions.checkArgument(request.getPermission().getValue() > 0);
+    topicClient.setPermission(request);
   }
 
-  public long addPermission(TopicInfo topicInfo, String developerId,
-      long permission) throws GalaxyTalosException, TException {
-    Preconditions.checkNotNull(topicInfo);
-    Preconditions.checkNotNull(developerId);
-    Preconditions.checkArgument(permission > 0);
-    AddPermissionRequest addPermissionRequest = new AddPermissionRequest(
-        topicInfo, developerId, permission);
-    AddPermissionResponse addPermissionResponse =
-        topicClient.addPermission(addPermissionRequest);
-    if (addPermissionResponse == null) {
-      LOG.warn("Add permission got null response for: " + developerId);
-      return -1;
-    }
-    LOG.info("Add permission success for: " + developerId);
-    return addPermissionResponse.getPermission();
-  }
-
-  public long deletePermission(TopicInfo topicInfo, String developerId,
-      long permission) throws GalaxyTalosException, TException {
-    Preconditions.checkNotNull(topicInfo);
-    Preconditions.checkNotNull(developerId);
-    Preconditions.checkArgument(permission > 0);
-    DeletePermissionRequest deletePermissionRequest =
-        new DeletePermissionRequest(topicInfo, developerId, permission);
-    DeletePermissionResponse deletePermissionResponse =
-        topicClient.deletePermission(deletePermissionRequest);
-    if (deletePermissionResponse == null) {
-      LOG.warn("Delete permission got null response for: " + developerId);
-      return -1;
-    }
-    LOG.info("Delete permission success for: " + developerId);
-    return deletePermissionResponse.getPermission();
-  }
-
-  public Map<String, Long> listPermission(TopicInfo topicInfo)
+  public void revokePermission(RevokePermissionRequest request)
       throws GalaxyTalosException, TException {
-    Preconditions.checkNotNull(topicInfo);
-    ListPermissionRequest listPermissionRequest = new ListPermissionRequest(topicInfo);
+    topicClient.revokePermission(request);
+  }
+
+  public Map<String, Integer> listPermission(ListPermissionRequest request)
+      throws GalaxyTalosException, TException {
     ListPermissionResponse listPermissionResponse =
-        topicClient.listPermission(listPermissionRequest);
-    if (listPermissionResponse == null) {
-      LOG.warn("List permission got null response for: " +
-          topicInfo.getTopicTalosResourceName().getTopicTalosResourceName());
-      return null;
-    }
+        topicClient.listPermission(request);
     return listPermissionResponse.getPermissions();
   }
 
-  public long queryPermission(TopicInfo topicInfo, String developerId)
+  public int queryPermission(GetPermissionRequest request)
       throws GalaxyTalosException, TException {
-    Preconditions.checkNotNull(topicInfo);
-    Preconditions.checkNotNull(developerId);
-    QueryPermissionRequest queryPermissionRequest = new QueryPermissionRequest(
-        topicInfo, developerId);
-    QueryPermissionResponse queryPermissionResponse =
-        topicClient.queryPermission(queryPermissionRequest);
-    if (queryPermissionResponse == null) {
-      LOG.warn("Query permission got null response for: " + developerId);
-      return -1;
-    }
+    GetPermissionResponse queryPermissionResponse =
+        topicClient.getPermission(request);
     return queryPermissionResponse.getPermission();
   }
 
-  public void setQuota(String developerId, UserQuota userQuota)
+  public void setUserQuota(SetUserQuotaRequest request)
       throws GalaxyTalosException, TException {
-    Preconditions.checkNotNull(developerId);
-    Preconditions.checkNotNull(userQuota);
-    SetQuotaRequest setQuotaRequest = new SetQuotaRequest(developerId, userQuota);
-    quotaClient.setQuota(setQuotaRequest);
-    LOG.info("Set quota success for: " + developerId);
+    quotaClient.setUserQuota(request);
   }
 
-  public Map<String, UserQuota> listQuota() throws GalaxyTalosException, TException {
-    ListQuotaResponse listQuotaResponse = quotaClient.listQuota();
-    if (listQuotaResponse == null) {
-      LOG.warn("List quota got null response");
-      return null;
-    }
-    return listQuotaResponse.getQuotas();
+  public Map<String, UserQuota> listAllUserQuota()
+      throws GalaxyTalosException, TException {
+    return quotaClient.listUserQuota().getUserQuotaList();
   }
 
-  public void deleteQuota(String developerId) throws GalaxyTalosException, TException {
-    Preconditions.checkNotNull(developerId);
-    DeleteQuotaRequest deleteQuotaRequest = new DeleteQuotaRequest(developerId);
-    quotaClient.deleteQuota(deleteQuotaRequest);
-    LOG.info("Delete quota success for: " + developerId);
+  public void deleteUserQuota(DeleteUserQuotaRequest request)
+      throws GalaxyTalosException, TException {
+    quotaClient.deleteUserQuota(request);
   }
 
-  public UserQuota queryQuota() throws GalaxyTalosException, TException {
-    QueryQuotaResponse queryQuotaResponse = quotaClient.queryQuota();
-    if (queryQuotaResponse == null) {
-      LOG.warn("Query quota got null response");
-      return null;
-    }
-    return queryQuotaResponse.getUserQuota();
+  public UserQuota queryUserQuota() throws GalaxyTalosException, TException {
+    return quotaClient.queryUserQuota().getUserQuota();
   }
 
-  // TODO: add function listQuota need argument developerId
-  // TODO: clearly specify all exceptions thrown
-  // TODO: change all function to just wrap them by remaining prototype of functions:
-  //       for example, public void deleteQuota(DeleteQuotaRequest deleteQuotaRequest) {
-  //                      quotaClient.deleteQuota(deleteQuotaRequest);
-  // }
+  public void setTopicQuota(SetTopicQuotaRequest request)
+      throws GalaxyTalosException, TException {
+    topicClient.setTopicQuota(request);
+  }
 
+  public void queryTopicQuota(QueryTopicQuotaRequest request)
+      throws GalaxyTalosException, TException {
+    topicClient.queryTopicQuota(request);
+  }
+
+  public void deleteTopicQuota(DeleteTopicQuotaRequest request)
+      throws GalaxyTalosException, TException {
+    topicClient.deleteTopicQuota(request);
+  }
 }

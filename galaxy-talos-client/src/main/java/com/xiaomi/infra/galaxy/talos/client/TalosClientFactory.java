@@ -22,8 +22,6 @@ import org.apache.http.params.HttpParams;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.xiaomi.infra.galaxy.rpc.client.AutoRetryClient;
-import com.xiaomi.infra.galaxy.rpc.client.ThreadSafeClient;
 import com.xiaomi.infra.galaxy.rpc.thrift.Credential;
 import com.xiaomi.infra.galaxy.rpc.util.clock.AdjustableClock;
 import com.xiaomi.infra.galaxy.talos.thrift.ConsumerService;
@@ -36,6 +34,7 @@ public class TalosClientFactory {
   private static final Logger LOG = LoggerFactory.getLogger(TalosClientFactory.class);
   private static final String USER_AGENT_HEADER = "User-Agent";
   private static final Version VERSION = new Version();
+  private static final String SID = "galaxytalos";
 
   private TalosClientConfig talosClientConfig;
   private Credential credential;
@@ -260,8 +259,9 @@ public class TalosClientFactory {
       headers.putAll(customHeaders);
     }
 
+    // setting 'supportAccountKey' to true for using Galaxy-V3 auth
     IFace client = ThreadSafeClient.getClient(httpClient, headers, credential,
-        clock, ifaceClass, implClass, url, socketTimeout, connTimeout, false);
+        clock, ifaceClass, implClass, url, socketTimeout, connTimeout, true, SID);
     client = AutoRetryClient.getAutoRetryClient(ifaceClass, client, isRetry,
         maxRetry);
     return TalosClient.getClient(ifaceClass, client);

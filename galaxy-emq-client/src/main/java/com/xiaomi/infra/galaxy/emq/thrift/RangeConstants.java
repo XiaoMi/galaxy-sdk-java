@@ -144,4 +144,13 @@ public class RangeConstants {
 
   public static final long GALAXY_EMQ_QUEUE_WRITE_QPS_MAXIMAL = 100000L;
 
+  /**
+   * queue redrive policy max receive time, default 2 (1 ~ 100)
+   */
+  public static final int GALAXY_EMQ_QUEUE_REDRIVE_POLICY_MAX_RECEIVE_TIME_DEFAULT = 2;
+
+  public static final int GALAXY_EMQ_QUEUE_REDRIVE_POLICY_MAX_RECEIVE_TIME_MINIMAL = 1;
+
+  public static final int GALAXY_EMQ_QUEUE_REDRIVE_POLICY_MAX_RECEIVE_TIME_MAXIMAL = 100;
+
 }

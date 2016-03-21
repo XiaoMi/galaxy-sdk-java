@@ -2,7 +2,7 @@ include "Common.thrift"
 include "Queue.thrift"
 
 namespace java com.xiaomi.infra.galaxy.emq.thrift
-namespace php EMQ.Statisitcs
+namespace php EMQ.Statistics
 namespace py emq.statistics
 
 /**
@@ -117,27 +117,29 @@ struct GetUserInfoResponse {
 
 }
 
-enum OPERATION{
-  SEND,
-  RECEIVE,
-  CHANGE,
-  DELETE,
-  SINGLE_SEND,
-  BATCH_SEND,
-  SHORT_RECEIVE,
-  LONG_RECEIVE,
+enum ALERT_TYPE{
+  SEND_REQUEST,
+  RECEIVE_REQUEST,
+  CHANGE_REQUEST,
+  DELETE_REQUEST,
+  SINGLE_SEND_REQUEST,
+  BATCH_SEND_REQUEST,
+  SHORT_RECEIVE_REQUEST,
+  LONG_RECEIVE_REQUEST,
+  QUEUE_MESSAGE_NUMBER,
 }
 
 enum MEASUREMENT{
   LATENCY,
   LATENCY_P999,
+  COUNT,
 }
 
 struct AlertPolicy{
   /**
   *The operation to be monitored;
   **/
-  1: required OPERATION operation;
+  1: required ALERT_TYPE type;
 
   /**
   *The measurement to be monitored;
@@ -152,7 +154,7 @@ struct AlertPolicy{
 
 }
 
-struct AddAlertPolicyRequest{
+struct AddQueueAlertPolicyRequest{
  /**
   *Queue name;
   **/
@@ -165,7 +167,7 @@ struct AddAlertPolicyRequest{
 
 }
 
-struct DeleteAlertPolicyRequest{
+struct DeleteQueueAlertPolicyRequest{
  /**
   *Queue name;
   **/
@@ -258,12 +260,12 @@ service StatisticsService extends Common.EMQBaseService {
   /**
   * Add an alert policy for queue;
   **/
-  void addQueueAlertPolicy(1: AddAlertPolicyRequest request) throws (1: Common.GalaxyEmqServiceException e);
+  void addQueueAlertPolicy(1: AddQueueAlertPolicyRequest request) throws (1: Common.GalaxyEmqServiceException e);
 
   /**
   * Delete an alert policy for queue;
   **/
-  void deleteQueueAlertPolicy(1: DeleteAlertPolicyRequest request) throws (1: Common.GalaxyEmqServiceException e);
+  void deleteQueueAlertPolicy(1: DeleteQueueAlertPolicyRequest request) throws (1: Common.GalaxyEmqServiceException e);
 
   /**
   * Clear alert policies for queue;

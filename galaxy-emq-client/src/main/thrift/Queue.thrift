@@ -1,3 +1,4 @@
+
 include "Common.thrift"
 include "Message.thrift"
 
@@ -56,6 +57,7 @@ struct QueueAttribute {
   * User-defined attributes;
   **/
   8: optional map<string, string> userAttributes;
+
 }
 
 struct QueueState {
@@ -121,6 +123,11 @@ struct CreateQueueRequest {
    * The queue quota, including space quota, read qps, and write qps;
    **/
   3: optional QueueQuota queueQuota;
+
+  /**
+   * Set the queue be a dead letter queue or not;
+   **/
+  4: optional bool deadLetterQueue;
 }
 
 struct CreateQueueResponse {
@@ -140,6 +147,11 @@ struct CreateQueueResponse {
    * The queue quota;
    **/
   3: optional QueueQuota queueQuota;
+
+  /**
+   * The queue is a dead letter queue or not;
+   **/
+  4: optional bool deadLetterQueue;
 }
 
 struct DeleteQueueRequest {
@@ -166,6 +178,7 @@ struct SetQueueAttributesRequest {
   * The queue attribute;
   **/
   2: optional QueueAttribute queueAttribute;
+
 }
 
 struct SetQueueAttributesResponse {
@@ -204,6 +217,18 @@ struct SetQueueQuotaResponse {
   2: optional QueueQuota queueQuota;
 }
 
+struct RedrivePolicy {
+  /**
+  * The dead letter queue name;
+  **/
+  1: required string dlqName;
+
+  /**
+  * The max receive time;
+  **/
+  2: required i32 maxReceiveTime;
+}
+
 struct GetQueueInfoRequest {
   /**
   * The queue name;
@@ -228,9 +253,49 @@ struct GetQueueInfoResponse {
   3: required QueueState queueState;
 
   /**
-   * The queue quota;
-   **/
+  * The queue quota;
+  **/
   4: optional QueueQuota queueQuota;
+
+  /**
+  * Whether the queue is a dead letter queue;
+  **/
+  5: optional bool isDeadLetterQueue;
+
+  /**
+  * The queue redrive policy, dead letter queue doesn't have redrive policy;
+  **/
+  6: optional RedrivePolicy redrivePolicy;
+
+}
+
+struct SetQueueRedrivePolicyRequest{
+  1: required string queueName;
+  2: required RedrivePolicy redrivePolicy
+}
+
+struct SetQueueRedrivePolicyResponse{
+  1: required string queueName;
+  2: required RedrivePolicy redrivePolicy
+}
+
+struct RemoveQueueRedrivePolicyRequest{
+  1: required string queueName;
+}
+
+struct ListDeadLetterSourceQueuesRequest{
+  1: required string dlqName;
+}
+
+struct ListDeadLetterSourceQueuesResponse{
+  /**
+  * The dead letter queue name;
+  **/
+  1: required string dlqName;
+  /**
+  * The source queues, only a dead letter queue has source queues;
+  **/
+  2: optional list<string> sourceQueues;
 }
 
 struct ListQueueRequest {
@@ -431,6 +496,21 @@ service QueueService extends Common.EMQBaseService {
   ListQueueResponse listQueue(1: ListQueueRequest request) throws (1: Common.GalaxyEmqServiceException e);
 
   /**
+  * Remove queue redrive policy;
+  **/
+  SetQueueRedrivePolicyResponse setQueueRedrivePolicy(1:SetQueueRedrivePolicyRequest  request) throws (1: Common.GalaxyEmqServiceException e);
+
+  /**
+  * Remove queue redrive policy;
+  **/
+  void removeQueueRedrivePolicy(1:RemoveQueueRedrivePolicyRequest  request) throws (1: Common.GalaxyEmqServiceException e);
+
+  /**
+  * List all the source queues of a dead letter queue;
+  **/
+  ListDeadLetterSourceQueuesResponse listDeadLetterSourceQueues(1: ListDeadLetterSourceQueuesRequest request) throws (1: Common.GalaxyEmqServiceException e);
+
+  /**
   * Set permission for developer
   * FULL_CONTROL required to use this method
   **/
@@ -465,14 +545,14 @@ service QueueService extends Common.EMQBaseService {
   **/
   ListPermissionsResponse listPermissions(1: ListPermissionsRequest request)
       throws (1: Common.GalaxyEmqServiceException e);
-  
+
   /**
   * create tag for queue
   * ADMIN_QUEUE required to use this method
   **/
   CreateTagResponse createTag(1: CreateTagRequest request)
       throws (1: Common.GalaxyEmqServiceException e);
- 
+
   /**
   * delete tag for queue
   * ADMIN_QUEUE required to use this method

@@ -119,7 +119,7 @@ public class TalosProducerTest {
         topicName, new TopicTalosResourceName(resourceName), ownerId);
     TopicAttribute topicAttribute = new TopicAttribute()
         .setPartitionNumber(partitionNumber)
-        .setMessageRetentionMs(messageRetentionMs);
+        .setMessageRetentionSecs(messageRetentionMs);
     TopicState topicState = new TopicState()
         .setTopicStatus(TopicStatus.ACTIVE)
         .setCreateTimestamp(System.currentTimeMillis());
@@ -165,7 +165,7 @@ public class TalosProducerTest {
         topicName, new TopicTalosResourceName(anotherResourceName), ownerId);
     TopicAttribute topicAttribute = new TopicAttribute()
         .setPartitionNumber(partitionNumber)
-        .setMessageRetentionMs(messageRetentionMs);
+        .setMessageRetentionSecs(messageRetentionMs);
     TopicState topicState = new TopicState()
         .setTopicStatus(TopicStatus.ACTIVE)
         .setCreateTimestamp(System.currentTimeMillis());
@@ -258,7 +258,7 @@ public class TalosProducerTest {
         topicName, new TopicTalosResourceName(resourceName), ownerId);
     TopicAttribute topicAttribute = new TopicAttribute()
         .setPartitionNumber(partitionNumber2)
-        .setMessageRetentionMs(messageRetentionMs);
+        .setMessageRetentionSecs(messageRetentionMs);
     TopicState topicState = new TopicState()
         .setTopicStatus(TopicStatus.ACTIVE)
         .setCreateTimestamp(System.currentTimeMillis());
@@ -283,7 +283,7 @@ public class TalosProducerTest {
         topicName, new TopicTalosResourceName(anotherResourceName), ownerId);
     TopicAttribute topicAttribute = new TopicAttribute()
         .setPartitionNumber(partitionNumber)
-        .setMessageRetentionMs(messageRetentionMs);
+        .setMessageRetentionSecs(messageRetentionMs);
     TopicState topicState = new TopicState()
         .setTopicStatus(TopicStatus.ACTIVE)
         .setCreateTimestamp(System.currentTimeMillis());

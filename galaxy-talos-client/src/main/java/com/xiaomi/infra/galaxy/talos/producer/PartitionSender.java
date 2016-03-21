@@ -18,11 +18,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.xiaomi.infra.galaxy.talos.client.Utils;
-import com.xiaomi.infra.galaxy.talos.client.compression.Compression;
 import com.xiaomi.infra.galaxy.talos.thrift.Message;
-import com.xiaomi.infra.galaxy.talos.thrift.MessageBlock;
 import com.xiaomi.infra.galaxy.talos.thrift.MessageService;
-import com.xiaomi.infra.galaxy.talos.thrift.PutMessageRequest;
 import com.xiaomi.infra.galaxy.talos.thrift.TopicAndPartition;
 import com.xiaomi.infra.galaxy.talos.thrift.TopicTalosResourceName;
 
@@ -46,6 +43,12 @@ public class PartitionSender {
   } // MessageCallbackTask
 
   private class MessageWriter implements Runnable {
+    private SimpleProducer simpleProducer;
+
+    private MessageWriter() {
+      simpleProducer = new SimpleProducer(talosProducerConfig,
+          topicAndPartition, messageClient, clientId, requestId);
+    }
 
     @Override
     public void run() {
@@ -68,7 +71,6 @@ public class PartitionSender {
     } // run
 
     private void putMessage(List<UserMessage> userMessageList) {
-      String requestSequenceId = Utils.generateRequestSequenceId(clientId, requestId);
       List<Message> messageList = new ArrayList<Message>(userMessageList.size());
       for (UserMessage userMessage : userMessageList) {
         messageList.add(userMessage.getMessage());
@@ -78,14 +80,7 @@ public class PartitionSender {
           messageList, partitionId);
 
       try {
-        MessageBlock messageBlock = Compression.compress(messageList, talosProducerConfig.getCompressionType());
-        List<MessageBlock> messageBlockList = new ArrayList<MessageBlock>(1);
-        messageBlockList.add(messageBlock);
-
-        PutMessageRequest putMessageRequest = new PutMessageRequest(
-            topicAndPartition, messageBlockList, messageList.size(), requestSequenceId);
-
-        messageClient.putMessage(putMessageRequest);
+        simpleProducer.doPut(messageList);
         // putMessage success callback
         userMessageResult.setSuccessful(true);
         messageCallbackExecutors.execute(

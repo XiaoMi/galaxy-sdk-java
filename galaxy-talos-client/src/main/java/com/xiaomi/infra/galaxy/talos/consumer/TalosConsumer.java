@@ -244,6 +244,7 @@ public class TalosConsumer {
   private Random random;
   private String consumerGroup;
   private MessageProcessorFactory messageProcessorFactory;
+  private MessageReaderFactory messageReaderFactory;
   private Map<Integer, PartitionFetcher> partitionFetcherMap;
   private TalosConsumerConfig talosConsumerConfig;
   private TalosClientFactory talosClientFactory;
@@ -271,13 +272,14 @@ public class TalosConsumer {
 
   public TalosConsumer(String consumerGroupName, TalosConsumerConfig consumerConfig,
       Credential credential, TopicTalosResourceName topicTalosResourceName,
+      MessageReaderFactory messageReaderFactory,
       MessageProcessorFactory messageProcessorFactory, String clientIdPrefix,
-      TopicAbnormalCallback abnormalCallback)
-      throws TException {
+      TopicAbnormalCallback abnormalCallback) throws TException {
     workerId = Utils.generateClientId(clientIdPrefix);
     random = new Random();
     consumerGroup = consumerGroupName;
     this.messageProcessorFactory = messageProcessorFactory;
+    this.messageReaderFactory = messageReaderFactory;
     partitionFetcherMap = new ConcurrentHashMap<Integer, PartitionFetcher>();
     talosConsumerConfig = consumerConfig;
     talosClientFactory = new TalosClientFactory(talosConsumerConfig, credential);
@@ -305,6 +307,16 @@ public class TalosConsumer {
     initCheckPartitionTask();
     initCheckWorkerInfoTask();
     initRenewTask();
+  }
+
+  public TalosConsumer(String consumerGroupName, TalosConsumerConfig consumerConfig,
+      Credential credential, TopicTalosResourceName topicTalosResourceName,
+      MessageProcessorFactory messageProcessorFactory, String clientIdPrefix,
+      TopicAbnormalCallback abnormalCallback)
+      throws TException {
+    this(consumerGroupName, consumerConfig, credential, topicTalosResourceName,
+        new TalosMessageReaderFactory(), messageProcessorFactory, clientIdPrefix,
+        abnormalCallback);
   }
 
   public TalosConsumer(String consumerGroup, TalosConsumerConfig consumerConfig,
@@ -556,7 +568,8 @@ public class TalosConsumer {
         PartitionFetcher partitionFetcher = new PartitionFetcher(consumerGroup,
             topicName, topicTalosResourceName, partitionId, talosConsumerConfig,
             workerId, consumerClient, talosClientFactory.newMessageClient(),
-            messageProcessorFactory.createProcessor());
+            messageProcessorFactory.createProcessor(),
+            messageReaderFactory.createMessageReader(talosConsumerConfig));
         partitionFetcherMap.put(partitionId, partitionFetcher);
       }
       partitionFetcherMap.get(partitionId).lock();

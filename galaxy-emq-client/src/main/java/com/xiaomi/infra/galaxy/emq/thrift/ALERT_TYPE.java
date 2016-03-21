@@ -11,19 +11,20 @@ import java.util.Map;
 import java.util.HashMap;
 import libthrift091.TEnum;
 
-public enum OPERATION implements libthrift091.TEnum {
-  SEND(0),
-  RECEIVE(1),
-  CHANGE(2),
-  DELETE(3),
-  SINGLE_SEND(4),
-  BATCH_SEND(5),
-  SHORT_RECEIVE(6),
-  LONG_RECEIVE(7);
+public enum ALERT_TYPE implements libthrift091.TEnum {
+  SEND_REQUEST(0),
+  RECEIVE_REQUEST(1),
+  CHANGE_REQUEST(2),
+  DELETE_REQUEST(3),
+  SINGLE_SEND_REQUEST(4),
+  BATCH_SEND_REQUEST(5),
+  SHORT_RECEIVE_REQUEST(6),
+  LONG_RECEIVE_REQUEST(7),
+  QUEUE_MESSAGE_NUMBER(8);
 
   private final int value;
 
-  private OPERATION(int value) {
+  private ALERT_TYPE(int value) {
     this.value = value;
   }
 
@@ -38,24 +39,26 @@ public enum OPERATION implements libthrift091.TEnum {
    * Find a the enum type by its integer value, as defined in the Thrift IDL.
    * @return null if the value is not found.
    */
-  public static OPERATION findByValue(int value) { 
+  public static ALERT_TYPE findByValue(int value) { 
     switch (value) {
       case 0:
-        return SEND;
+        return SEND_REQUEST;
       case 1:
-        return RECEIVE;
+        return RECEIVE_REQUEST;
       case 2:
-        return CHANGE;
+        return CHANGE_REQUEST;
       case 3:
-        return DELETE;
+        return DELETE_REQUEST;
       case 4:
-        return SINGLE_SEND;
+        return SINGLE_SEND_REQUEST;
       case 5:
-        return BATCH_SEND;
+        return BATCH_SEND_REQUEST;
       case 6:
-        return SHORT_RECEIVE;
+        return SHORT_RECEIVE_REQUEST;
       case 7:
-        return LONG_RECEIVE;
+        return LONG_RECEIVE_REQUEST;
+      case 8:
+        return QUEUE_MESSAGE_NUMBER;
       default:
         return null;
     }

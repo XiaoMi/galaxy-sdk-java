@@ -38,12 +38,17 @@ public enum Permission implements libthrift091.TEnum {
    */
   DESCRIBE_TOPIC(4),
   /**
+   * Topic read and Message full control;
+   * 
+   */
+  TOPIC_READ_AND_MESSAGE_FULL_CONTROL(7),
+  /**
    * deleteTopic and changeTopicAttribute;
    * 
    */
   CHANGE_TOPIC(8),
   /**
-   * CHECK_TOPIC and CHANGE_TOPIC;
+   * DESCRIBE_TOPIC and CHANGE_TOPIC;
    * 
    */
   FULL_TOPIC_CONTROL(12),
@@ -53,10 +58,10 @@ public enum Permission implements libthrift091.TEnum {
    */
   FULL_CONTROL(15),
   /**
-   * setPermission, revokePermission, addPermission and deletePermission, only
-   * owner of the topic and Talos admin has CHANGE_PERMISSION permission by
-   * default, and you can't add CHANGE_PERMISSION to a developerId, or you can't
-   * revoke CHANGE_PERMISSION from the topic owner;
+   * setPermission, revokePermission, only owner of the topic and Talos admin
+   * has CHANGE_PERMISSION/CHANGE_TOPIC permission by default;
+   * One can't add CHANGE_PERMISSION/CHANGE_TOPIC to a accountId, or you can't
+   * revoke CHANGE_PERMISSION/CHANGE_TOPIC from the topic owner;
    * 
    */
   CHANGE_PERMISSION(16),
@@ -96,6 +101,8 @@ public enum Permission implements libthrift091.TEnum {
         return FULL_MESSAGE_CONTROL;
       case 4:
         return DESCRIBE_TOPIC;
+      case 7:
+        return TOPIC_READ_AND_MESSAGE_FULL_CONTROL;
       case 8:
         return CHANGE_TOPIC;
       case 12:
