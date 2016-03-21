@@ -87,16 +87,16 @@ public class TableScanner implements Iterable<Map<String, Datum>> {
             // finish the whole scan request
             finished = true;
           } else {
-            if (scan.getLimit() == result.getRecordsSize()) {
-              // finish the current sub scan request
-              retry = 0;
-            } else {
+            if (result.getRecordsSize() < scan.getLimit() && result.isThrottled()) {
               // two possible cases: qps quota exceeds or scan limit is too large
               retry++;
               if (retry > MAX_RETRY) {
                 throw new RuntimeException("Scan request " + scan + " failed with "
                     + retry + " retries");
               }
+            } else {
+              // finish the current sub scan request
+              retry = 0;
             }
             lastResult = result;
             scan.setStartKey(result.getNextStartKey());
