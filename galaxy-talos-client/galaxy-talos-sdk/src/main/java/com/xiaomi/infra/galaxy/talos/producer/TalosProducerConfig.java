@@ -11,6 +11,7 @@ import org.apache.hadoop.conf.Configuration;
 
 import com.xiaomi.infra.galaxy.talos.client.TalosClientConfig;
 import com.xiaomi.infra.galaxy.talos.client.TalosClientConfigKeys;
+import com.xiaomi.infra.galaxy.talos.client.Utils;
 import com.xiaomi.infra.galaxy.talos.thrift.MessageCompressionType;
 
 public class TalosProducerConfig extends TalosClientConfig {
@@ -27,6 +28,10 @@ public class TalosProducerConfig extends TalosClientConfig {
   private String compressionType;
 
   public TalosProducerConfig(Configuration configuration) {
+    this(configuration, true);
+  }
+
+  public TalosProducerConfig(Configuration configuration, boolean checkParameter) {
     super(configuration);
     maxBufferedMsgNumber = configuration.getInt(
         TalosClientConfigKeys.GALAXY_TALOS_PRODUCER_MAX_BUFFERED_MESSAGE_NUMBER,
@@ -61,6 +66,29 @@ public class TalosProducerConfig extends TalosClientConfig {
     compressionType = configuration.get(
         TalosClientConfigKeys.GALAXY_TALOS_PRODUCER_COMPRESSION_TYPE,
         TalosClientConfigKeys.GALAXY_TALOS_PRODUCER_COMPRESSION_TYPE_DEFAULT);
+
+    if (checkParameter) {
+      Utils.checkParameterRange(
+          TalosClientConfigKeys.GALAXY_TALOS_PRODUCER_MAX_PUT_MESSAGE_NUMBER,
+          maxPutMsgNumber,
+          TalosClientConfigKeys.GALAXY_TALOS_PRODUCER_MAX_PUT_MESSAGE_NUMBER_MINIMUM,
+          TalosClientConfigKeys.GALAXY_TALOS_PRODUCER_MAX_PUT_MESSAGE_NUMBER_MAXIMUM);
+      Utils.checkParameterRange(
+          TalosClientConfigKeys.GALAXY_TALOS_PRODUCER_MAX_PUT_MESSAGE_BYTES,
+          maxPutMsgBytes,
+          TalosClientConfigKeys.GALAXY_TALOS_PRODUCER_MAX_PUT_MESSAGE_BYTES_MINIMUM,
+          TalosClientConfigKeys.GALAXY_TALOS_PRODUCER_MAX_PUT_MESSAGE_BYTES_MAXIMUM);
+      Utils.checkParameterRange(
+          TalosClientConfigKeys.GALAXY_TALOS_PRODUCER_CHECK_PARTITION_INTERVAL,
+          checkPartitionInterval,
+          TalosClientConfigKeys.GALAXY_TALOS_PRODUCER_CHECK_PARTITION_INTERVAL_MINIMUM,
+          TalosClientConfigKeys.GALAXY_TALOS_PRODUCER_CHECK_PARTITION_INTERVAL_MAXIMUM);
+      Utils.checkParameterRange(
+          TalosClientConfigKeys.GALAXY_TALOS_PRODUCER_UPDATE_PARTITIONID_INTERVAL,
+          (int) updatePartitionIdInterval,
+          (int) TalosClientConfigKeys.GALAXY_TALOS_PRODUCER_UPDATE_PARTITIONID_INTERVAL_MINIMUM,
+          (int) TalosClientConfigKeys.GALAXY_TALOS_PRODUCER_UPDATE_PARTITIONID_INTERVAL_MAXIMUM);
+    }
 
     if (!compressionType.equals("NONE") && !compressionType.equals("SNAPPY")
         && !compressionType.equals("GZIP")) {

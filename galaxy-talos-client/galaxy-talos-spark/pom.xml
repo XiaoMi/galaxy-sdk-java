@@ -29,6 +29,12 @@
             <groupId>com.xiaomi.infra.galaxy</groupId>
             <artifactId>galaxy-talos-sdk</artifactId>
             <version>${project.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>com.xiaomi.infra.galaxy</groupId>
+                    <artifactId>galaxy-authorization</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.apache.spark</groupId>

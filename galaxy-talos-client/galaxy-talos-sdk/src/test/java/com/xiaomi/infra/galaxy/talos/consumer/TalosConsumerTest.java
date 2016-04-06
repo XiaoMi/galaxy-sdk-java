@@ -52,9 +52,9 @@ public class TalosConsumerTest {
   private static final String resourceName = "12345#MyTopic#34595fkdiso456i390";
   private static final String resourceName2 = "12345#MyTopic#34595fkdiso456i23";
   private static final String consumerGroup = "MyConsumerGroup";
-  private static final String clientIdPrefix = "TestClient1#";
-  private static final String clientIdPrefix2 = "TestClient2#";
-  private static final String clientIdPrefix3 = "TestClient3#";
+  private static final String clientIdPrefix = "TestClient1";
+  private static final String clientIdPrefix2 = "TestClient2";
+  private static final String clientIdPrefix3 = "TestClient3";
   private static final String workerId = Utils.generateClientId(clientIdPrefix);
   private static final String workerId2 = Utils.generateClientId(clientIdPrefix2);
   private static final String workerId3 = Utils.generateClientId(clientIdPrefix3);

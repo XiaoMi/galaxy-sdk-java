@@ -57,6 +57,7 @@ public abstract class MessageReader {
   }
 
   public MessageReader setConsumerGroup(String consumerGroup) {
+    Utils.checkNameValidity(consumerGroup);
     this.consumerGroup = consumerGroup;
     return this;
   }

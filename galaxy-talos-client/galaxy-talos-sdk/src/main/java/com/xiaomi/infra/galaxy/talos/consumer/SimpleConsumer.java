@@ -13,6 +13,7 @@ import java.util.concurrent.atomic.AtomicLong;
 import libthrift091.TException;
 
 import com.xiaomi.infra.galaxy.rpc.thrift.Credential;
+import com.xiaomi.infra.galaxy.talos.client.TalosClientConfigKeys;
 import com.xiaomi.infra.galaxy.talos.client.TalosClientFactory;
 import com.xiaomi.infra.galaxy.talos.client.Utils;
 import com.xiaomi.infra.galaxy.talos.client.compression.Compression;
@@ -69,6 +70,12 @@ public class SimpleConsumer {
 
   public List<MessageAndOffset> fetchMessage(long startOffset,
       int maxFetchedNumber) throws TException, IOException {
+    Utils.checkParameterRange(
+        TalosClientConfigKeys.GALAXY_TALOS_CONSUMER_MAX_FETCH_RECORDS,
+        maxFetchedNumber,
+        TalosClientConfigKeys.GALAXY_TALOS_CONSUMER_MAX_FETCH_RECORDS_MINIMUM,
+        TalosClientConfigKeys.GALAXY_TALOS_CONSUMER_MAX_FETCH_RECORDS_MAXIMUM);
+
     String requestSequenceId = Utils.generateRequestSequenceId(
         simpleConsumerId, requestId);
     GetMessageRequest getMessageRequest = new GetMessageRequest(topicAndPartition,

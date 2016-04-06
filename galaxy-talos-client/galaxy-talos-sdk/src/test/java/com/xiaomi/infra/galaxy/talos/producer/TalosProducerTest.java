@@ -112,7 +112,7 @@ public class TalosProducerTest {
     configuration.setInt(
         TalosClientConfigKeys.GALAXY_TALOS_PRODUCER_CHECK_PARTITION_INTERVAL,
         checkPartitionInterval);
-    talosProducerConfig = new TalosProducerConfig(configuration);
+    talosProducerConfig = new TalosProducerConfig(configuration, false);
 
     // construct a topic
     TopicInfo topicInfo = new TopicInfo(

@@ -23,7 +23,6 @@ public class TalosClient {
     @Override
     public Object invoke(Object proxy, Method method, Object[] args)
         throws Throwable {
-      TalosRequestCheckUtils.checkRequest(args);
       try {
         return method.invoke(instance, args);
       } catch (InvocationTargetException e) {

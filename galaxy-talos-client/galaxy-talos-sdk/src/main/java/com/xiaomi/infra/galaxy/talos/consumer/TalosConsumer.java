@@ -277,6 +277,7 @@ public class TalosConsumer {
       TopicAbnormalCallback abnormalCallback) throws TException {
     workerId = Utils.generateClientId(clientIdPrefix);
     random = new Random();
+    Utils.checkNameValidity(consumerGroupName);
     consumerGroup = consumerGroupName;
     this.messageProcessorFactory = messageProcessorFactory;
     this.messageReaderFactory = messageReaderFactory;

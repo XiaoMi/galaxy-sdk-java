@@ -43,13 +43,21 @@ public class Utils {
     return System.currentTimeMillis() + UUID.randomUUID().toString().substring(0, 8);
   }
 
-  // TODO: check prefix can not contains character '#'
+  public static void checkNameValidity(String str) {
+    if (str.contains(TALOS_IDENTIFIER_DELIMITER)) {
+      throw new IllegalArgumentException("invalid str: " + str +
+          ". please remove the character: " + TALOS_IDENTIFIER_DELIMITER);
+    }
+  }
+
   public static String generateClientId(String prefix) {
+    checkNameValidity(prefix);
     return prefix + generateClientId();
   }
 
   public static String generateRequestSequenceId(String clientId,
       AtomicLong requestId) {
+    checkNameValidity(clientId);
     return clientId + Constants.TALOS_IDENTIFIER_DELIMITER +
         requestId.getAndIncrement();
   }

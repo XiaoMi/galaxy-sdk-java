@@ -108,6 +108,9 @@ public class TalosClientConfigKeys {
       "galaxy.talos.producer.max.put.message.number";
   public static final int GALAXY_TALOS_PRODUCER_MAX_PUT_MESSAGE_NUMBER_DEFAULT =
       2000;
+  public static final int GALAXY_TALOS_PRODUCER_MAX_PUT_MESSAGE_NUMBER_MINIMUM = 1;
+  public static final int GALAXY_TALOS_PRODUCER_MAX_PUT_MESSAGE_NUMBER_MAXIMUM =
+      2000;
 
   /**
    * The producer max bytes of message in each putMessage batch
@@ -115,7 +118,10 @@ public class TalosClientConfigKeys {
   public static final String GALAXY_TALOS_PRODUCER_MAX_PUT_MESSAGE_BYTES =
       "galaxy.talos.producer.max.put.message.bytes";
   public static final int GALAXY_TALOS_PRODUCER_MAX_PUT_MESSAGE_BYTES_DEFAULT =
-      4 * 1024 * 1024;
+      1024 * 1024;
+  public static final int GALAXY_TALOS_PRODUCER_MAX_PUT_MESSAGE_BYTES_MINIMUM = 1;
+  public static final int GALAXY_TALOS_PRODUCER_MAX_PUT_MESSAGE_BYTES_MAXIMUM =
+      1024 * 1024;
 
   /**
    * The producer thread pool number
@@ -131,6 +137,10 @@ public class TalosClientConfigKeys {
       "galaxy.talos.producer.check.partition.interval";
   public static final int GALAXY_TALOS_PRODUCER_CHECK_PARTITION_INTERVAL_DEFAULT =
       1000 * 60 * 3;
+  public static final int GALAXY_TALOS_PRODUCER_CHECK_PARTITION_INTERVAL_MINIMUM =
+      1000 * 60 * 1;
+  public static final int GALAXY_TALOS_PRODUCER_CHECK_PARTITION_INTERVAL_MAXIMUM =
+      1000 * 60 * 5;
 
   /**
    * The producer update partitionId time interval when calling addMessage
@@ -140,6 +150,10 @@ public class TalosClientConfigKeys {
       "galaxy.talos.producer.update.partition.id.interval.milli";
   public static final long GALAXY_TALOS_PRODUCER_UPDATE_PARTITIONID_INTERVAL_DEFAULT =
       100;
+  public static final long GALAXY_TALOS_PRODUCER_UPDATE_PARTITIONID_INTERVAL_MINIMUM =
+      100;
+  public static final long GALAXY_TALOS_PRODUCER_UPDATE_PARTITIONID_INTERVAL_MAXIMUM =
+      500;
 
   /**
    * The producer update partitionId
@@ -228,6 +242,8 @@ public class TalosClientConfigKeys {
   public static final String GALAXY_TALOS_CONSUMER_MAX_FETCH_RECORDS =
       "galaxy.talos.consumer.max.fetch.records";
   public static final int GALAXY_TALOS_CONSUMER_MAX_FETCH_RECORDS_DEFAULT = 1000;
+  public static final int GALAXY_TALOS_CONSUMER_MAX_FETCH_RECORDS_MINIMUM = 1;
+  public static final int GALAXY_TALOS_CONSUMER_MAX_FETCH_RECORDS_MAXIMUM = 2000;
 
   /**
    * The consumer worker register self max retry times
@@ -242,6 +258,8 @@ public class TalosClientConfigKeys {
   public static final String GALAXY_TALOS_CONSUMER_COMMIT_OFFSET_THRESHOLD =
       "galaxy.talos.consumer.commit.offset.record.fetched.num";
   public static final int GALAXY_TALOS_CONSUMER_COMMIT_OFFSET_THRESHOLD_DEFAULT = 10000;
+  public static final int GALAXY_TALOS_CONSUMER_COMMIT_OFFSET_THRESHOLD_MINIMUM = 5000;
+  public static final int GALAXY_TALOS_CONSUMER_COMMIT_OFFSET_THRESHOLD_MAXIMUM = 20000;
 
   /**
    * The consumer commit offset time interval threshold, milli secs
@@ -249,6 +267,8 @@ public class TalosClientConfigKeys {
   public static final String GALAXY_TALOS_CONSUMER_COMMIT_OFFSET_INTERVAL =
       "galaxy.talos.consumer.commit.offset.interval.milli";
   public static final int GALAXY_TALOS_CONSUMER_COMMIT_OFFSET_INTERVAL_DEFAULT = 5000;
+  public static final int GALAXY_TALOS_CONSUMER_COMMIT_OFFSET_INTERVAL_MINIMUM = 3000;
+  public static final int GALAXY_TALOS_CONSUMER_COMMIT_OFFSET_INTERVAL_MAXIMUM = 8000;
 
   /**
    * The consumer switch for whether checking lastCommitOffset or not

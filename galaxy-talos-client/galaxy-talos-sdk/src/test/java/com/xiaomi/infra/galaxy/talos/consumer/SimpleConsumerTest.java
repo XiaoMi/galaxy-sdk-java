@@ -29,6 +29,7 @@ import com.xiaomi.infra.galaxy.talos.thrift.TopicAndPartition;
 import com.xiaomi.infra.galaxy.talos.thrift.TopicTalosResourceName;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.when;
@@ -65,6 +66,12 @@ public class SimpleConsumerTest {
   @After
   public void tearDown() {
 
+  }
+
+  @Test (expected = IllegalArgumentException.class)
+  public void testClientPrefixIllegal() throws Exception {
+    SimpleConsumer simpleConsumer1 = new SimpleConsumer(consumerConfig,
+        topicAndPartition, messageClientMock, "prefix#illegal");
   }
 
   @Test
@@ -110,6 +117,13 @@ public class SimpleConsumerTest {
 
     List<MessageAndOffset> msgList = simpleConsumer.fetchMessage(startOffset);
     assertEquals(messageAndOffsetList, msgList);
+
+    try {
+      simpleConsumer.fetchMessage(startOffset, 3000);
+      assertTrue("test fetchMessage illegal maxFetchNumber error", false);
+    } catch (Exception e) {
+      assertTrue(e instanceof IllegalArgumentException);
+    }
 
     InOrder inOrder = inOrder(messageClientMock);
     inOrder.verify(messageClientMock).getMessage(any(GetMessageRequest.class));
