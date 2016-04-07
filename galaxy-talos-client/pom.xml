@@ -12,12 +12,20 @@
     <groupId>com.xiaomi.infra.galaxy</groupId>
     <artifactId>galaxy-talos-client</artifactId>
     <packaging>pom</packaging>
-    <version>1.3-SNAPSHOT</version>
+    <version>1.1-SNAPSHOT</version>
 
     <modules>
         <module>galaxy-talos-sdk</module>
         <module>galaxy-talos-spark</module>
     </modules>
+
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <galaxy-client-java.version>1.2.5</galaxy-client-java.version>
+        <galaxy-thrift-api.version>1.2.5</galaxy-thrift-api.version>
+        <snappy.version>1.1.1.6</snappy.version>
+        <httpcomponents.version>4.2.2</httpcomponents.version>
+    </properties>
 
     <build>
         <plugins>
