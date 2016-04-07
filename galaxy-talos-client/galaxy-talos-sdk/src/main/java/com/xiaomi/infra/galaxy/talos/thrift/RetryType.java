@@ -7,6 +7,10 @@
 package com.xiaomi.infra.galaxy.talos.thrift;
 
 
+import java.util.Map;
+import java.util.HashMap;
+import libthrift091.TEnum;
+
 public enum RetryType implements libthrift091.TEnum {
   /**
    * Safe retry

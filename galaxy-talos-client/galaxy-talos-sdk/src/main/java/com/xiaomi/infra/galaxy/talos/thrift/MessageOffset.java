@@ -7,6 +7,10 @@
 package com.xiaomi.infra.galaxy.talos.thrift;
 
 
+import java.util.Map;
+import java.util.HashMap;
+import libthrift091.TEnum;
+
 public enum MessageOffset implements libthrift091.TEnum {
   START_OFFSET(-1),
   LATEST_OFFSET(-2);

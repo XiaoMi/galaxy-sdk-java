@@ -7,6 +7,10 @@
 package com.xiaomi.infra.galaxy.talos.thrift;
 
 
+import java.util.Map;
+import java.util.HashMap;
+import libthrift091.TEnum;
+
 public enum ErrorCode implements libthrift091.TEnum {
   NO_ERROR(0),
   UNKNOWN(1),

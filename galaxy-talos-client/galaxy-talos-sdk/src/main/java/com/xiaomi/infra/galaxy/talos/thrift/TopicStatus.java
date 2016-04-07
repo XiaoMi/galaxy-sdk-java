@@ -7,6 +7,10 @@
 package com.xiaomi.infra.galaxy.talos.thrift;
 
 
+import java.util.Map;
+import java.util.HashMap;
+import libthrift091.TEnum;
+
 public enum TopicStatus implements libthrift091.TEnum {
   CREATING(0),
   ACTIVE(1),
