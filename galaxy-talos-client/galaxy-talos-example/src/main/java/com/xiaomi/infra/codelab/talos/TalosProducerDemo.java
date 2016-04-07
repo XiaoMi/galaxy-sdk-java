@@ -56,7 +56,7 @@ public class TalosProducerDemo {
     }
   }
 
-  private static final String talosServiceURI = "https://cnbj0.talos.api.xiaomi.com";
+  private static final String talosServiceURI = "$talosServiceURI";
   private static final String appKeyId = "$your_appKey";
   private static final String appKeySecret = "$your_appSecret";
   private static final String topicName = "testTopic";

@@ -30,7 +30,7 @@ import com.xiaomi.infra.galaxy.talos.thrift.TopicAttribute;
 import com.xiaomi.infra.galaxy.talos.thrift.TopicTalosResourceName;
 
 public class TalosAdminDemo {
-  private static final String talosServiceURI = "https://cnbj0.talos.api.xiaomi.com";
+  private static final String talosServiceURI = "$talosServiceURI";
   // authenticate for Developer, using to createTopic/setPermission etc.
   private static final String accountKeyId = "$your_accountKey";
   private static final String accountSecret = "$your_accountKeySecret";
@@ -42,7 +42,7 @@ public class TalosAdminDemo {
    * then grant read permission to AppRoot principal by using 'appKeyId/appKeySecret'
    * Both TalosConsumer demo and TalosProducer demo use 'appKeyId/appKeySecret'
    */
-  private static final String appId = "2882303761517385049";
+  private static final String appId = "$appId";
   private static final String appKeyId = "$your_appKey";
   private static final String appKeySecret = "$your_appSecret";
 
