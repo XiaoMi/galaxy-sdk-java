@@ -12,11 +12,12 @@
     <groupId>com.xiaomi.infra.galaxy</groupId>
     <artifactId>galaxy-talos-client</artifactId>
     <packaging>pom</packaging>
-    <version>1.1-SNAPSHOT</version>
+    <version>1.0.0</version>
 
     <modules>
         <module>galaxy-talos-sdk</module>
         <module>galaxy-talos-spark</module>
+        <module>galaxy-talos-example</module>
     </modules>
 
     <properties>
@@ -96,4 +97,20 @@
         </plugins>
     </build>
 
+    <distributionManagement>
+        <repository>
+            <id>archiva.internal</id>
+            <name>Internal Release Repository</name>
+            <url>
+                http://nexus.d.xiaomi.net/nexus/content/repositories/releases/
+            </url>
+        </repository>
+        <snapshotRepository>
+            <id>archiva.snapshots</id>
+            <name>Internal Snapshot Repository</name>
+            <url>
+                http://nexus.d.xiaomi.net/nexus/content/repositories/snapshots/
+            </url>
+        </snapshotRepository>
+    </distributionManagement>
 </project>
