@@ -1,6 +1,7 @@
 package org.apache.spark.streaming.talos
 
 import com.xiaomi.infra.galaxy.rpc.thrift.Credential
+import com.xiaomi.infra.galaxy.talos.client.TalosClientConfigKeys
 import com.xiaomi.infra.galaxy.talos.consumer.SimpleConsumer
 import com.xiaomi.infra.galaxy.talos.thrift.MessageAndOffset
 import org.apache.spark.annotation.{DeveloperApi, Experimental}
@@ -120,14 +121,21 @@ R: ClassTag](
     var requestOffset = part.offsetRange.fromOffset
     var iter: Iterator[MessageAndOffset] = null
 
-    private def fetchNumber = part.offsetRange.untilOffset - requestOffset + 1
+    private def fetchNumber = part.offsetRange.untilOffset - requestOffset
 
     private def fetchBatch: Iterator[MessageAndOffset] = {
-      val consumer: SimpleConsumer = tc.simpleConsumer(part.offsetRange.topic,
-        part.offsetRange.partition)
-      val resp = consumer.fetchMessage(requestOffset, fetchNumber.toInt)
-      import scala.collection.JavaConverters._
-      resp.iterator().asScala.dropWhile(_.messageOffset < requestOffset)
+      val maxFetch = math.min(fetchNumber,
+        TalosClientConfigKeys.GALAXY_TALOS_CONSUMER_MAX_FETCH_RECORDS_MAXIMUM)
+
+      if (maxFetch <= 0) {
+        Iterator.empty
+      } else {
+        val consumer: SimpleConsumer = tc.simpleConsumer(part.offsetRange.topic,
+          part.offsetRange.partition)
+        val resp = consumer.fetchMessage(requestOffset, maxFetch.toInt)
+        import scala.collection.JavaConverters._
+        resp.iterator().asScala.dropWhile(_.messageOffset < requestOffset)
+      }
     }
 
     override protected def getNext(): R = {

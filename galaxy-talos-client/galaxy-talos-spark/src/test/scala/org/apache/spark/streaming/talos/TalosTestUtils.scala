@@ -29,7 +29,7 @@ class TalosTestUtils(params: immutable.Map[String, String])
     this(immutable.Map(params.asScala.toSeq: _*))
   }
 
-  private val uri = "https://cnbj0.talos.api.xiaomi.com"
+  private val uri = ""
   // credential key
   private val key = ""
   // credential secret
