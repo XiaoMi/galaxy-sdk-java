@@ -6,12 +6,12 @@
     <parent>
         <artifactId>galaxy-talos-client</artifactId>
         <groupId>com.xiaomi.infra.galaxy</groupId>
-        <version>1.0.0</version>
+        <version>1.1-SNAPSHOT</version>
     </parent>
 
     <artifactId>galaxy-talos-spark</artifactId>
     <packaging>jar</packaging>
-    <version>1.0.0</version>
+    <version>1.1-SNAPSHOT</version>
 
     <properties>
         <scala.version>2.10.4</scala.version>

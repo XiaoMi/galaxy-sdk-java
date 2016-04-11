@@ -12,7 +12,7 @@
     <groupId>com.xiaomi.infra.galaxy</groupId>
     <artifactId>galaxy-talos-client</artifactId>
     <packaging>pom</packaging>
-    <version>1.0.0</version>
+    <version>1.1-SNAPSHOT</version>
 
     <modules>
         <module>galaxy-talos-sdk</module>
