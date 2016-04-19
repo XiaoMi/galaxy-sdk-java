@@ -110,7 +110,7 @@ public class TalosClientConfigKeys {
       2000;
   public static final int GALAXY_TALOS_PRODUCER_MAX_PUT_MESSAGE_NUMBER_MINIMUM = 1;
   public static final int GALAXY_TALOS_PRODUCER_MAX_PUT_MESSAGE_NUMBER_MAXIMUM =
-      2000;
+      5000;
 
   /**
    * The producer max bytes of message in each putMessage batch
@@ -121,7 +121,7 @@ public class TalosClientConfigKeys {
       1024 * 1024;
   public static final int GALAXY_TALOS_PRODUCER_MAX_PUT_MESSAGE_BYTES_MINIMUM = 1;
   public static final int GALAXY_TALOS_PRODUCER_MAX_PUT_MESSAGE_BYTES_MAXIMUM =
-      1024 * 1024;
+      10 * 1024 * 1024;
 
   /**
    * The producer thread pool number
@@ -151,7 +151,7 @@ public class TalosClientConfigKeys {
   public static final long GALAXY_TALOS_PRODUCER_UPDATE_PARTITIONID_INTERVAL_DEFAULT =
       100;
   public static final long GALAXY_TALOS_PRODUCER_UPDATE_PARTITIONID_INTERVAL_MINIMUM =
-      100;
+      1;
   public static final long GALAXY_TALOS_PRODUCER_UPDATE_PARTITIONID_INTERVAL_MAXIMUM =
       500;
 

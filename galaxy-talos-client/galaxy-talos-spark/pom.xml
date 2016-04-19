@@ -9,14 +9,18 @@
         <version>1.1-SNAPSHOT</version>
     </parent>
 
+    <groupId>com.xiaomi.infra.galaxy</groupId>
     <artifactId>galaxy-talos-spark</artifactId>
-    <packaging>jar</packaging>
     <version>1.1-SNAPSHOT</version>
 
     <properties>
         <scala.version>2.10.4</scala.version>
         <scala.binary.version>2.10</scala.binary.version>
         <spark.version>1.5.2-mdh1.5.4</spark.version>
+        <java.version>1.6</java.version>
+        <PermGen>512m</PermGen>
+        <MaxPermGen>1024m</MaxPermGen>
+        <CodeCacheSize>1024m</CodeCacheSize>
         <skipTests>true</skipTests>
     </properties>
 
@@ -60,6 +64,57 @@
     </dependencies>
     <build>
         <plugins>
+            <plugin>
+              <groupId>net.alchim31.maven</groupId>
+              <artifactId>scala-maven-plugin</artifactId>
+              <version>3.2.2</version>
+              <executions>
+                <execution>
+                  <id>eclipse-add-source</id>
+                  <goals>
+                    <goal>add-source</goal>
+                  </goals>
+                </execution>
+                <execution>
+                  <id>scala-compile-first</id>
+                  <phase>process-resources</phase>
+                  <goals>
+                    <goal>compile</goal>
+                  </goals>
+                </execution>
+                <execution>
+                  <id>attach-scaladocs</id>
+                  <phase>verify</phase>
+                  <goals>
+                    <goal>doc-jar</goal>
+                  </goals>
+                </execution>
+              </executions>
+              <configuration>
+                <scalaVersion>${scala.version}</scalaVersion>
+                <recompileMode>incremental</recompileMode>
+                <useZincServer>true</useZincServer>
+                <args>
+                  <arg>-unchecked</arg>
+                  <arg>-deprecation</arg>
+                  <arg>-feature</arg>
+                </args>
+                <jvmArgs>
+                  <jvmArg>-Xms1024m</jvmArg>
+                  <jvmArg>-Xmx1024m</jvmArg>
+                  <jvmArg>-XX:PermSize=${PermGen}</jvmArg>
+                  <jvmArg>-XX:MaxPermSize=${MaxPermGen}</jvmArg>
+                  <jvmArg>-XX:ReservedCodeCacheSize=${CodeCacheSize}</jvmArg>
+                </jvmArgs>
+                <javacArgs>
+                  <javacArg>-source</javacArg>
+                  <javacArg>${java.version}</javacArg>
+                  <javacArg>-target</javacArg>
+                  <javacArg>${java.version}</javacArg>
+                  <javacArg>-Xlint:all,-serial,-path</javacArg>
+                </javacArgs>
+              </configuration>
+            </plugin>
             <plugin>
                 <groupId>org.scala-tools</groupId>
                 <artifactId>maven-scala-plugin</artifactId>
@@ -137,6 +192,5 @@
             </plugin>
         </plugins>
     </build>
-
 
 </project>

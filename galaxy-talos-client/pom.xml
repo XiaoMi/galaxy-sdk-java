@@ -2,17 +2,44 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-    <parent>
-        <artifactId>galaxy-sdk-java-pom</artifactId>
-        <groupId>com.xiaomi.infra.galaxy</groupId>
-        <version>1.3-SNAPSHOT</version>
-    </parent>
     <modelVersion>4.0.0</modelVersion>
-
     <groupId>com.xiaomi.infra.galaxy</groupId>
     <artifactId>galaxy-talos-client</artifactId>
     <packaging>pom</packaging>
     <version>1.1-SNAPSHOT</version>
+
+    <name>Galaxy Talos SDK</name>
+    <description>Xiaomi Galaxy Talos Service SDK</description>
+    <url>http://dev.xiaomi.com/doc/?page_id=2095</url>
+
+    <!--When publishing to maven central repository, using this parent.-->
+    <!--
+    <parent>
+      <groupId>org.sonatype.oss</groupId>
+      <artifactId>oss-parent</artifactId>
+      <version>7</version>
+    </parent>
+
+    <scm>
+      <url>https://github.com/XiaoMi/galaxy-sdk-java.git</url>
+    </scm>
+
+    <licenses>
+      <license>
+        <name>The Apache License, Version 2.0</name>
+        <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+      </license>
+    </licenses>
+
+    <developers>
+      <developer>
+        <name>Infra-dev</name>
+        <email>talos-help@xiaomi.com</email>
+        <organization>Xiaomi</organization>
+        <organizationUrl>http://www.mi.com</organizationUrl>
+      </developer>
+    </developers>
+    -->
 
     <modules>
         <module>galaxy-talos-sdk</module>
@@ -54,7 +81,7 @@
                 <executions>
                     <execution>
                         <id>attach-sources</id>
-                        <phase>deploy</phase>
+                        <phase>package</phase>
                         <goals>
                             <goal>jar-no-fork</goal>
                         </goals>
@@ -68,7 +95,7 @@
                 <executions>
                     <execution>
                         <id>attach-javadocs</id>
-                        <phase>deploy</phase>
+                        <phase>package</phase>
                         <goals>
                             <goal>jar</goal>
                         </goals>
@@ -96,6 +123,38 @@
             </plugin>
         </plugins>
     </build>
+    <profiles>
+      <profile>
+        <id>publishing</id>
+        <build>
+          <plugins>
+            <plugin>
+              <groupId>org.apache.maven.plugins</groupId>
+              <artifactId>maven-gpg-plugin</artifactId>
+              <executions>
+                <execution>
+                  <id>sign-artifacts</id>
+                  <phase>verify</phase>
+                  <goals>
+                    <goal>sign</goal>
+                  </goals>
+                </execution>
+              </executions>
+            </plugin>
+            <plugin>
+              <groupId>org.sonatype.plugins</groupId>
+              <artifactId>nexus-staging-maven-plugin</artifactId>
+              <version>1.5.1</version>
+              <extensions>true</extensions>
+              <configuration>
+                <serverId>sonatype-nexus-staging</serverId>
+                <nexusUrl>https://oss.sonatype.org</nexusUrl>
+              </configuration>
+            </plugin>
+          </plugins>
+        </build>
+      </profile>
+    </profiles>
 
     <distributionManagement>
         <repository>
@@ -113,4 +172,5 @@
             </url>
         </snapshotRepository>
     </distributionManagement>
+
 </project>
