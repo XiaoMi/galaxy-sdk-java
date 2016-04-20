@@ -1,4 +1,4 @@
-# Code lab for talos producer and consumer demo
+# Talos producer and consumer demo
 
 ## Prerequisite
 
@@ -9,8 +9,8 @@
       ```
       <dependency>
         <groupId>com.xiaomi.infra.galaxy</groupId>
-        <artifactId>galaxy-talos-client</artifactId>
-        <version>1.3-SNAPSHOT</version>
+        <artifactId>galaxy-talos-sdk</artifactId>
+        <version>1.0.0</version>
       </dependency>
       ```
 
@@ -26,4 +26,4 @@
 
 ## Talos Book
 
-  [Talos Wiki](https://cnbj0.talos.api.xiaomi.com)
+  [Talos Wiki](http://awsbj0.talos.api.xiaomi.com)
