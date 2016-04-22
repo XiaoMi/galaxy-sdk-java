@@ -99,13 +99,13 @@ public class SimpleConsumerTest {
     messageList.add(message2);
     messageList.add(message3);
     MessageBlock messageBlock = Compression.compress(messageList, producerConfig.getCompressionType());
-    messageBlock.setStartMessageOffset(1);
+    messageBlock.setStartMessageOffset(startOffset);
     List<MessageBlock> messageBlockList = new ArrayList<MessageBlock>(1);
     messageBlockList.add(messageBlock);
 
-    MessageAndOffset messageAndOffset1 = new MessageAndOffset(message1, 1);
-    MessageAndOffset messageAndOffset2 = new MessageAndOffset(message2, 2);
-    MessageAndOffset messageAndOffset3 = new MessageAndOffset(message3, 3);
+    MessageAndOffset messageAndOffset1 = new MessageAndOffset(message1, startOffset);
+    MessageAndOffset messageAndOffset2 = new MessageAndOffset(message2, startOffset + 1);
+    MessageAndOffset messageAndOffset3 = new MessageAndOffset(message3, startOffset + 2);
     messageAndOffsetList.add(messageAndOffset1);
     messageAndOffsetList.add(messageAndOffset2);
     messageAndOffsetList.add(messageAndOffset3);
@@ -116,6 +116,43 @@ public class SimpleConsumerTest {
         .thenReturn(response);
 
     List<MessageAndOffset> msgList = simpleConsumer.fetchMessage(startOffset);
+    assertEquals(messageAndOffsetList, msgList);
+
+    try {
+      simpleConsumer.fetchMessage(startOffset, 3000);
+      assertTrue("test fetchMessage illegal maxFetchNumber error", false);
+    } catch (Exception e) {
+      assertTrue(e instanceof IllegalArgumentException);
+    }
+
+    InOrder inOrder = inOrder(messageClientMock);
+    inOrder.verify(messageClientMock).getMessage(any(GetMessageRequest.class));
+  }
+
+  @Test
+  public void testFetchMessageWithMiddleOffset() throws Exception {
+    Message message1 = new Message(ByteBuffer.wrap("message1".getBytes()));
+    Message message2 = new Message(ByteBuffer.wrap("message2".getBytes()));
+    Message message3 = new Message(ByteBuffer.wrap("message3".getBytes()));
+    messageList.add(message1);
+    messageList.add(message2);
+    messageList.add(message3);
+    MessageBlock messageBlock = Compression.compress(messageList, producerConfig.getCompressionType());
+    messageBlock.setStartMessageOffset(startOffset);
+    List<MessageBlock> messageBlockList = new ArrayList<MessageBlock>(1);
+    messageBlockList.add(messageBlock);
+
+    MessageAndOffset messageAndOffset2 = new MessageAndOffset(message2, startOffset + 1);
+    MessageAndOffset messageAndOffset3 = new MessageAndOffset(message3, startOffset + 2);
+    messageAndOffsetList.add(messageAndOffset2);
+    messageAndOffsetList.add(messageAndOffset3);
+
+    GetMessageResponse response = new GetMessageResponse(messageBlockList, 3,
+        "testFetchMessageSequenceId");
+    when(messageClientMock.getMessage(any(GetMessageRequest.class)))
+        .thenReturn(response);
+
+    List<MessageAndOffset> msgList = simpleConsumer.fetchMessage(startOffset + 1);
     assertEquals(messageAndOffsetList, msgList);
 
     try {

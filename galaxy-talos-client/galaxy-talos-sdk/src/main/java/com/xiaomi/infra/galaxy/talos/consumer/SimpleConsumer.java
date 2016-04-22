@@ -7,6 +7,7 @@
 package com.xiaomi.infra.galaxy.talos.consumer;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -19,6 +20,7 @@ import com.xiaomi.infra.galaxy.talos.client.Utils;
 import com.xiaomi.infra.galaxy.talos.client.compression.Compression;
 import com.xiaomi.infra.galaxy.talos.thrift.GetMessageRequest;
 import com.xiaomi.infra.galaxy.talos.thrift.GetMessageResponse;
+import com.xiaomi.infra.galaxy.talos.thrift.Message;
 import com.xiaomi.infra.galaxy.talos.thrift.MessageAndOffset;
 import com.xiaomi.infra.galaxy.talos.thrift.MessageService;
 import com.xiaomi.infra.galaxy.talos.thrift.TopicAndPartition;
@@ -81,6 +83,20 @@ public class SimpleConsumer {
     GetMessageRequest getMessageRequest = new GetMessageRequest(topicAndPartition,
         startOffset, requestSequenceId).setMaxGetMessageNumber(maxFetchedNumber);
     GetMessageResponse getMessageResponse = messageClient.getMessage(getMessageRequest);
-    return Compression.decompress(getMessageResponse.getMessageBlocks());
+    List<MessageAndOffset> messageAndOffsetList =
+        Compression.decompress(getMessageResponse.getMessageBlocks());
+
+    if (messageAndOffsetList.size() <= 0) {
+      return messageAndOffsetList;
+    }
+
+    long actualStartOffset = messageAndOffsetList.get(0).getMessageOffset();
+    if (messageAndOffsetList.get(0).getMessageOffset() == startOffset) {
+      return messageAndOffsetList;
+    } else {
+      int start = (int)(startOffset - actualStartOffset);
+      int end = messageAndOffsetList.size();
+      return messageAndOffsetList.subList(start, end);
+    }
   }
 }
