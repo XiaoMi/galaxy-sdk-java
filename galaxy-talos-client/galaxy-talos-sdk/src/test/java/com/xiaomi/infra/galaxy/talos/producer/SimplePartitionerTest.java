@@ -22,12 +22,13 @@ public class SimplePartitionerTest {
   @Test
   public void testPartition() {
     assertEquals(0, partitioner.partition("0", 8));
-    assertEquals(1, partitioner.partition("1", 8));
-    assertEquals(2, partitioner.partition("2", 8));
-    assertEquals(3, partitioner.partition("3", 8));
-    assertEquals(4, partitioner.partition("4", 8));
-    assertEquals(5, partitioner.partition("5", 8));
-    assertEquals(6, partitioner.partition("6", 8));
-    assertEquals(7, partitioner.partition("7", 8));
+    assertEquals(0, partitioner.partition("1", 8));
+
+    /*
+    // test when partitioner return:
+    // (Integer.parseInt(partitionKey) & 0x7FFFFFFF) / partitionInterval;
+    assertEquals(0, partitioner.partition("268435454", 8));
+    assertEquals(1, partitioner.partition("268435455", 8));
+    */
   }
 }
