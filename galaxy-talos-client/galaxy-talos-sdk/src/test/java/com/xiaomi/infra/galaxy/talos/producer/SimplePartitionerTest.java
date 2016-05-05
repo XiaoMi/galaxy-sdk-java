@@ -6,6 +6,8 @@
 
 package com.xiaomi.infra.galaxy.talos.producer;
 
+import java.util.UUID;
+
 import org.junit.Before;
 import org.junit.Test;
 
@@ -19,16 +21,31 @@ public class SimplePartitionerTest {
     partitioner = new SimplePartitioner();
   }
 
+  // just test for 4 partition
+  private int getPartitionId(int hashcode) {
+    if (hashcode >= 0 && hashcode < 536870911) {
+      return 0;
+    } else if (hashcode >= 536870911 && hashcode < 1073741822) {
+      return 1;
+    } else if (hashcode >= 1073741822 && hashcode < 1610612733) {
+      return 2;
+    } else if (hashcode >= 1610612733 && hashcode < 2147483644) {
+      return 3;
+    }
+    return 0;
+  }
+
+  private String randomKey() {
+    return UUID.randomUUID().toString();
+  }
+
+  // test 70 times
   @Test
   public void testPartition() {
-    assertEquals(0, partitioner.partition("0", 8));
-    assertEquals(0, partitioner.partition("1", 8));
-
-    /*
-    // test when partitioner return:
-    // (Integer.parseInt(partitionKey) & 0x7FFFFFFF) / partitionInterval;
-    assertEquals(0, partitioner.partition("268435454", 8));
-    assertEquals(1, partitioner.partition("268435455", 8));
-    */
+    for (int i = 0; i < 70; ++i) {
+      String key = randomKey();
+      assertEquals(getPartitionId(key.hashCode() & 0x7FFFFFFF),
+          partitioner.partition(key, 4));
+    }
   }
 }
