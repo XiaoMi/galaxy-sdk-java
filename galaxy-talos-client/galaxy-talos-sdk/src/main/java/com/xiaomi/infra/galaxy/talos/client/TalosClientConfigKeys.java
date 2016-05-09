@@ -246,6 +246,15 @@ public class TalosClientConfigKeys {
   public static final int GALAXY_TALOS_CONSUMER_MAX_FETCH_RECORDS_MAXIMUM = 2000;
 
   /**
+   * The consumer getRecords max fetch message bytes
+   */
+  public static final String GALAXY_TALOS_CONSUMER_MAX_FETCH_BYTES =
+      "galaxy.talos.consumer.max.fetch.bytes";
+  public static final int GALAXY_TALOS_CONSUMER_MAX_FETCH_BYTES_DEFAULT = 2 * 1024 * 1024;
+  public static final int GALAXY_TALOS_CONSUMER_MAX_FETCH_BYTES_MINIMUM = 1;
+  public static final int GALAXY_TALOS_CONSUMER_MAX_FETCH_BYTES_MAXIMUM = 10 * 1024 * 1024;
+
+  /**
    * The consumer worker register self max retry times
    */
   public static final String GALAXY_TALOS_CONSUMER_REGISTER_MAX_RETRY =

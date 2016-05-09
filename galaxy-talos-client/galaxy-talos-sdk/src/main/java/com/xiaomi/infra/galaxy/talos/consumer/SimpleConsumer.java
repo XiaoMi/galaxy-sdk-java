@@ -80,8 +80,12 @@ public class SimpleConsumer {
 
     String requestSequenceId = Utils.generateRequestSequenceId(
         simpleConsumerId, requestId);
+    // limit the default max fetch bytes 2M
     GetMessageRequest getMessageRequest = new GetMessageRequest(topicAndPartition,
-        startOffset, requestSequenceId).setMaxGetMessageNumber(maxFetchedNumber);
+        startOffset, requestSequenceId)
+        .setMaxGetMessageNumber(maxFetchedNumber)
+        .setMaxGetMessageBytes(TalosClientConfigKeys.GALAXY_TALOS_CONSUMER_MAX_FETCH_BYTES_DEFAULT);
+
     GetMessageResponse getMessageResponse = messageClient.getMessage(getMessageRequest);
     List<MessageAndOffset> messageAndOffsetList =
         Compression.decompress(getMessageResponse.getMessageBlocks());

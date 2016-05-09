@@ -248,7 +248,7 @@ public class TalosProducer {
 
     for (Message message : msgList) {
       // check data validity
-      checkMessageLenValidity(message.getMessage());
+      Utils.checkMessageLenValidity(message.getMessage());
 
       // check partitionKey setting and validity
       if (!message.isSetPartitionKey()) {
@@ -366,16 +366,6 @@ public class TalosProducer {
       throw new IllegalArgumentException("Invalid partition key which length " +
           "must be at least " + partitionKeyMinLen + " and at most " +
           partitionKeyMinLen + ", got " + partitionKey.length());
-    }
-  }
-
-  private void checkMessageLenValidity(byte[] data) {
-    Preconditions.checkNotNull(data);
-    if (data.length > Constants.TALOS_SINGLE_MESSAGE_BYTES_MAXIMAL ||
-        data.length < Constants.TALOS_SINGLE_MESSAGE_BYTES_MINIMAL) {
-      throw new IllegalArgumentException("Data must be less than or equal to " +
-          Constants.TALOS_SINGLE_MESSAGE_BYTES_MAXIMAL + " bytes, got bytes: " +
-          data.length);
     }
   }
 

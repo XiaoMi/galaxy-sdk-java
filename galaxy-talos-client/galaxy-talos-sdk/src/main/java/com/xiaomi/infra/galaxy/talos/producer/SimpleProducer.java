@@ -58,6 +58,11 @@ public class SimpleProducer {
   }
 
   public boolean putMessage(List<Message> msgList) {
+    // check data validity
+    for (Message message : msgList) {
+      Utils.checkMessageLenValidity(message.getMessage());
+    }
+
     try {
       doPut(msgList);
       return true;

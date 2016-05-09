@@ -81,4 +81,14 @@ public class Utils {
   public static boolean isOffsetOutOfRange(Throwable throwable) {
     return getErrorCode(throwable) == ErrorCode.MESSAGE_OFFSET_OUT_OF_RANGE;
   }
+
+  public static void checkMessageLenValidity(byte[] data) {
+    Preconditions.checkNotNull(data);
+    if (data.length > Constants.TALOS_SINGLE_MESSAGE_BYTES_MAXIMAL ||
+        data.length < Constants.TALOS_SINGLE_MESSAGE_BYTES_MINIMAL) {
+      throw new IllegalArgumentException("Data must be less than or equal to " +
+          Constants.TALOS_SINGLE_MESSAGE_BYTES_MAXIMAL + " bytes, got bytes: " +
+          data.length);
+    }
+  }
 }
