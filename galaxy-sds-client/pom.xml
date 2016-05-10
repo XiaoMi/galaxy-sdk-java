@@ -10,7 +10,7 @@
   <parent>
     <artifactId>galaxy-sdk-java-pom</artifactId>
     <groupId>com.xiaomi.infra.galaxy</groupId>
-    <version>1.2.5</version>
+    <version>1.2.6</version>
   </parent>
 
   <dependencies>
