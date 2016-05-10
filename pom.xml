@@ -4,7 +4,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.xiaomi.infra.galaxy</groupId>
   <artifactId>galaxy-sdk-java-pom</artifactId>
-  <version>1.2.4</version>
+  <version>1.2.5</version>
   <packaging>pom</packaging>
   <name>Galaxy SDK</name>
   <description>Xiaomi Galaxy Service SDK</description>
