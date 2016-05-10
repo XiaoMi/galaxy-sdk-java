@@ -8,7 +8,6 @@ import libthrift091.TException;
 import com.xiaomi.infra.galaxy.emq.client.EMQClientFactory;
 import com.xiaomi.infra.galaxy.emq.thrift.ChangeMessageVisibilityBatchRequest;
 import com.xiaomi.infra.galaxy.emq.thrift.ChangeMessageVisibilityBatchRequestEntry;
-import com.xiaomi.infra.galaxy.emq.thrift.ChangeMessageVisibilityRequest;
 import com.xiaomi.infra.galaxy.emq.thrift.CreateQueueRequest;
 import com.xiaomi.infra.galaxy.emq.thrift.CreateQueueResponse;
 import com.xiaomi.infra.galaxy.emq.thrift.CreateTagRequest;
@@ -32,17 +31,22 @@ import com.xiaomi.infra.galaxy.rpc.thrift.UserType;
  * Author: shenyuannan@xiaomi.com
  */
 
+/* This JAVA SDK support Java6 and Java7; Java8 is not included yet */
+
 public class EMQExample {
-  private static String secretKeyId = ""; // Set your AppKey
-  private static String secretKey = ""; // Set your AppSecret
+  private static String secretKeyId = ""; // Set your AppKey, like "5521728135794"
+
+  private static String secretKey = ""; // Set your AppSecret, like "K7czwCuHttwZD49DD/qKzg=="
   private static String name = "testClient";
 
   public static void main(String[] args) {
     Credential credential = new Credential().setSecretKeyId(secretKeyId).
         setSecretKey(secretKey).setType(UserType.APP_SECRET);
     EMQClientFactory clientFactory = new EMQClientFactory(credential);
-    QueueService.Iface queueClient = clientFactory.newQueueClient();
-    MessageService.Iface messageClient = clientFactory.newMessageClient();
+    QueueService.Iface queueClient = clientFactory.newQueueClient(
+        "http://awsbj0.emq.api.xiaomi.com");
+    MessageService.Iface messageClient = clientFactory.newMessageClient(
+        "http://awsbj0.emq.api.xiaomi.com");
 
     try {
       CreateQueueRequest createQueueRequest = new CreateQueueRequest(name);
