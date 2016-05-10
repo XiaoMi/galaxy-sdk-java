@@ -80,7 +80,7 @@ public class ThreadSafeClient<IFace, Impl> {
         sdsHttpClient.setSocketTimeout(socketTimeout)
             .setConnectTimeout(connTimeout)
             .setProtocol(protocol)
-            .setQueryString("type=" + method.getName())
+            .setQueryString(SdsRequestUtils.getQuery(method, args))
             .setSupportAccountKey(supportAccountKey)
             .setSid(sid);
         if (customHeaders != null) {

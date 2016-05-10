@@ -81,9 +81,7 @@ public class TableScanner implements Iterable<Map<String, Datum>> {
             bufferIterator = buffer.iterator();
           }
 
-          if ((result.getNextStartKey() == null ||
-              result.getNextStartKey().isEmpty()) &&
-              result.getNextSplitIndex() == -1) {
+          if (result.getNextStartKey() == null || result.getNextStartKey().isEmpty()) {
             // finish the whole scan request
             finished = true;
           } else {
@@ -100,9 +98,6 @@ public class TableScanner implements Iterable<Map<String, Datum>> {
             }
             lastResult = result;
             scan.setStartKey(result.getNextStartKey());
-            if (result.getNextSplitIndex() > 0) {
-              scan.setSplitIndex(result.getNextSplitIndex());
-            }
           }
           return hasNext();
         }

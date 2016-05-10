@@ -165,7 +165,6 @@
     <module>galaxy-client-java</module>
     <module>galaxy-sds-client</module>
     <module>galaxy-emq-client</module>
-    <module>galaxy-talos-client</module>
     <module>galaxy-storm-emq</module>
   </modules>
 </project>

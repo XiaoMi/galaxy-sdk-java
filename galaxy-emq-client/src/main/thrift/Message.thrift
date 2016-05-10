@@ -58,6 +58,12 @@ struct SendMessageRequest {
   * User-defined attributes attached to message
   **/
   5: optional map<string, MessageAttribute> messageAttributes;
+
+
+  /**
+  * Topic of this message
+  **/
+  6: optional string topic;
 }
 
 struct SendMessageResponse {
@@ -125,6 +131,11 @@ struct SendMessageBatchRequest {
   * List of SendMessageBatchRequestEntry;
   **/
   2: required list<SendMessageBatchRequestEntry> sendMessageBatchRequestEntryList;
+
+  /**
+  * Topic of this message-list
+  **/
+  3: optional string topic;
 }
 
 struct SendMessageBatchResponseEntry {
@@ -248,6 +259,8 @@ struct ReceiveMessageResponse {
   * - originalMessageID
   * - originalReceiveCount
   *
+  * If the message has been set topic
+  * - topic
   **/
   4: optional map<string, string> attributes;
 

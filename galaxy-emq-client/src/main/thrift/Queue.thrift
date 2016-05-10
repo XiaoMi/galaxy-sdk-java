@@ -128,6 +128,25 @@ struct CreateQueueRequest {
    * Set the queue be a dead letter queue or not;
    **/
   4: optional bool deadLetterQueue;
+
+  /**
+   * Set the queue be a topic queue or not;
+   * All messages with the same topic in topic queue will be received one by one
+   * Default: false
+   **/
+  6: optional bool topicQueue;
+
+  /**
+   * Purge expired messages even if they have not been received by users
+   * Default: true
+   **/
+  7: optional bool deleteMessageForce = true;
+
+  /**
+   * Name default tag
+   * You can use "" as default tag name while receiving messages if this field is not set
+   **/
+  8: optional string defaultTagName;
 }
 
 struct CreateQueueResponse {
@@ -152,6 +171,18 @@ struct CreateQueueResponse {
    * The queue is a dead letter queue or not;
    **/
   4: optional bool deadLetterQueue;
+
+  /**
+   * Set the queue be a topic queue or not;
+   **/
+  6: optional bool topicQueue;
+
+  /**
+   * Purge expired messages even if they have not been received by users
+   **/
+  7: optional bool deleteMessageForce;
+
+  8: optional string defaultTagName;
 }
 
 struct DeleteQueueRequest {
@@ -267,6 +298,17 @@ struct GetQueueInfoResponse {
   **/
   6: optional RedrivePolicy redrivePolicy;
 
+  /**
+   * Set the queue be a topic queue or not;
+   **/
+  8: optional bool topicQueue;
+
+  /**
+   * Purge expired messages even if they have not been received by users
+   **/
+  9: optional bool deleteMessageForce;
+
+  10: optional string defaultTagName;
 }
 
 struct SetQueueRedrivePolicyRequest{

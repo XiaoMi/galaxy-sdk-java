@@ -1,0 +1,149 @@
+/**
+ * Copyright 2015, Xiaomi.
+ * All rights reserved.
+ * Author: yongxing@xiaomi.com
+ */
+
+package com.xiaomi.infra.galaxy.talos.producer;
+
+import com.google.common.base.Preconditions;
+import org.apache.hadoop.conf.Configuration;
+
+import com.xiaomi.infra.galaxy.talos.client.TalosClientConfig;
+import com.xiaomi.infra.galaxy.talos.client.TalosClientConfigKeys;
+import com.xiaomi.infra.galaxy.talos.client.Utils;
+import com.xiaomi.infra.galaxy.talos.thrift.MessageCompressionType;
+
+public class TalosProducerConfig extends TalosClientConfig {
+  private int maxBufferedMsgNumber;
+  private int maxBufferedMsgBytes;
+  private int maxBufferedMsgTime;
+  private int maxPutMsgNumber;
+  private int maxPutMsgBytes;
+  private int threadPoolsize;
+  private int checkPartitionInterval;
+  private long updatePartitionIdInterval;
+  private long waitPartitionWorkingTime;
+  private long updatePartitionMsgNum;
+  private String compressionType;
+
+  public TalosProducerConfig(Configuration configuration) {
+    this(configuration, true);
+  }
+
+  public TalosProducerConfig(Configuration configuration, boolean checkParameter) {
+    super(configuration);
+    maxBufferedMsgNumber = configuration.getInt(
+        TalosClientConfigKeys.GALAXY_TALOS_PRODUCER_MAX_BUFFERED_MESSAGE_NUMBER,
+        TalosClientConfigKeys.GALAXY_TALOS_PRODUCER_MAX_BUFFERED_MESSAGE_NUMBER_DEFAULT);
+    maxBufferedMsgBytes = configuration.getInt(
+        TalosClientConfigKeys.GALAXY_TALOS_PRODUCER_MAX_BUFFERED_MESSAGE_BYTES,
+        TalosClientConfigKeys.GALAXY_TALOS_PRODUCER_MAX_BUFFERED_MESSAGE_BYTES_DEFAULT);
+    maxBufferedMsgTime = configuration.getInt(
+        TalosClientConfigKeys.GALAXY_TALOS_PRODUCER_MAX_BUFFERED_MILLI_SECS,
+        TalosClientConfigKeys.GALAXY_TALOS_PRODUCER_MAX_BUFFERED_MILLI_SECS_DEFAULT);
+    maxPutMsgNumber = configuration.getInt(
+        TalosClientConfigKeys.GALAXY_TALOS_PRODUCER_MAX_PUT_MESSAGE_NUMBER,
+        TalosClientConfigKeys.GALAXY_TALOS_PRODUCER_MAX_PUT_MESSAGE_NUMBER_DEFAULT);
+    maxPutMsgBytes = configuration.getInt(
+        TalosClientConfigKeys.GALAXY_TALOS_PRODUCER_MAX_PUT_MESSAGE_BYTES,
+        TalosClientConfigKeys.GALAXY_TALOS_PRODUCER_MAX_PUT_MESSAGE_BYTES_DEFAULT);
+    threadPoolsize = configuration.getInt(
+        TalosClientConfigKeys.GALAXY_TALOS_PRODUCER_THREAD_POOL_SIZE,
+        TalosClientConfigKeys.GALAXY_TALOS_PRODUCER_THREAD_POOL_SIZE_DEFAULT);
+    checkPartitionInterval = configuration.getInt(
+        TalosClientConfigKeys.GALAXY_TALOS_PRODUCER_CHECK_PARTITION_INTERVAL,
+        TalosClientConfigKeys.GALAXY_TALOS_PRODUCER_CHECK_PARTITION_INTERVAL_DEFAULT);
+    updatePartitionIdInterval = configuration.getLong(
+        TalosClientConfigKeys.GALAXY_TALOS_PRODUCER_UPDATE_PARTITIONID_INTERVAL,
+        TalosClientConfigKeys.GALAXY_TALOS_PRODUCER_UPDATE_PARTITIONID_INTERVAL_DEFAULT);
+    waitPartitionWorkingTime = configuration.getLong(
+        TalosClientConfigKeys.GALAXY_TALOS_PRODUCER_WAIT_PARTITION_WORKING_TIME,
+        TalosClientConfigKeys.GALAXY_TALOS_PRODUCER_WAIT_PARTITION_WORKING_TIME_DEFAULT);
+    updatePartitionMsgNum = configuration.getLong(
+        TalosClientConfigKeys.GALAXY_TALOS_PRODUCER_UPDATE_PARTITION_MSGNUMBER,
+        TalosClientConfigKeys.GALAXY_TALOS_PRODUCER_UPDATE_PARTITION_MSGNUMBER_DEFAULT);
+    compressionType = configuration.get(
+        TalosClientConfigKeys.GALAXY_TALOS_PRODUCER_COMPRESSION_TYPE,
+        TalosClientConfigKeys.GALAXY_TALOS_PRODUCER_COMPRESSION_TYPE_DEFAULT);
+
+    if (checkParameter) {
+      Utils.checkParameterRange(
+          TalosClientConfigKeys.GALAXY_TALOS_PRODUCER_MAX_PUT_MESSAGE_NUMBER,
+          maxPutMsgNumber,
+          TalosClientConfigKeys.GALAXY_TALOS_PRODUCER_MAX_PUT_MESSAGE_NUMBER_MINIMUM,
+          TalosClientConfigKeys.GALAXY_TALOS_PRODUCER_MAX_PUT_MESSAGE_NUMBER_MAXIMUM);
+      Utils.checkParameterRange(
+          TalosClientConfigKeys.GALAXY_TALOS_PRODUCER_MAX_PUT_MESSAGE_BYTES,
+          maxPutMsgBytes,
+          TalosClientConfigKeys.GALAXY_TALOS_PRODUCER_MAX_PUT_MESSAGE_BYTES_MINIMUM,
+          TalosClientConfigKeys.GALAXY_TALOS_PRODUCER_MAX_PUT_MESSAGE_BYTES_MAXIMUM);
+      Utils.checkParameterRange(
+          TalosClientConfigKeys.GALAXY_TALOS_PRODUCER_CHECK_PARTITION_INTERVAL,
+          checkPartitionInterval,
+          TalosClientConfigKeys.GALAXY_TALOS_PRODUCER_CHECK_PARTITION_INTERVAL_MINIMUM,
+          TalosClientConfigKeys.GALAXY_TALOS_PRODUCER_CHECK_PARTITION_INTERVAL_MAXIMUM);
+      Utils.checkParameterRange(
+          TalosClientConfigKeys.GALAXY_TALOS_PRODUCER_UPDATE_PARTITIONID_INTERVAL,
+          (int) updatePartitionIdInterval,
+          (int) TalosClientConfigKeys.GALAXY_TALOS_PRODUCER_UPDATE_PARTITIONID_INTERVAL_MINIMUM,
+          (int) TalosClientConfigKeys.GALAXY_TALOS_PRODUCER_UPDATE_PARTITIONID_INTERVAL_MAXIMUM);
+    }
+
+    if (!compressionType.equals("NONE") && !compressionType.equals("SNAPPY")
+        && !compressionType.equals("GZIP")) {
+      throw new RuntimeException("Unsupported Compression Type: " + compressionType);
+    }
+  }
+
+  public int getMaxBufferedMsgNumber() {
+    return maxBufferedMsgNumber;
+  }
+
+  public int getMaxBufferedMsgBytes() {
+    return maxBufferedMsgBytes;
+  }
+
+  public int getMaxBufferedMsgTime() {
+    return maxBufferedMsgTime;
+  }
+
+  public int getMaxPutMsgNumber() {
+    return maxPutMsgNumber;
+  }
+
+  public int getMaxPutMsgBytes() {
+    return maxPutMsgBytes;
+  }
+
+  public int getThreadPoolsize() {
+    return threadPoolsize;
+  }
+
+  public int getCheckPartitionInterval() {
+    return checkPartitionInterval;
+  }
+
+  public long getUpdatePartitionIdInterval() {
+    return updatePartitionIdInterval;
+  }
+
+  public long getWaitPartitionWorkingTime() {
+    return waitPartitionWorkingTime;
+  }
+
+  public long getUpdatePartitionMsgNum() {
+    return updatePartitionMsgNum;
+  }
+
+  public MessageCompressionType getCompressionType() {
+    if (compressionType.equals("NONE")) {
+      return MessageCompressionType.NONE;
+    } else if (compressionType.equals("SNAPPY")) {
+      return MessageCompressionType.SNAPPY;
+    } else {
+      Preconditions.checkArgument(compressionType.equals("GZIP"));
+      return MessageCompressionType.GZIP;
+    }
+  }
+}
