@@ -7,10 +7,10 @@
 package com.xiaomi.infra.galaxy.talos.consumer;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
 
+import com.google.common.base.Preconditions;
 import libthrift091.TException;
 
 import com.xiaomi.infra.galaxy.rpc.thrift.Credential;
@@ -20,8 +20,8 @@ import com.xiaomi.infra.galaxy.talos.client.Utils;
 import com.xiaomi.infra.galaxy.talos.client.compression.Compression;
 import com.xiaomi.infra.galaxy.talos.thrift.GetMessageRequest;
 import com.xiaomi.infra.galaxy.talos.thrift.GetMessageResponse;
-import com.xiaomi.infra.galaxy.talos.thrift.Message;
 import com.xiaomi.infra.galaxy.talos.thrift.MessageAndOffset;
+import com.xiaomi.infra.galaxy.talos.thrift.MessageOffset;
 import com.xiaomi.infra.galaxy.talos.thrift.MessageService;
 import com.xiaomi.infra.galaxy.talos.thrift.TopicAndPartition;
 import com.xiaomi.infra.galaxy.talos.thrift.TopicTalosResourceName;
@@ -72,6 +72,7 @@ public class SimpleConsumer {
 
   public List<MessageAndOffset> fetchMessage(long startOffset,
       int maxFetchedNumber) throws TException, IOException {
+    Utils.checkStartOffsetValidity(startOffset);
     Utils.checkParameterRange(
         TalosClientConfigKeys.GALAXY_TALOS_CONSUMER_MAX_FETCH_RECORDS,
         maxFetchedNumber,
@@ -95,10 +96,13 @@ public class SimpleConsumer {
     }
 
     long actualStartOffset = messageAndOffsetList.get(0).getMessageOffset();
-    if (messageAndOffsetList.get(0).getMessageOffset() == startOffset) {
+    if (messageAndOffsetList.get(0).getMessageOffset() == startOffset ||
+        startOffset == MessageOffset.START_OFFSET.getValue() ||
+        startOffset == MessageOffset.LATEST_OFFSET.getValue()) {
       return messageAndOffsetList;
     } else {
       int start = (int)(startOffset - actualStartOffset);
+      Preconditions.checkArgument(start > 0, "Unexpected subList start index: " + start);
       int end = messageAndOffsetList.size();
       return messageAndOffsetList.subList(start, end);
     }

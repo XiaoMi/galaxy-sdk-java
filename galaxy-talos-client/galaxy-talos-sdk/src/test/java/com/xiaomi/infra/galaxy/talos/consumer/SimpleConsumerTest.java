@@ -6,10 +6,12 @@
 
 package com.xiaomi.infra.galaxy.talos.consumer;
 
+import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
+import libthrift091.TException;
 import org.apache.hadoop.conf.Configuration;
 import org.junit.After;
 import org.junit.Before;
@@ -24,6 +26,7 @@ import com.xiaomi.infra.galaxy.talos.thrift.GetMessageResponse;
 import com.xiaomi.infra.galaxy.talos.thrift.Message;
 import com.xiaomi.infra.galaxy.talos.thrift.MessageAndOffset;
 import com.xiaomi.infra.galaxy.talos.thrift.MessageBlock;
+import com.xiaomi.infra.galaxy.talos.thrift.MessageOffset;
 import com.xiaomi.infra.galaxy.talos.thrift.MessageService;
 import com.xiaomi.infra.galaxy.talos.thrift.TopicAndPartition;
 import com.xiaomi.infra.galaxy.talos.thrift.TopicTalosResourceName;
@@ -88,6 +91,44 @@ public class SimpleConsumerTest {
   @Test
   public void testGetTopicAndPartition() {
     assertEquals(topicAndPartition, simpleConsumer.getTopicAndPartition());
+  }
+
+  @Test
+  public void testCheckStartOffset() throws TException, IOException {
+    Message message1 = new Message(ByteBuffer.wrap("message1".getBytes()));
+    Message message2 = new Message(ByteBuffer.wrap("message2".getBytes()));
+    Message message3 = new Message(ByteBuffer.wrap("message3".getBytes()));
+    messageList.add(message1);
+    messageList.add(message2);
+    messageList.add(message3);
+    MessageBlock messageBlock = Compression.compress(messageList, producerConfig.getCompressionType());
+    messageBlock.setStartMessageOffset(startOffset);
+    List<MessageBlock> messageBlockList = new ArrayList<MessageBlock>(1);
+    messageBlockList.add(messageBlock);
+
+    MessageAndOffset messageAndOffset1 = new MessageAndOffset(message1, startOffset);
+    MessageAndOffset messageAndOffset2 = new MessageAndOffset(message2, startOffset + 1);
+    MessageAndOffset messageAndOffset3 = new MessageAndOffset(message3, startOffset + 2);
+    messageAndOffsetList.add(messageAndOffset1);
+    messageAndOffsetList.add(messageAndOffset2);
+    messageAndOffsetList.add(messageAndOffset3);
+
+    GetMessageResponse response = new GetMessageResponse(messageBlockList, 3,
+        "testCheckStartOffset");
+    when(messageClientMock.getMessage(any(GetMessageRequest.class)))
+        .thenReturn(response);
+    simpleConsumer.fetchMessage(MessageOffset.START_OFFSET.getValue(), 100);
+    simpleConsumer.fetchMessage(MessageOffset.LATEST_OFFSET.getValue(), 100);
+    simpleConsumer.fetchMessage(0, 100);
+    simpleConsumer.fetchMessage(2, 100);
+    simpleConsumer.fetchMessage(-1, 100);
+    simpleConsumer.fetchMessage(-2, 100);
+    try {
+      simpleConsumer.fetchMessage(-3, 100);
+      assertTrue("test check startOffset validity error", false);
+    } catch (Exception e) {
+      assertTrue(e instanceof IllegalArgumentException);
+    }
   }
 
   @Test

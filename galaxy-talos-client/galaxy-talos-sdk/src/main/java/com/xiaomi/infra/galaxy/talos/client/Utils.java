@@ -13,6 +13,7 @@ import com.google.common.base.Preconditions;
 
 import com.xiaomi.infra.galaxy.talos.thrift.ErrorCode;
 import com.xiaomi.infra.galaxy.talos.thrift.GalaxyTalosException;
+import com.xiaomi.infra.galaxy.talos.thrift.MessageOffset;
 
 import static com.xiaomi.infra.galaxy.talos.client.Constants.TALOS_IDENTIFIER_DELIMITER;
 
@@ -37,6 +38,16 @@ public class Utils {
       throw new IllegalArgumentException(parameter + " should be in range [" +
           minValue + ", " + maxValue + "], got: " + value);
     }
+  }
+
+  public static void checkStartOffsetValidity(long startOffset) {
+    if (startOffset >= 0 || startOffset == MessageOffset.START_OFFSET.getValue() ||
+        startOffset == MessageOffset.LATEST_OFFSET.getValue()) {
+      return;
+    }
+    throw new IllegalArgumentException("invalid startOffset: " + startOffset +
+        ". It must be greater than or equal to 0, " +
+        "or equal to MessageOffset.START_OFFSET/MessageOffset.LATEST_OFFSET");
   }
 
   public static String generateClientId() {
