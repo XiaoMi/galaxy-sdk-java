@@ -25,6 +25,7 @@ public class TalosConsumerConfig extends TalosClientConfig {
   private boolean checkLastCommitOffset;
   private long waitPartitionWorkingTime;
   private boolean resetLatestOffset;
+  private boolean checkpointMessageOffset;
 
   public TalosConsumerConfig(Configuration configuration) {
     this(configuration, true);
@@ -68,6 +69,9 @@ public class TalosConsumerConfig extends TalosClientConfig {
     resetLatestOffset = configuration.getBoolean(
         TalosClientConfigKeys.GALAXY_TALOS_CONSUMER_RESET_LATEST_OFFSET,
         TalosClientConfigKeys.GALAXY_TALOS_CONSUMER_RESET_LATEST_OFFSET_DEFAULT);
+    checkpointMessageOffset = configuration.getBoolean(
+        TalosClientConfigKeys.GALAXY_TALOS_CONSUMER_CHECKPOINT_MESSAGE_OFFSET,
+        TalosClientConfigKeys.GALAXY_TALOS_CONSUMER_CHECKPOINT_MESSAGE_OFFSET_DEFAULT);
 
     if (checkParameter) {
       Utils.checkParameterRange(
@@ -159,5 +163,9 @@ public class TalosConsumerConfig extends TalosClientConfig {
 
   public boolean isResetLatestOffset() {
     return resetLatestOffset;
+  }
+
+  public boolean isCheckpointMessageOffset() {
+    return checkpointMessageOffset;
   }
 }

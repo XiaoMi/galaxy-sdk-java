@@ -304,4 +304,12 @@ public class TalosClientConfigKeys {
   public static final boolean GALAXY_TALOS_CONSUMER_RESET_LATEST_OFFSET_DEFAULT =
       true;
 
+  /**
+   * The consumer checkpoint the message offset or not;
+   */
+  public static final String GALAXY_TALOS_CONSUMER_CHECKPOINT_MESSAGE_OFFSET =
+      "galaxy.talos.consumer.checkpoint.message.offset";
+  public static final boolean GALAXY_TALOS_CONSUMER_CHECKPOINT_MESSAGE_OFFSET_DEFAULT = true;
+
+
 }
