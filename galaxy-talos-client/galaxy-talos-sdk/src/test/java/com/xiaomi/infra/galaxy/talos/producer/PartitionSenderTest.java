@@ -30,6 +30,7 @@ import com.xiaomi.infra.galaxy.talos.thrift.TopicTalosResourceName;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
 
 public class PartitionSenderTest {
@@ -126,8 +127,7 @@ public class PartitionSenderTest {
     userMessageList.add(userMessage3);
     userMessageList.add(userMessage4);
 
-    when(messageClientMock.putMessage(any(PutMessageRequest.class)))
-        .thenReturn(null);
+    doNothing().when(messageClientMock.putMessage(any(PutMessageRequest.class)));
     int addCount = 50;
     while (addCount-- > 0) {
       partitionSender.addMessage(userMessageList);
@@ -159,8 +159,7 @@ public class PartitionSenderTest {
     userMessageList.add(userMessage1);
     userMessageList.add(userMessage2);
 
-    when(messageClientMock.putMessage(any(PutMessageRequest.class)))
-        .thenReturn(null);
+    doNothing().when(messageClientMock.putMessage(any(PutMessageRequest.class)));
     partitionSender.addMessage(userMessageList);
 
     Thread.sleep(110);
@@ -182,4 +181,6 @@ public class PartitionSenderTest {
     assertEquals(2, msgPutFailureCount);
     clearCounter();
   }
+
+
 }

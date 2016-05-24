@@ -77,9 +77,9 @@ public class TalosProducer {
   } // CheckPartitionTask
 
   private enum PRODUCER_STATE {
-    CREATING,
     ACTIVE,
     DISABLED,
+    SHUTDOWN,
   }
 
   private static final Logger LOG = LoggerFactory.getLogger(TalosProducer.class);
@@ -87,10 +87,8 @@ public class TalosProducer {
   private final int partitionKeyMaxLen = Constants.TALOS_PARTITION_KEY_LENGTH_MAXIMAL;
   private static final AtomicLong requestId = new AtomicLong(1);
   private static final Object globalLock = new Object();
-  private final AtomicReference<BufferedMessageCount> bufferedCount =
-      new AtomicReference<BufferedMessageCount>();
 
-  private PRODUCER_STATE producerState;
+  private AtomicReference<PRODUCER_STATE> producerState;
   private Partitioner partitioner;
   private TopicAbnormalCallback topicAbnormalCallback;
   private UserMessageCallback userMessageCallback;
@@ -102,6 +100,7 @@ public class TalosProducer {
   private Random random;
   private int maxBufferedMsgNumber;
   private int maxBufferedMsgBytes;
+  private BufferedMessageCount bufferedCount;
   private String clientId;
   private TalosClientFactory talosClientFactory;
   private TalosAdmin talosAdmin;
@@ -139,8 +138,7 @@ public class TalosProducer {
       TopicTalosResourceName topicTalosResourceName, Partitioner partitioner,
       TopicAbnormalCallback topicAbnormalCallback,
       UserMessageCallback userMessageCallback) throws TException {
-    producerState = PRODUCER_STATE.CREATING;
-    bufferedCount.set(new BufferedMessageCount(0, 0));
+    producerState = new AtomicReference<PRODUCER_STATE>(PRODUCER_STATE.ACTIVE);
     this.partitioner = partitioner;
     this.topicAbnormalCallback = topicAbnormalCallback;
     this.userMessageCallback = userMessageCallback;
@@ -152,6 +150,7 @@ public class TalosProducer {
     random = new Random();
     maxBufferedMsgNumber = talosProducerConfig.getMaxBufferedMsgNumber();
     maxBufferedMsgBytes = talosProducerConfig.getMaxBufferedMsgBytes();
+    bufferedCount = new BufferedMessageCount(maxBufferedMsgNumber, maxBufferedMsgBytes);
     clientId = Utils.generateClientId();
     talosClientFactory = new TalosClientFactory(talosProducerConfig, credential);
     talosAdmin = new TalosAdmin(talosClientFactory);
@@ -162,7 +161,6 @@ public class TalosProducer {
     partitionCheckExecutor = Executors.newSingleThreadScheduledExecutor();
     initPartitionSender();
     initCheckPartitionTask();
-    producerState = PRODUCER_STATE.ACTIVE;
     LOG.info("Init a producer for topic: " +
         topicTalosResourceName.getTopicTalosResourceName() +
         ", partitions: " + partitionNumber);
@@ -171,11 +169,11 @@ public class TalosProducer {
   // for test
   public TalosProducer(TalosProducerConfig producerConfig,
       TopicTalosResourceName topicTalosResourceName, TalosAdmin talosAdmin,
+      TalosClientFactory talosClientFactory,
       PartitionSender partitionSender,
       TopicAbnormalCallback topicAbnormalCallback,
       UserMessageCallback userMessageCallback) throws TException {
-    producerState = PRODUCER_STATE.CREATING;
-    bufferedCount.set(new BufferedMessageCount(0, 0));
+    producerState = new AtomicReference<PRODUCER_STATE>(PRODUCER_STATE.ACTIVE);
     partitioner = new SimplePartitioner();
     this.topicAbnormalCallback = topicAbnormalCallback;
     this.userMessageCallback = userMessageCallback;
@@ -187,41 +185,38 @@ public class TalosProducer {
     random = new Random();
     maxBufferedMsgNumber = talosProducerConfig.getMaxBufferedMsgNumber();
     maxBufferedMsgBytes = talosProducerConfig.getMaxBufferedMsgBytes();
+    bufferedCount = new BufferedMessageCount(maxBufferedMsgNumber, maxBufferedMsgBytes);
     this.topicTalosResourceName = topicTalosResourceName;
-    this.talosAdmin = talosAdmin;
     clientId = Utils.generateClientId();
-    talosClientFactory = new TalosClientFactory(
-        talosProducerConfig, new Credential());
+    this.talosClientFactory = talosClientFactory;
+    this.talosAdmin = talosAdmin;
     checkAndGetTopicInfo(topicTalosResourceName);
     messageCallbackExecutors = Executors.newFixedThreadPool(
         talosProducerConfig.getThreadPoolsize());
     partitionCheckExecutor = Executors.newSingleThreadScheduledExecutor();
-    for (int i = 0; i < partitionNumber; ++i) {
-      partitionSenderMap.put(i, partitionSender);
-    }
+    initPartitionSender();
     initCheckPartitionTask();
-    producerState = PRODUCER_STATE.ACTIVE;
     LOG.info("Init a producer for topic: " +
         topicTalosResourceName.getTopicTalosResourceName() +
         ", partitions: " + partitionNumber);
   }
 
-  public void addUserMessage(List<Message> msgList)
+  public synchronized void addUserMessage(List<Message> msgList)
       throws ProducerNotActiveException {
     // check producer state
-    PRODUCER_STATE state = getProducerState();
-    if (state != PRODUCER_STATE.ACTIVE) {
+    if (!isActive()) {
       throw new ProducerNotActiveException("Producer is not active, " +
-          "current state: " + state);
+          "current state: " + producerState);
     }
 
     // check total buffered message number
-    while (shouldBlock()) {
+    while (bufferedCount.isFull()) {
       synchronized (globalLock) {
         try {
           globalLock.wait();
           LOG.info("too many buffered messages, globalLock is active." +
-              " message number: " + bufferedCount.get().getBufferedMsgNumber());
+              " message number: " + bufferedCount.getBufferedMsgNumber() +
+              ", message bytes:  " + bufferedCount.getBufferedMsgBytes());
         } catch (InterruptedException e) {
           LOG.error("addUserMessage global lock wait is interrupt.");
         }
@@ -275,29 +270,50 @@ public class TalosProducer {
 
   // cancel the putMessage threads and checkPartitionTask
   // when topic not exist during producer running
-  public synchronized void disableProducer(Throwable throwable) {
-    if (producerState == PRODUCER_STATE.DISABLED) {
+  private synchronized void disableProducer(Throwable throwable) {
+    if (!isActive()) {
       return;
     }
 
-    producerState = PRODUCER_STATE.DISABLED;
-    for (Map.Entry<Integer, PartitionSender> entry : partitionSenderMap.entrySet()) {
-      entry.getValue().cancel(true);
-    }
+    producerState.set(PRODUCER_STATE.DISABLED);
+    stopAndWait();
     topicAbnormalCallback.abnormalHandler(topicTalosResourceName, throwable);
-    partitionCheckFuture.cancel(true);
+  }
+
+  public synchronized void shutdown() {
+    if (!isActive()) {
+      return;
+    }
+
+    producerState.set(PRODUCER_STATE.SHUTDOWN);
+    stopAndWait();
+  }
+
+  private void stopAndWait() {
+    for (Map.Entry<Integer, PartitionSender> entry : partitionSenderMap.entrySet()) {
+      entry.getValue().shutdown();
+    }
+    partitionCheckFuture.cancel(false);
     partitionCheckExecutor.shutdownNow();
     messageCallbackExecutors.shutdownNow();
+  }
+
+  public boolean isActive() {
+    return producerState.get() == PRODUCER_STATE.ACTIVE;
+  }
+
+  public boolean isDisabled() {
+    return producerState.get() == PRODUCER_STATE.DISABLED;
+  }
+
+  public boolean isShutdowned() {
+    return producerState.get() == PRODUCER_STATE.SHUTDOWN;
   }
 
   private synchronized boolean shouldUpdatePartition() {
     return (System.currentTimeMillis() - lastUpdatePartitionIdTime >=
         updatePartitionIdInterval) || (lastAddMsgNumber >=
         updatePartitionIdMsgNumber);
-  }
-
-  private synchronized PRODUCER_STATE getProducerState() {
-    return producerState;
   }
 
   private synchronized void checkAndGetTopicInfo(
@@ -369,25 +385,14 @@ public class TalosProducer {
     }
   }
 
-  private synchronized boolean shouldBlock() {
-    return (bufferedCount.get().getBufferedMsgNumber() >= maxBufferedMsgNumber ||
-        bufferedCount.get().getBufferedMsgBytes() >= maxBufferedMsgBytes);
-  }
-
-  protected synchronized void increaseBufferedCount(int incrementNumber,
+  protected void increaseBufferedCount(int incrementNumber,
       int incrementBytes) {
-    BufferedMessageCount newCount = new BufferedMessageCount(
-        bufferedCount.get().getBufferedMsgNumber() + incrementNumber,
-        bufferedCount.get().getBufferedMsgBytes() + incrementBytes);
-    bufferedCount.set(newCount);
+    bufferedCount.increase(incrementNumber, incrementBytes);
   }
 
-  protected synchronized void decreaseBufferedCount(int decrementNumber,
+  protected void decreaseBufferedCount(int decrementNumber,
       int decrementBytes) {
-    BufferedMessageCount newCount = new BufferedMessageCount(
-        bufferedCount.get().getBufferedMsgNumber() - decrementNumber,
-        bufferedCount.get().getBufferedMsgBytes() - decrementBytes);
-    bufferedCount.set(newCount);
+    bufferedCount.descrease(decrementNumber, decrementBytes);
   }
 
 }

@@ -23,7 +23,9 @@ import com.xiaomi.infra.galaxy.talos.thrift.Message;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.anyInt;
 import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.inOrder;
+import static org.mockito.Mockito.timeout;
 import static org.mockito.Mockito.times;
 
 public class PartitionMessageQueueTest {
@@ -34,13 +36,14 @@ public class PartitionMessageQueueTest {
   private static final int maxPutMsgNumber = 3;
   private static final int maxBufferedMillSecs = 200;
 
-  private static TalosProducer producer;
-  private static TalosProducerConfig producerConfig;
-  private static PartitionMessageQueue partitionMessageQueue;
-  private static UserMessage userMessage1;
-  private static UserMessage userMessage2;
-  private static UserMessage userMessage3;
-  private static List<UserMessage> messageList;
+  private TalosProducer producer;
+  private TalosProducerConfig producerConfig;
+  private PartitionMessageQueue partitionMessageQueue;
+  private UserMessage userMessage1;
+  private UserMessage userMessage2;
+  private UserMessage userMessage3;
+  private List<UserMessage> userMessageList;
+  private List<Message> messageList;
 
   @Before
   public void setUp() {
@@ -56,6 +59,10 @@ public class PartitionMessageQueueTest {
     userMessage1 = new UserMessage(msg);
     userMessage2 = new UserMessage(msg);
     userMessage3 = new UserMessage(msg);
+
+    producer = Mockito.mock(TalosProducer.class);
+    partitionMessageQueue = new PartitionMessageQueue(
+        producerConfig, partitionId, producer);
   }
 
   @After
@@ -64,45 +71,119 @@ public class PartitionMessageQueueTest {
 
   @Test
   public void testAddGetMessageWhenMaxPutNumber() {
-    messageList = new ArrayList<UserMessage>();
-    messageList.add(userMessage1);
-    messageList.add(userMessage2);
-    messageList.add(userMessage3);
+    userMessageList = new ArrayList<UserMessage>();
+    userMessageList.add(userMessage1);
+    userMessageList.add(userMessage2);
+    userMessageList.add(userMessage3);
 
-    producer = Mockito.mock(TalosProducer.class);
-    doNothing().when(producer).increaseBufferedCount(anyInt(), anyInt());
-    doNothing().when(producer).decreaseBufferedCount(anyInt(), anyInt());
+    messageList = new ArrayList<Message>();
+    messageList.add(msg);
+    messageList.add(msg);
+    messageList.add(msg);
 
-    partitionMessageQueue = new PartitionMessageQueue(
-        producerConfig, partitionId, producer);
-    partitionMessageQueue.addMessage(messageList);
+    doNothing().when(producer).increaseBufferedCount(3, msgStr.length() * 3);
+    doReturn(true).when(producer).isActive();
+    doNothing().when(producer).decreaseBufferedCount(3, msgStr.length() * 3);
+
+
+    partitionMessageQueue.addMessage(userMessageList);
     assertEquals(messageList.size(),
-        partitionMessageQueue.getUserMessageList().size());
+        partitionMessageQueue.getMessageList().size());
     InOrder inOrder = inOrder(producer);
-    inOrder.verify(producer, times(1)).increaseBufferedCount(anyInt(), anyInt());
-    inOrder.verify(producer, times(1)).decreaseBufferedCount(anyInt(), anyInt());
+    inOrder.verify(producer, times(1)).increaseBufferedCount(3, msgStr.length() * 3);
+    inOrder.verify(producer).isActive();
+    inOrder.verify(producer, times(1)).decreaseBufferedCount(3, msgStr.length() * 3);
     inOrder.verifyNoMoreInteractions();
   }
 
   @Test
   public void testAddGetWaitMessageWhenNumberNotEnough() {
-    messageList = new ArrayList<UserMessage>();
-    messageList.add(userMessage1);
-    messageList.add(userMessage2);
+    userMessageList = new ArrayList<UserMessage>();
+    userMessageList.add(userMessage1);
+    userMessageList.add(userMessage2);
+    messageList = new ArrayList<Message>();
+    messageList.add(msg);
+    messageList.add(msg);
 
-    producer = Mockito.mock(TalosProducer.class);
-    doNothing().when(producer).increaseBufferedCount(anyInt(), anyInt());
-    doNothing().when(producer).decreaseBufferedCount(anyInt(), anyInt());
+    InOrder inOrder = inOrder(producer);
 
-    partitionMessageQueue = new PartitionMessageQueue(
-        producerConfig, partitionId, producer);
-    partitionMessageQueue.addMessage(messageList);
+
+    doNothing().when(producer).increaseBufferedCount(2, msgStr.length() * 2);
+    doReturn(true).when(producer).isActive();
+    doNothing().when(producer).decreaseBufferedCount(2, msgStr.length() * 2);
+
+    partitionMessageQueue.addMessage(userMessageList);
     // check log has waiting time
     assertEquals(messageList.size(),
-        partitionMessageQueue.getUserMessageList().size());
+        partitionMessageQueue.getMessageList().size());
+    inOrder.verify(producer, times(1)).increaseBufferedCount(2, msgStr.length() * 2);
+    // first time not return, second return by time;
+    inOrder.verify(producer, times(2)).isActive();
+    inOrder.verify(producer, times(1)).decreaseBufferedCount(2, msgStr.length() * 2);
+    inOrder.verifyNoMoreInteractions();
+  }
+
+  @Test
+  public void testAddGetMessageWhenNotAlive() {
+    userMessageList = new ArrayList<UserMessage>();
+    userMessageList.add(userMessage1);
+    userMessageList.add(userMessage2);
+    userMessageList.add(userMessage3);
+    messageList = new ArrayList<Message>();
+    messageList.add(msg);
+    messageList.add(msg);
+    messageList.add(msg);
+
     InOrder inOrder = inOrder(producer);
-    inOrder.verify(producer, times(1)).increaseBufferedCount(anyInt(), anyInt());
-    inOrder.verify(producer, times(1)).decreaseBufferedCount(anyInt(), anyInt());
+
+    doNothing().when(producer).increaseBufferedCount(3, msgStr.length() * 3);
+    doReturn(true).doReturn(false).when(producer).isActive();
+    doNothing().when(producer).decreaseBufferedCount(3, msgStr.length() * 3);
+
+    partitionMessageQueue.addMessage(userMessageList);
+    // check log has waiting time
+    assertEquals(messageList.size(),
+        partitionMessageQueue.getMessageList().size());
+    assertEquals(0,
+        partitionMessageQueue.getMessageList().size());
+
+    inOrder.verify(producer, times(1)).increaseBufferedCount(3, msgStr.length() * 3);
+    inOrder.verify(producer).isActive();
+    inOrder.verify(producer, times(1)).decreaseBufferedCount(3, msgStr.length() * 3);
+    inOrder.verify(producer).isActive();
+    inOrder.verify(producer, times(1)).decreaseBufferedCount(0, 0);
+    inOrder.verifyNoMoreInteractions();
+  }
+
+  @Test
+  public void testAddGetWaitMessageWhenNotAlive() {
+    userMessageList = new ArrayList<UserMessage>();
+    userMessageList.add(userMessage1);
+    userMessageList.add(userMessage2);
+    messageList = new ArrayList<Message>();
+    messageList.add(msg);
+    messageList.add(msg);
+
+    InOrder inOrder = inOrder(producer);
+
+
+    doNothing().when(producer).increaseBufferedCount(2, msgStr.length() * 2);
+    doReturn(true).doReturn(true).doReturn(false).when(producer).isActive();
+    doNothing().when(producer).decreaseBufferedCount(2, msgStr.length() * 2);
+
+    partitionMessageQueue.addMessage(userMessageList);
+    // check log has waiting time
+    assertEquals(messageList.size(),
+        partitionMessageQueue.getMessageList().size());
+    assertEquals(0,
+        partitionMessageQueue.getMessageList().size());
+
+    inOrder.verify(producer, times(1)).increaseBufferedCount(2, msgStr.length() * 2);
+    // first time not return, second return by time;
+    inOrder.verify(producer, times(2)).isActive();
+    inOrder.verify(producer, times(1)).decreaseBufferedCount(2, msgStr.length() * 2);
+    inOrder.verify(producer).isActive();
+    inOrder.verify(producer, times(1)).decreaseBufferedCount(0, 0);
     inOrder.verifyNoMoreInteractions();
   }
 }
