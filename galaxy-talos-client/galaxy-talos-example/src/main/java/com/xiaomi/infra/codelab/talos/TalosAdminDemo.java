@@ -8,9 +8,9 @@ package com.xiaomi.infra.codelab.talos;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Properties;
 
 import libthrift091.TException;
-import org.apache.hadoop.conf.Configuration;
 
 import com.xiaomi.infra.galaxy.rpc.thrift.Credential;
 import com.xiaomi.infra.galaxy.rpc.thrift.GrantType;
@@ -18,7 +18,6 @@ import com.xiaomi.infra.galaxy.rpc.thrift.Grantee;
 import com.xiaomi.infra.galaxy.rpc.thrift.UserType;
 import com.xiaomi.infra.galaxy.talos.admin.TalosAdmin;
 import com.xiaomi.infra.galaxy.talos.client.TalosClientConfig;
-import com.xiaomi.infra.galaxy.talos.client.TalosClientConfigKeys;
 import com.xiaomi.infra.galaxy.talos.thrift.ChangeTopicAttributeRequest;
 import com.xiaomi.infra.galaxy.talos.thrift.CreateTopicRequest;
 import com.xiaomi.infra.galaxy.talos.thrift.CreateTopicResponse;
@@ -30,7 +29,6 @@ import com.xiaomi.infra.galaxy.talos.thrift.TopicAttribute;
 import com.xiaomi.infra.galaxy.talos.thrift.TopicTalosResourceName;
 
 public class TalosAdminDemo {
-  private static final String talosServiceURI = "$talosServiceURI";
   // authenticate for Developer, using to createTopic/setPermission etc.
   private static final String accountKeyId = "$your_accountKey";
   private static final String accountSecret = "$your_accountKeySecret";
@@ -45,6 +43,7 @@ public class TalosAdminDemo {
   private static final String appId = "$appId";
   private static final String appKeyId = "$your_appKey";
   private static final String appKeySecret = "$your_appSecret";
+  private static final String propertyFileName = "$your_propertyFile";
 
   private static final String topicName = "testTopic";
   private static final int partitionNumber = 8;
@@ -54,11 +53,19 @@ public class TalosAdminDemo {
   private TalosAdmin talosAdmin;
 
   public TalosAdminDemo() throws TException {
-    // init client config
-    Configuration configuration = new Configuration();
-    configuration.set(TalosClientConfigKeys.GALAXY_TALOS_SECURE_SERVICE_ENDPOINT,
-        talosServiceURI);
-    TalosClientConfig clientConfig = new TalosClientConfig(configuration);
+    // init client config by put $your_propertyFile in your classpath
+    // with the content of:
+    /*
+      galaxy.talos.service.endpoint=$talosServiceURI
+    */
+    TalosClientConfig clientConfig = new TalosClientConfig(propertyFileName);
+    /*
+      You can also using the other method to init client config as follows:
+
+      Properties properties = new Properties();
+      properties.setProperty("galaxy.talos.service.endpoint", "serviceURI");
+      TalosClientConfig clientConfig = new TalosClientConfig(properties);
+    */
 
     // credential
     credential = new Credential();

@@ -10,8 +10,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 
-import org.apache.hadoop.conf.Configuration;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -101,23 +101,25 @@ public class TalosConsumerTest {
 
   @Before
   public void setUp() throws Exception {
-    Configuration configuration = new Configuration();
+    Properties properties = new Properties();
     // check partition number interval 200 ms
-    configuration.setInt(
-        TalosClientConfigKeys.GALAXY_TALOS_CONSUMER_CHECK_PARTITION_INTERVAL, 200);
+    properties.setProperty(
+        TalosClientConfigKeys.GALAXY_TALOS_CONSUMER_CHECK_PARTITION_INTERVAL, "200");
     // check worker info interval 300 ms
-    configuration.setInt(
-        TalosClientConfigKeys.GALAXY_TALOS_CONSUMER_CHECK_WORKER_INFO_INTERVAL, 300);
+    properties.setProperty(
+        TalosClientConfigKeys.GALAXY_TALOS_CONSUMER_CHECK_WORKER_INFO_INTERVAL, "300");
     // renew interval 3050 ms
-    configuration.setInt(
-        TalosClientConfigKeys.GALAXY_TALOS_CONSUMER_RENEW_INTERVAL, 300);
-    configuration.setInt(
-        TalosClientConfigKeys.GALAXY_TALOS_CONSUMER_RENEW_MAX_RETRY, 0);
-    configuration.setInt(
-        TalosClientConfigKeys.GALAXY_TALOS_CONSUMER_REGISTER_MAX_RETRY, 0);
+    properties.setProperty(
+        TalosClientConfigKeys.GALAXY_TALOS_CONSUMER_RENEW_INTERVAL, "300");
+    properties.setProperty(
+        TalosClientConfigKeys.GALAXY_TALOS_CONSUMER_RENEW_MAX_RETRY, "0");
+    properties.setProperty(
+        TalosClientConfigKeys.GALAXY_TALOS_CONSUMER_REGISTER_MAX_RETRY, "0");
+    properties.setProperty(
+        TalosClientConfigKeys.GALAXY_TALOS_SERVICE_ENDPOINT, "testURI");
 
     // do not check parameter validity for unit test
-    consumerConfig = new TalosConsumerConfig(configuration, false);
+    consumerConfig = new TalosConsumerConfig(properties, false);
     talosAdminMock = Mockito.mock(TalosAdmin.class);
     consumerClientMock = Mockito.mock(ConsumerService.Iface.class);
 

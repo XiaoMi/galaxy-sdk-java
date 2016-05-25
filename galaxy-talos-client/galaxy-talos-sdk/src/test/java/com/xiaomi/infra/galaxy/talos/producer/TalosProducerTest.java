@@ -9,10 +9,10 @@ package com.xiaomi.infra.galaxy.talos.producer;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Properties;
 import java.util.Random;
 
 import libthrift091.TException;
-import org.apache.hadoop.conf.Configuration;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -107,21 +107,23 @@ public class TalosProducerTest {
 
   @Before
   public void setUp() throws TException {
-    // set configuration
-    Configuration configuration = new Configuration();
-    configuration.setInt(
+    // set properties
+    Properties properties = new Properties();
+    properties.setProperty(
         TalosClientConfigKeys.GALAXY_TALOS_PRODUCER_MAX_BUFFERED_MILLI_SECS,
-        producerMaxBufferedMillSecs);
-    configuration.setInt(
+        String.valueOf(producerMaxBufferedMillSecs));
+    properties.setProperty(
         TalosClientConfigKeys.GALAXY_TALOS_PRODUCER_MAX_PUT_MESSAGE_NUMBER,
-        producerMaxPutMsgNumber);
-    configuration.setInt(
+        String.valueOf(producerMaxPutMsgNumber));
+    properties.setProperty(
         TalosClientConfigKeys.GALAXY_TALOS_PRODUCER_MAX_PUT_MESSAGE_BYTES,
-        producerMaxPutMsgBytes);
-    configuration.setInt(
+        String.valueOf(producerMaxPutMsgBytes));
+    properties.setProperty(
         TalosClientConfigKeys.GALAXY_TALOS_PRODUCER_CHECK_PARTITION_INTERVAL,
-        checkPartitionInterval);
-    talosProducerConfig = new TalosProducerConfig(configuration, false);
+        String.valueOf(checkPartitionInterval));
+    properties.setProperty(
+        TalosClientConfigKeys.GALAXY_TALOS_SERVICE_ENDPOINT, "testURI");
+    talosProducerConfig = new TalosProducerConfig(properties, false);
 
     // construct a topic
     TopicInfo topicInfo = new TopicInfo(

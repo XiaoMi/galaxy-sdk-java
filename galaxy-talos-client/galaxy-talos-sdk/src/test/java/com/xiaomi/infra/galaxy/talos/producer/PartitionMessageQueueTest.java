@@ -9,8 +9,8 @@ package com.xiaomi.infra.galaxy.talos.producer;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Properties;
 
-import org.apache.hadoop.conf.Configuration;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -47,14 +47,16 @@ public class PartitionMessageQueueTest {
 
   @Before
   public void setUp() {
-    Configuration configuration = new Configuration();
-    configuration.setInt(
+    Properties properties = new Properties();
+    properties.setProperty(
         TalosClientConfigKeys.GALAXY_TALOS_PRODUCER_MAX_PUT_MESSAGE_NUMBER,
-        maxPutMsgNumber);
-    configuration.setInt(
+        String.valueOf(maxPutMsgNumber));
+    properties.setProperty(
         TalosClientConfigKeys.GALAXY_TALOS_PRODUCER_MAX_BUFFERED_MILLI_SECS,
-        maxBufferedMillSecs);
-    producerConfig = new TalosProducerConfig(configuration);
+        String.valueOf(maxBufferedMillSecs));
+    properties.setProperty(
+        TalosClientConfigKeys.GALAXY_TALOS_SERVICE_ENDPOINT, "testURI");
+    producerConfig = new TalosProducerConfig(properties, false);
 
     userMessage1 = new UserMessage(msg);
     userMessage2 = new UserMessage(msg);

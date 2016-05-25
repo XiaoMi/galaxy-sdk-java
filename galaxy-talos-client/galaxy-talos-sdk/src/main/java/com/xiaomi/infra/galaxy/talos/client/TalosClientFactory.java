@@ -123,7 +123,7 @@ public class TalosClientFactory {
 
   public TopicService.Iface newTopicClient() {
     checkCredential();
-    return newTopicClient(talosClientConfig.getSecureServiceEndpoint());
+    return newTopicClient(talosClientConfig.getServiceEndpoint());
   }
 
   public TopicService.Iface newTopicClient(String endpoint) {
@@ -155,7 +155,7 @@ public class TalosClientFactory {
 
   public MessageService.Iface newMessageClient() {
     checkCredential();
-    return newMessageClient(talosClientConfig.getSecureServiceEndpoint());
+    return newMessageClient(talosClientConfig.getServiceEndpoint());
   }
 
   public MessageService.Iface newMessageClient(String endpoint) {
@@ -187,7 +187,7 @@ public class TalosClientFactory {
 
   public QuotaService.Iface newQuotaClient() {
     checkCredential();
-    return newQuotaClient(talosClientConfig.getSecureServiceEndpoint());
+    return newQuotaClient(talosClientConfig.getServiceEndpoint());
   }
 
   public QuotaService.Iface newQuotaClient(String endpoint) {
@@ -219,7 +219,7 @@ public class TalosClientFactory {
 
   public ConsumerService.Iface newConsumerClient() {
     checkCredential();
-    return newConsumerClient(talosClientConfig.getSecureServiceEndpoint());
+    return newConsumerClient(talosClientConfig.getServiceEndpoint());
   }
 
   public ConsumerService.Iface newConsumerClient(String endpoint) {

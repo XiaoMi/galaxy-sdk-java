@@ -9,8 +9,8 @@ package com.xiaomi.infra.galaxy.talos.consumer;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Properties;
 
-import org.apache.hadoop.conf.Configuration;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.InOrder;
@@ -19,7 +19,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.xiaomi.infra.galaxy.talos.client.TalosClientConfigKeys;
-import com.xiaomi.infra.galaxy.talos.client.TalosClientConfigurationLoader;
 import com.xiaomi.infra.galaxy.talos.thrift.CheckPoint;
 import com.xiaomi.infra.galaxy.talos.thrift.ConsumerService;
 import com.xiaomi.infra.galaxy.talos.thrift.Message;
@@ -34,14 +33,13 @@ import com.xiaomi.infra.galaxy.talos.thrift.UpdateOffsetResponse;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.inOrder;
 
 public class TalosMessageReaderTest {
   private static final Logger LOG = LoggerFactory.getLogger(TalosMessageReaderTest.class);
-  private static Configuration configuration = TalosClientConfigurationLoader.getConfiguration();
+  private static Properties properties = new Properties();
 
   private TalosConsumerConfig consumerConfig;
   private static final String topicName = "MyTopic";
@@ -126,11 +124,11 @@ public class TalosMessageReaderTest {
 
   @Test
   public void testDefaultCheckpointOffset() throws Exception {
-    configuration.setBoolean(TalosClientConfigKeys.GALAXY_TALOS_CONSUMER_CHECKPOINT_MESSAGE_OFFSET, true);
-    configuration.setInt(TalosClientConfigKeys.GALAXY_TALOS_CONSUMER_FETCH_INTERVAL, 0);
-    configuration.setInt(TalosClientConfigKeys.GALAXY_TALOS_CONSUMER_COMMIT_OFFSET_INTERVAL, 0);
-    configuration.setInt(TalosClientConfigKeys.GALAXY_TALOS_CONSUMER_COMMIT_OFFSET_THRESHOLD, 0);
-    consumerConfig = new TalosConsumerConfig(configuration, false);
+    properties.setProperty(TalosClientConfigKeys.GALAXY_TALOS_CONSUMER_CHECKPOINT_MESSAGE_OFFSET, "true");
+    properties.setProperty(TalosClientConfigKeys.GALAXY_TALOS_CONSUMER_FETCH_INTERVAL, "0");
+    properties.setProperty(TalosClientConfigKeys.GALAXY_TALOS_CONSUMER_COMMIT_OFFSET_INTERVAL, "0");
+    properties.setProperty(TalosClientConfigKeys.GALAXY_TALOS_CONSUMER_COMMIT_OFFSET_THRESHOLD, "0");
+    consumerConfig = new TalosConsumerConfig(properties, false);
 
     messageProcessorMock = Mockito.mock(MessageProcessor.class);
 
@@ -187,9 +185,10 @@ public class TalosMessageReaderTest {
 
   @Test
   public void testUserCheckpointOffset() throws Exception {
-    configuration.setBoolean(TalosClientConfigKeys.GALAXY_TALOS_CONSUMER_CHECKPOINT_MESSAGE_OFFSET, false);
-    configuration.setInt(TalosClientConfigKeys.GALAXY_TALOS_CONSUMER_FETCH_INTERVAL, 0);
-    consumerConfig = new TalosConsumerConfig(configuration, false);
+    properties.setProperty(TalosClientConfigKeys.GALAXY_TALOS_CONSUMER_CHECKPOINT_MESSAGE_OFFSET, "false");
+    properties.setProperty(TalosClientConfigKeys.GALAXY_TALOS_CONSUMER_FETCH_INTERVAL, "0");
+    properties.setProperty(TalosClientConfigKeys.GALAXY_TALOS_SERVICE_ENDPOINT, "testURI");
+    consumerConfig = new TalosConsumerConfig(properties, false);
 
     messageReader = new TalosMessageReader(consumerConfig);
     messageReader.setSimpleConsumer(simpleConsumerMock)
@@ -234,6 +233,4 @@ public class TalosMessageReaderTest {
     messageReader.commitCheckPoint();
     inOrder.verifyNoMoreInteractions();
   }
-
-
 }

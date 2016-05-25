@@ -10,9 +10,9 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Properties;
 
 import libthrift091.TException;
-import org.apache.hadoop.conf.Configuration;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -54,9 +54,10 @@ public class SimpleConsumerTest {
 
   @Before
   public void setUp() {
-    Configuration configuration = new Configuration();
-    producerConfig = new TalosProducerConfig(configuration);
-    consumerConfig = new TalosConsumerConfig(configuration, false);
+    Properties properties = new Properties();
+    properties.setProperty("galaxy.talos.service.endpoint", "testUrl");
+    producerConfig = new TalosProducerConfig(properties);
+    consumerConfig = new TalosConsumerConfig(properties);
     topicAndPartition = new TopicAndPartition(topicName,
         new TopicTalosResourceName(resourceName), partitionId);
     messageClientMock = Mockito.mock(MessageService.Iface.class);
