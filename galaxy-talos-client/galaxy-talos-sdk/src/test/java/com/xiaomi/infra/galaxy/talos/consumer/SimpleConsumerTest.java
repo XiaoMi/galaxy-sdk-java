@@ -152,13 +152,18 @@ public class SimpleConsumerTest {
     messageAndOffsetList.add(messageAndOffset2);
     messageAndOffsetList.add(messageAndOffset3);
 
+    long unHandledNumber = 117;
     GetMessageResponse response = new GetMessageResponse(messageBlockList, 3,
-        "testFetchMessageSequenceId");
+        "testFetchMessageSequenceId").setUnHandledMessageNumber(unHandledNumber);
     when(messageClientMock.getMessage(any(GetMessageRequest.class)))
         .thenReturn(response);
 
     List<MessageAndOffset> msgList = simpleConsumer.fetchMessage(startOffset);
-    assertEquals(messageAndOffsetList, msgList);
+    for (int i = 0; i < msgList.size(); ++i) {
+      assertEquals(messageAndOffsetList.get(i).getMessage(), msgList.get(i).getMessage());
+      assertEquals(messageAndOffsetList.get(i).getMessageOffset(), msgList.get(i).getMessageOffset());
+      assertEquals(msgList.get(i).getUnHandledMessageNumber(), unHandledNumber + msgList.size() - 1 - i);
+    }
 
     try {
       simpleConsumer.fetchMessage(startOffset, 3000);
@@ -189,13 +194,19 @@ public class SimpleConsumerTest {
     messageAndOffsetList.add(messageAndOffset2);
     messageAndOffsetList.add(messageAndOffset3);
 
+    long unHandledNumber = 117;
     GetMessageResponse response = new GetMessageResponse(messageBlockList, 3,
-        "testFetchMessageSequenceId");
+        "testFetchMessageSequenceId").setUnHandledMessageNumber(unHandledNumber);
     when(messageClientMock.getMessage(any(GetMessageRequest.class)))
         .thenReturn(response);
 
     List<MessageAndOffset> msgList = simpleConsumer.fetchMessage(startOffset + 1);
-    assertEquals(messageAndOffsetList, msgList);
+
+    for (int i = 0; i < msgList.size(); ++i) {
+      assertEquals(messageAndOffsetList.get(i).getMessage(), msgList.get(i).getMessage());
+      assertEquals(messageAndOffsetList.get(i).getMessageOffset(), msgList.get(i).getMessageOffset());
+      assertEquals(msgList.get(i).getUnHandledMessageNumber(), unHandledNumber + msgList.size() - 1 - i);
+    }
 
     try {
       simpleConsumer.fetchMessage(startOffset, 3000);

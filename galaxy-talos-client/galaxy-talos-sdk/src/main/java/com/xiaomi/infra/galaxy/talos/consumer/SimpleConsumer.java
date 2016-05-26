@@ -89,7 +89,8 @@ public class SimpleConsumer {
 
     GetMessageResponse getMessageResponse = messageClient.getMessage(getMessageRequest);
     List<MessageAndOffset> messageAndOffsetList =
-        Compression.decompress(getMessageResponse.getMessageBlocks());
+        Compression.decompress(getMessageResponse.getMessageBlocks(),
+            getMessageResponse.getUnHandledMessageNumber());
 
     if (messageAndOffsetList.size() <= 0) {
       return messageAndOffsetList;

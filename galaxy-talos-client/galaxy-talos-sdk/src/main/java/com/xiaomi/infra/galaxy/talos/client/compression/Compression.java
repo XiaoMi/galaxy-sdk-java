@@ -71,28 +71,35 @@ public class Compression {
     return messageBlock;
   }
 
-  public static List<MessageAndOffset> decompress(List<MessageBlock> messageBlockList) throws IOException {
+  public static List<MessageAndOffset> decompress(List<MessageBlock> messageBlockList,
+      long unHandledMessageNumber) throws IOException {
     List<MessageAndOffset> messageAndOffsetList = new ArrayList<MessageAndOffset>();
-    for (MessageBlock messageBlock : messageBlockList) {
-      List<MessageAndOffset> list = decompress(messageBlock);
-      messageAndOffsetList.addAll(list);
+    long unHandledNumber = unHandledMessageNumber;
+
+    for (int i = messageBlockList.size() - 1; i >= 0; --i) {
+      List<MessageAndOffset> list = decompress(messageBlockList.get(i), unHandledNumber);
+      unHandledNumber += list.size();
+      messageAndOffsetList.addAll(0, list);
     }
 
     return messageAndOffsetList;
   }
 
-  public static List<MessageAndOffset> decompress(MessageBlock messageBlock) throws IOException {
+  public static List<MessageAndOffset> decompress(MessageBlock messageBlock,
+      long unHandledNumber) throws IOException {
     DataInputStream dataInputStream = CompressionFactory.getDeconpressedInputStream(
         messageBlock.getCompressionType(), ByteBuffer.wrap(messageBlock.getMessageBlock()));
+    int messageNumber = messageBlock.getMessageNumber();
 
     List<MessageAndOffset> messageAndOffsetList =
-        new ArrayList<MessageAndOffset>(messageBlock.getMessageNumber());
+        new ArrayList<MessageAndOffset>(messageNumber);
     try {
-      for (int i = 0; i < messageBlock.getMessageNumber(); ++i) {
+      for (int i = 0; i < messageNumber; ++i) {
         MessageAndOffset messageAndOffset = new MessageAndOffset();
         messageAndOffset.setMessageOffset(messageBlock.getStartMessageOffset() + i);
         Message message = new Message();
         messageAndOffset.setMessage(message);
+        messageAndOffset.setUnHandledMessageNumber(unHandledNumber + messageNumber - 1 - i);
 
         // read sequence number;
         int sequenceNumberSize = dataInputStream.readInt();

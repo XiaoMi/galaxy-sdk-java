@@ -22,6 +22,7 @@ import com.xiaomi.infra.galaxy.talos.thrift.MessageBlock;
 import com.xiaomi.infra.galaxy.talos.thrift.MessageCompressionType;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 public class CompressionTest {
   private static final Logger LOG = LoggerFactory.getLogger(CompressionTest.class);
@@ -63,6 +64,7 @@ public class CompressionTest {
   @Test
   public void testNoCompression() throws Exception {
     LOG.info("message Bytes: " + rowMessageSize);
+    long unHandledMessageNumber = 117;
     MessageBlock messageBlock = Compression.compress(messageList, MessageCompressionType.NONE);
     assertEquals(MessageCompressionType.NONE, messageBlock.getCompressionType());
     assertEquals(messageList.size(), messageBlock.getMessageNumber());
@@ -70,12 +72,13 @@ public class CompressionTest {
     messageBlock.setStartMessageOffset(startOffset);
     LOG.info("CompressionType: None, message BlockSize: " + messageBlock.getMessageBlock().length);
 
-
-    List<MessageAndOffset> verifyMessageList = Compression.decompress(messageBlock);
+    List<MessageAndOffset> verifyMessageList = Compression.decompress(messageBlock, unHandledMessageNumber);
     assertEquals(messageList.size(), verifyMessageList.size());
     for (int index = 0; index < messageList.size(); ++index) {
       assertEquals(messageList.get(index), verifyMessageList.get(index).getMessage());
       assertEquals(startOffset + index, verifyMessageList.get(index).getMessageOffset());
+      assertTrue(verifyMessageList.get(index).getUnHandledMessageNumber() ==
+          (unHandledMessageNumber + messageList.size() - 1 - index));
     }
   }
 
@@ -86,14 +89,17 @@ public class CompressionTest {
     assertEquals(MessageCompressionType.SNAPPY, messageBlock.getCompressionType());
     assertEquals(messageList.size(), messageBlock.getMessageNumber());
     long startOffset = 1234;
+    long unHandledMessageNumber = 117;
     messageBlock.setStartMessageOffset(startOffset);
     LOG.info("CompressionType: Snappy, message BlockSize: " + messageBlock.getMessageBlock().length);
 
-    List<MessageAndOffset> verifyMessageList = Compression.decompress(messageBlock);
+    List<MessageAndOffset> verifyMessageList = Compression.decompress(messageBlock, unHandledMessageNumber);
     assertEquals(messageList.size(), verifyMessageList.size());
     for (int index = 0; index < messageList.size(); ++index) {
       assertEquals(messageList.get(index), verifyMessageList.get(index).getMessage());
       assertEquals(startOffset + index, verifyMessageList.get(index).getMessageOffset());
+      assertTrue(verifyMessageList.get(index).getUnHandledMessageNumber() ==
+          (unHandledMessageNumber + messageList.size() - 1 - index));
     }
   }
 
@@ -104,14 +110,17 @@ public class CompressionTest {
     assertEquals(MessageCompressionType.GZIP, messageBlock.getCompressionType());
     assertEquals(messageList.size(), messageBlock.getMessageNumber());
     long startOffset = 1234;
+    long unHandledMessageNumber = 117;
     messageBlock.setStartMessageOffset(startOffset);
     LOG.info("CompressionType: Gzip, message BlockSize: " + messageBlock.getMessageBlock().length);
 
-    List<MessageAndOffset> verifyMessageList = Compression.decompress(messageBlock);
+    List<MessageAndOffset> verifyMessageList = Compression.decompress(messageBlock, unHandledMessageNumber);
     assertEquals(messageList.size(), verifyMessageList.size());
     for (int index = 0; index < messageList.size(); ++index) {
       assertEquals(messageList.get(index), verifyMessageList.get(index).getMessage());
       assertEquals(startOffset + index, verifyMessageList.get(index).getMessageOffset());
+      assertTrue(verifyMessageList.get(index).getUnHandledMessageNumber() ==
+          (unHandledMessageNumber + messageList.size() - 1 - index));
     }
   }
 
@@ -129,13 +138,15 @@ public class CompressionTest {
     messageBlockList.add(messageBlock1);
     messageBlockList.add(messageBlock2);
     messageBlockList.add(messageBlock3);
+    long unHandledMessageNumber = 117;
 
-    List<MessageAndOffset> messageAndOffsetList = Compression.decompress(messageBlockList);
+    List<MessageAndOffset> messageAndOffsetList = Compression.decompress(messageBlockList, unHandledMessageNumber);
     assertEquals(messageList.size() * 3, messageAndOffsetList.size());
     for (int index = 0; index < messageAndOffsetList.size(); ++index) {
       assertEquals(messageList.get(index % messageList.size()), messageAndOffsetList.get(index).getMessage());
       assertEquals(startOffset + index, messageAndOffsetList.get(index).getMessageOffset());
+      assertTrue(messageAndOffsetList.get(index).getUnHandledMessageNumber() ==
+          (unHandledMessageNumber + messageAndOffsetList.size() - 1 - index));
     }
-
   }
 }
