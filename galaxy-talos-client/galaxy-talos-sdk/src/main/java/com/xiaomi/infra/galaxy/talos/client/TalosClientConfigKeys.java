@@ -298,11 +298,11 @@ public class TalosClientConfigKeys {
       true;
 
   /**
-   * The consumer checkpoint the message offset or not;
+   * The consumer checkpoint auto commit;
    */
-  public static final String GALAXY_TALOS_CONSUMER_CHECKPOINT_MESSAGE_OFFSET =
-      "galaxy.talos.consumer.checkpoint.message.offset";
-  public static final boolean GALAXY_TALOS_CONSUMER_CHECKPOINT_MESSAGE_OFFSET_DEFAULT = true;
+  public static final String GALAXY_TALOS_CONSUMER_CHECKPOINT_AUTO_COMMIT =
+      "galaxy.talos.consumer.checkpoint.auto.commit";
+  public static final boolean GALAXY_TALOS_CONSUMER_CHECKPOINT_AUTO_COMMIT_DEFAULT = true;
 
 
 }

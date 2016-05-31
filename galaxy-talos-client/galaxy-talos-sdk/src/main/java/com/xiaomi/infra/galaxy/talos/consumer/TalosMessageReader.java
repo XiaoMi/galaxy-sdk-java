@@ -100,7 +100,7 @@ public class TalosMessageReader extends MessageReader implements MessageCheckpoi
   }
 
   private void innerCheckpoint() throws TException {
-    if (consumerConfig.isCheckpointMessageOffset()) {
+    if (consumerConfig.isCheckpointAutoCommit()) {
       commitOffset(finishedOffset);
     }
   }
@@ -113,7 +113,7 @@ public class TalosMessageReader extends MessageReader implements MessageCheckpoi
   @Override
   public boolean checkpoint(long messageOffset) {
     LOG.info("start checkpoint: " + messageOffset);
-    if (consumerConfig.isCheckpointMessageOffset()) {
+    if (consumerConfig.isCheckpointAutoCommit()) {
       LOG.info("You can not checkpoint through MessageCheckpointer when you set " +
           "\"galaxy.talos.consumer.checkpoint.message.offset\" as \"true\"");
       return false;

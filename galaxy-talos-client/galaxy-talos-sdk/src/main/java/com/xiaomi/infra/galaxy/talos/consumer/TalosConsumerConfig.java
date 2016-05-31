@@ -26,7 +26,7 @@ public class TalosConsumerConfig extends TalosClientConfig {
   private boolean checkLastCommitOffset;
   private long waitPartitionWorkingTime;
   private boolean resetLatestOffset;
-  private boolean checkpointMessageOffset;
+  private boolean checkpointAutoCommit;
 
   public TalosConsumerConfig(String fileName) {
     super(fileName);
@@ -84,9 +84,9 @@ public class TalosConsumerConfig extends TalosClientConfig {
     resetLatestOffset = Boolean.parseBoolean(properties.getProperty(
         TalosClientConfigKeys.GALAXY_TALOS_CONSUMER_RESET_LATEST_OFFSET,
         String.valueOf(TalosClientConfigKeys.GALAXY_TALOS_CONSUMER_RESET_LATEST_OFFSET_DEFAULT)));
-    checkpointMessageOffset = Boolean.parseBoolean(properties.getProperty(
-        TalosClientConfigKeys.GALAXY_TALOS_CONSUMER_CHECKPOINT_MESSAGE_OFFSET,
-        String.valueOf(TalosClientConfigKeys.GALAXY_TALOS_CONSUMER_CHECKPOINT_MESSAGE_OFFSET_DEFAULT)));
+    checkpointAutoCommit = Boolean.parseBoolean(properties.getProperty(
+        TalosClientConfigKeys.GALAXY_TALOS_CONSUMER_CHECKPOINT_AUTO_COMMIT,
+        String.valueOf(TalosClientConfigKeys.GALAXY_TALOS_CONSUMER_CHECKPOINT_AUTO_COMMIT_DEFAULT)));
   }
 
   private void parameterChecking() {
@@ -180,7 +180,7 @@ public class TalosConsumerConfig extends TalosClientConfig {
     return resetLatestOffset;
   }
 
-  public boolean isCheckpointMessageOffset() {
-    return checkpointMessageOffset;
+  public boolean isCheckpointAutoCommit() {
+    return checkpointAutoCommit;
   }
 }

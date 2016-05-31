@@ -124,7 +124,7 @@ public class TalosMessageReaderTest {
 
   @Test
   public void testDefaultCheckpointOffset() throws Exception {
-    properties.setProperty(TalosClientConfigKeys.GALAXY_TALOS_CONSUMER_CHECKPOINT_MESSAGE_OFFSET, "true");
+    properties.setProperty(TalosClientConfigKeys.GALAXY_TALOS_CONSUMER_CHECKPOINT_AUTO_COMMIT, "true");
     properties.setProperty(TalosClientConfigKeys.GALAXY_TALOS_CONSUMER_FETCH_INTERVAL, "0");
     properties.setProperty(TalosClientConfigKeys.GALAXY_TALOS_CONSUMER_COMMIT_OFFSET_INTERVAL, "0");
     properties.setProperty(TalosClientConfigKeys.GALAXY_TALOS_CONSUMER_COMMIT_OFFSET_THRESHOLD, "0");
@@ -185,7 +185,7 @@ public class TalosMessageReaderTest {
 
   @Test
   public void testUserCheckpointOffset() throws Exception {
-    properties.setProperty(TalosClientConfigKeys.GALAXY_TALOS_CONSUMER_CHECKPOINT_MESSAGE_OFFSET, "false");
+    properties.setProperty(TalosClientConfigKeys.GALAXY_TALOS_CONSUMER_CHECKPOINT_AUTO_COMMIT, "false");
     properties.setProperty(TalosClientConfigKeys.GALAXY_TALOS_CONSUMER_FETCH_INTERVAL, "0");
     properties.setProperty(TalosClientConfigKeys.GALAXY_TALOS_SERVICE_ENDPOINT, "testURI");
     consumerConfig = new TalosConsumerConfig(properties, false);
