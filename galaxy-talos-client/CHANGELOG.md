@@ -3,6 +3,17 @@
 
   ...
 
+## 1.1.1
+
+  * D33222: Fix simple consumer bug when startOffset==-1/-2
+  * D33380: Change generated files version to thrift 0.9.2
+  * D33368: MessageProcessor support checkpoint consumed message offset
+  * D33652: add shutdown for TalosProducer
+  * D33707: add shutdown for TalosConsumer
+  * D33736: Using Properties instead of hadoop.conf
+  * D33815: Add unhandled msg number for fetched messages
+  * D34190: Fix log info boring to application
+
 
 ## 1.1.0
 
