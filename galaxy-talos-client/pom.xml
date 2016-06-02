@@ -6,7 +6,7 @@
     <groupId>com.xiaomi.infra.galaxy</groupId>
     <artifactId>galaxy-talos-client</artifactId>
     <packaging>pom</packaging>
-    <version>1.2-SNAPSHOT</version>
+    <version>1.1.1</version>
 
     <name>Galaxy Talos SDK</name>
     <description>Xiaomi Galaxy Talos Service SDK</description>
