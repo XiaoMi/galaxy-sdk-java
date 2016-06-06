@@ -11,16 +11,15 @@ import java.util.Map;
 import java.util.HashMap;
 import libthrift091.TEnum;
 
-/**
- * stream view type
- */
-public enum StreamViewType implements libthrift091.TEnum {
-  RECORD_IMAGE(1),
-  MUTATE_LOG(2);
+public enum StreamState implements libthrift091.TEnum {
+  CREATING(0),
+  ACTIVE(1),
+  DELETING(2),
+  DELETED(3);
 
   private final int value;
 
-  private StreamViewType(int value) {
+  private StreamState(int value) {
     this.value = value;
   }
 
@@ -35,12 +34,16 @@ public enum StreamViewType implements libthrift091.TEnum {
    * Find a the enum type by its integer value, as defined in the Thrift IDL.
    * @return null if the value is not found.
    */
-  public static StreamViewType findByValue(int value) { 
+  public static StreamState findByValue(int value) { 
     switch (value) {
+      case 0:
+        return CREATING;
       case 1:
-        return RECORD_IMAGE;
+        return ACTIVE;
       case 2:
-        return MUTATE_LOG;
+        return DELETING;
+      case 3:
+        return DELETED;
       default:
         return null;
     }

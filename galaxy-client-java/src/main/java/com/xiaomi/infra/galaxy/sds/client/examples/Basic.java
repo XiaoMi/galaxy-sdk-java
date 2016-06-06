@@ -1,4 +1,4 @@
-package com.xiaomi.infra.galaxy.sds.examples;
+package com.xiaomi.infra.galaxy.sds.client.examples;
 
 import com.xiaomi.infra.galaxy.sds.client.ClientFactory;
 import com.xiaomi.infra.galaxy.sds.client.TableScanner;
@@ -11,6 +11,7 @@ import com.xiaomi.infra.galaxy.sds.thrift.Datum;
 import com.xiaomi.infra.galaxy.sds.thrift.DatumUtil;
 import com.xiaomi.infra.galaxy.sds.thrift.GetRequest;
 import com.xiaomi.infra.galaxy.sds.thrift.GetResult;
+import com.xiaomi.infra.galaxy.sds.thrift.IncrementRequest;
 import com.xiaomi.infra.galaxy.sds.thrift.KeySpec;
 import com.xiaomi.infra.galaxy.sds.thrift.ProvisionThroughput;
 import com.xiaomi.infra.galaxy.sds.thrift.PutRequest;
