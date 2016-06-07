@@ -9,12 +9,13 @@ package com.xiaomi.infra.galaxy.talos.client;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.Serializable;
 import java.util.Properties;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class TalosClientConfig {
+public class TalosClientConfig implements Serializable {
   private static final Logger LOG = LoggerFactory.getLogger(TalosClientConfig.class);
   private int maxRetry;
   private int clientTimeout;
