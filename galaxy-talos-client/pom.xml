@@ -45,6 +45,7 @@
         <module>galaxy-talos-sdk</module>
         <module>galaxy-talos-spark</module>
         <module>galaxy-talos-example</module>
+        <module>galaxy-talos-storm</module>
     </modules>
 
     <properties>
