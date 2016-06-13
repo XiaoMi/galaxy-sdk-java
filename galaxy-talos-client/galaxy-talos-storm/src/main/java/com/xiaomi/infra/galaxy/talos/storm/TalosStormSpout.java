@@ -44,13 +44,13 @@ public class TalosStormSpout extends BaseRichSpout {
     }
 
     private void disableAutoCommitOffset() {
-        String autoCommit = talosConfig.parameters.get(TalosClientConfigKeys.GALAXY_TALOS_CONSUMER_CHECKPOINT_MESSAGE_OFFSET);
+        String autoCommit = talosConfig.parameters.get(TalosClientConfigKeys.GALAXY_TALOS_CONSUMER_CHECKPOINT_AUTO_COMMIT);
         if (autoCommit != null && autoCommit.equalsIgnoreCase("true")) {
             LOG.warn(String.format("%s should be set to false in TalosStormSpout, " +
                             "otherwise we will manually set it to false to turn off auto offset commit in Talos",
-                    TalosClientConfigKeys.GALAXY_TALOS_CONSUMER_CHECKPOINT_MESSAGE_OFFSET));
+                    TalosClientConfigKeys.GALAXY_TALOS_CONSUMER_CHECKPOINT_AUTO_COMMIT));
         }
-        talosConfig.parameters.put(TalosClientConfigKeys.GALAXY_TALOS_CONSUMER_CHECKPOINT_MESSAGE_OFFSET, "false");
+        talosConfig.parameters.put(TalosClientConfigKeys.GALAXY_TALOS_CONSUMER_CHECKPOINT_AUTO_COMMIT, "false");
     }
 
     private void loadTalosStormParams(Properties properties) {
