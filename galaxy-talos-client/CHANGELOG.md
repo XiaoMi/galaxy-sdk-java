@@ -3,16 +3,23 @@
 
   ...
 
+
+## 1.1.2
+
+  * D33949: Add talos-storm plugin
+  * D34377: Make config serializable
+
+
 ## 1.1.1
 
-  * D33222: Fix simple consumer bug when startOffset==-1/-2
+  * D34190: Fix log info boring to application
+  * D33815: Add unhandled msg number for fetched messages
+  * D33736: Using Properties instead of hadoop.conf
+  * D33707: add shutdown for TalosConsumer
+  * D33652: add shutdown for TalosProducer
   * D33380: Change generated files version to thrift 0.9.2
   * D33368: MessageProcessor support checkpoint consumed message offset
-  * D33652: add shutdown for TalosProducer
-  * D33707: add shutdown for TalosConsumer
-  * D33736: Using Properties instead of hadoop.conf
-  * D33815: Add unhandled msg number for fetched messages
-  * D34190: Fix log info boring to application
+  * D33222: Fix simple consumer bug when startOffset==-1/-2
 
 
 ## 1.1.0

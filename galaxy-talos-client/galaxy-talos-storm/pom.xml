@@ -6,10 +6,12 @@
     <parent>
         <artifactId>galaxy-talos-client</artifactId>
         <groupId>com.xiaomi.infra.galaxy</groupId>
-        <version>1.2-SNAPSHOT</version>
+        <version>1.1.2</version>
     </parent>
 
+    <groupId>com.xiaomi.infra.galaxy</groupId>
     <artifactId>galaxy-talos-storm</artifactId>
+    <version>1.1.2</version>
     <properties>
         <maven.compiler.source>1.6</maven.compiler.source>
         <maven.compiler.target>1.6</maven.compiler.target>
@@ -52,6 +54,10 @@
                 <exclusion>
                     <groupId>log4j</groupId>
                     <artifactId>log4j</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.xiaomi.infra.galaxy</groupId>
+                    <artifactId>galaxy-authorization</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>
