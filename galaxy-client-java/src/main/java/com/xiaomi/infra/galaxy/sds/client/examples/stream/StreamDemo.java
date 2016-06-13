@@ -282,7 +282,6 @@ public class StreamDemo {
       Preconditions.checkArgument(putResult.isSuccess());
 
       // increment
-      //    if (mixed && shouldDo()) {
       if (shouldDo()) {
         Map<String, Datum> amounts = DataProvider.randomIncrementAmounts(tableSchema,
             dataRecord.keySet());
