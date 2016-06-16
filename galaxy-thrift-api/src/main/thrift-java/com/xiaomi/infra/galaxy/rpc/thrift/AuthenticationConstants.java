@@ -77,6 +77,8 @@ public class AuthenticationConstants {
 
   public static final String HK_SERVICE_MARK = "#";
 
+  public static final String HK_ATTACHED_INFO = "Attached-Info";
+
   /**
    * 建议签名应包含的HTTP头
    */
