@@ -69,6 +69,15 @@ public class AuthenticationConstants {
   public static final String HK_AUTHORIZATION = "Authorization";
 
   /**
+   * 认证 service_admin, 用于 SDS/FDS 等可信认的 Server 作为 producer 向 Talos 推送数据
+   * 构造Credential的AccessKeyId的格式为："HK_SERVICE_ADMIN#AccessKeyId#AttachedInfo"
+   * 其中，AttachedInfo可以是developerId或其他信息
+   */
+  public static final String HK_SERVICE_ADMIN = "Service-Admin";
+
+  public static final String HK_SERVICE_MARK = "#";
+
+  /**
    * 建议签名应包含的HTTP头
    */
   public static final List<String> SUGGESTED_SIGNATURE_HEADERS = new ArrayList<String>();
