@@ -18,6 +18,12 @@
             <groupId>com.xiaomi.infra.galaxy</groupId>
             <artifactId>galaxy-client-java</artifactId>
             <version>${galaxy-client-java.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>com.xiaomi.infra.galaxy</groupId>
+                    <artifactId>galaxy-thrift-api</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>com.xiaomi.infra.galaxy</groupId>

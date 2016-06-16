@@ -397,6 +397,23 @@ public class TalosHttpClient extends TTransport {
             if (credential.getType() == UserType.APP_ACCESS_TOKEN) {
               authType = "OAuth ";
             }
+
+            // check secretKeyId and set header attached info
+            // secretKeyId format: "Service-Admin#SecretKeyId#developerId"
+            if (credential.getSecretKeyId().contains(
+                AuthenticationConstants.HK_SERVICE_ADMIN)) {
+              String[] items = credential.getSecretKeyId().split(
+                  AuthenticationConstants.HK_SERVICE_MARK);
+              if (items.length != 3) {
+                throw new RuntimeException("Invalid credential secretKeyId, " +
+                    "expected: 3, actual: " + items.length);
+              }
+
+              // reset secretKeyId and add header attached info
+              credential.setSecretKeyId(items[1]);
+              post.setHeader(AuthenticationConstants.HK_ATTACHED_INFO, items[2]);
+            }
+
             String authString = authType + credential.getSecretKeyId() + ":" +
                 Signer.signToBase64(HttpMethod.POST, post.getURI(), headers,
                     credential.getSecretKey(), SignAlgorithm.HmacSHA1);
