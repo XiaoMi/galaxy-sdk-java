@@ -68,7 +68,7 @@ public class TalosHttpClient extends TTransport {
   private Map<String, String> customHeaders_ = null;
   private final HttpHost host;
   private final HttpClient client;
-  private Credential credential;
+  private final Credential credential;
   private AdjustableClock clock;
   private ThriftProtocol protocol_ = ThriftProtocol.TCOMPACT;
   private String queryString = null;
@@ -400,21 +400,20 @@ public class TalosHttpClient extends TTransport {
 
             // check secretKeyId and set header attached info
             // secretKeyId format: "Service-Admin#SecretKeyId#developerId"
-            if (credential.getSecretKeyId().contains(
-                AuthenticationConstants.HK_SERVICE_ADMIN)) {
-              String[] items = credential.getSecretKeyId().split(
-                  AuthenticationConstants.HK_SERVICE_MARK);
+            String secretKeyId = credential.getSecretKeyId();
+            if (secretKeyId.contains(AuthenticationConstants.HK_SERVICE_ADMIN)) {
+              String[] items = secretKeyId.split(AuthenticationConstants.HK_SERVICE_MARK);
               if (items.length != 3) {
                 throw new RuntimeException("Invalid credential secretKeyId, " +
                     "expected: 3, actual: " + items.length);
               }
 
               // reset secretKeyId and add header attached info
-              credential.setSecretKeyId(items[1]);
+              secretKeyId = items[1];
               post.setHeader(AuthenticationConstants.HK_ATTACHED_INFO, items[2]);
             }
 
-            String authString = authType + credential.getSecretKeyId() + ":" +
+            String authString = authType + secretKeyId + ":" +
                 Signer.signToBase64(HttpMethod.POST, post.getURI(), headers,
                     credential.getSecretKey(), SignAlgorithm.HmacSHA1);
             post.setHeader(AuthenticationConstants.HK_AUTHORIZATION, authString);
