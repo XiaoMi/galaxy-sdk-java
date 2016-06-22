@@ -4,6 +4,11 @@
   ...
 
 
+## 1.1.3
+
+  * D34943/D35154: SDK support SDS Stream Auth
+
+
 ## 1.1.2
 
   * D33949: Add talos-storm plugin

@@ -6,12 +6,12 @@
     <parent>
         <artifactId>galaxy-talos-client</artifactId>
         <groupId>com.xiaomi.infra.galaxy</groupId>
-        <version>1.2-SNAPSHOT</version>
+        <version>1.1.3</version>
     </parent>
 
     <groupId>com.xiaomi.infra.galaxy</groupId>
     <artifactId>galaxy-talos-storm</artifactId>
-    <version>1.2-SNAPSHOT</version>
+    <version>1.1.3</version>
     <properties>
         <maven.compiler.source>1.6</maven.compiler.source>
         <maven.compiler.target>1.6</maven.compiler.target>
