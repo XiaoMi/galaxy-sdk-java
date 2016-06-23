@@ -15,12 +15,13 @@
     <properties>
         <maven.compiler.source>1.6</maven.compiler.source>
         <maven.compiler.target>1.6</maven.compiler.target>
+        <storm.version>0.9.1-incubating</storm.version>
     </properties>
     <dependencies>
         <dependency>
             <groupId>org.apache.storm</groupId>
             <artifactId>storm-core</artifactId>
-            <version>0.9.1-incubating-mdh1.0-SNAPSHOT</version>
+            <version>${storm.version}</version>
             <scope>provided</scope>
             <exclusions>
                 <exclusion>
