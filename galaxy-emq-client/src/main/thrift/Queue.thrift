@@ -326,6 +326,8 @@ struct GetQueueInfoResponse {
 
   10: optional string defaultTagName;
 
+  11: optional list<string> sourceQueues;
+
 }
 
 struct SetQueueRedrivePolicyRequest{
@@ -340,21 +342,6 @@ struct SetQueueRedrivePolicyResponse{
 
 struct RemoveQueueRedrivePolicyRequest{
   1: required string queueName;
-}
-
-struct ListDeadLetterSourceQueuesRequest{
-  1: required string dlqName;
-}
-
-struct ListDeadLetterSourceQueuesResponse{
-  /**
-  * The dead letter queue name;
-  **/
-  1: required string dlqName;
-  /**
-  * The source queues, only a dead letter queue has source queues;
-  **/
-  2: optional list<string> sourceQueues;
 }
 
 struct ListQueueRequest {
@@ -563,11 +550,6 @@ service QueueService extends Common.EMQBaseService {
   * Remove queue redrive policy;
   **/
   void removeQueueRedrivePolicy(1:RemoveQueueRedrivePolicyRequest  request) throws (1: Common.GalaxyEmqServiceException e);
-
-  /**
-  * List all the source queues of a dead letter queue;
-  **/
-  ListDeadLetterSourceQueuesResponse listDeadLetterSourceQueues(1: ListDeadLetterSourceQueuesRequest request) throws (1: Common.GalaxyEmqServiceException e);
 
   /**
   * Set permission for developer

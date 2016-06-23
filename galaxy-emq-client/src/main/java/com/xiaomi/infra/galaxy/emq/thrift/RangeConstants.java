@@ -117,18 +117,18 @@ public class RangeConstants {
   public static final int GALAXY_EMQ_MESSAGE_INVISIBILITY_SECONDS_MAXIMAL = 43200;
 
   /**
-   * queue read qps, default 0 (0 ~ 100000)
+   * queue read qps, default 50 (0 ~ 100000)
    */
-  public static final long GALAXY_EMQ_QUEUE_READ_QPS_DEFAULT = 0L;
+  public static final long GALAXY_EMQ_QUEUE_READ_QPS_DEFAULT = 50L;
 
   public static final long GALAXY_EMQ_QUEUE_READ_QPS_MINIMAL = 0L;
 
   public static final long GALAXY_EMQ_QUEUE_READ_QPS_MAXIMAL = 100000L;
 
   /**
-   * queue write qps, default 0 (0 ~ 100000)
+   * queue write qps, default 50 (0 ~ 100000)
    */
-  public static final long GALAXY_EMQ_QUEUE_WRITE_QPS_DEFAULT = 0L;
+  public static final long GALAXY_EMQ_QUEUE_WRITE_QPS_DEFAULT = 50L;
 
   public static final long GALAXY_EMQ_QUEUE_WRITE_QPS_MINIMAL = 0L;
 
