@@ -84,6 +84,8 @@ public class SimpleProducerTest {
         any(PutMessageRequest.class));
     boolean putSuccess = simpleProducer.putMessage(messageList);
     assertTrue(putSuccess);
+    assertTrue(simpleProducer.putMessage(new ArrayList<Message>()));
+    assertTrue(simpleProducer.putMessage(null));
 
     InOrder inOrder = inOrder(messageClientMock);
     inOrder.verify(messageClientMock, times(1)).putMessage(
