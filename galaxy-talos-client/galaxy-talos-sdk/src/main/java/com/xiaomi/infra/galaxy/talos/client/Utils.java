@@ -8,6 +8,7 @@ package com.xiaomi.infra.galaxy.talos.client;
 
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.regex.Pattern;
 
 import com.google.common.base.Preconditions;
 
@@ -16,6 +17,7 @@ import com.xiaomi.infra.galaxy.talos.thrift.GalaxyTalosException;
 import com.xiaomi.infra.galaxy.talos.thrift.MessageOffset;
 
 import static com.xiaomi.infra.galaxy.talos.client.Constants.TALOS_IDENTIFIER_DELIMITER;
+import static com.xiaomi.infra.galaxy.talos.client.Constants.TALOS_NAME_REGEX;
 
 public class Utils {
   /**
@@ -55,9 +57,11 @@ public class Utils {
   }
 
   public static void checkNameValidity(String str) {
-    if (str.contains(TALOS_IDENTIFIER_DELIMITER)) {
+    if (!Pattern.matches(TALOS_NAME_REGEX, str) || str == null ||
+        str.length() <= 0 || str.length() > 80) {
       throw new IllegalArgumentException("invalid str: " + str +
-          ". please remove the character: " + TALOS_IDENTIFIER_DELIMITER);
+          ". please name the str only with the regex set: [a-zA-Z0-9_]" +
+          ". And the str length must be [1, 80]");
     }
   }
 

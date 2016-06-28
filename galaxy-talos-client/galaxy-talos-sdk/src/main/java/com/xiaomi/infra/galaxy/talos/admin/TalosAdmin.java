@@ -77,6 +77,7 @@ public class TalosAdmin {
   // topicAttribute for partitionNumber required
   public CreateTopicResponse createTopic(CreateTopicRequest request)
       throws GalaxyTalosException, TException {
+    Utils.checkNameValidity(request.getTopicName());
     return topicClient.createTopic(request);
   }
 
