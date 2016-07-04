@@ -358,6 +358,38 @@ struct ListQueueResponse {
   1: required list<string> queueName;
 }
 
+struct QueryPrivilegedQueueRequest {
+  /**
+  * The queue name prefix;
+  **/
+  1: optional string queueNamePrefix = "";
+}
+
+struct QueryPrivilegedQueueResponseEntry {
+  1: required string queueName;
+
+  /**
+  * The approximate message number in this queue;
+  **/
+  2: required i64 approximateMessageNumber;
+
+  /**
+  * The available message number in this queue, this is for message that could
+  * be get using receivedMessage
+  **/
+  3: required i64 approximateAvailableMessageNumber;
+
+  /**
+  * The invisibility message number in this queue, this is for received message
+  * that in invisibilitySeconds and not deleted;
+  **/
+  4: required i64 approximateInvisibilityMessageNumber;
+}
+
+struct QueryPrivilegedQueueResponse {
+  1: required list<QueryPrivilegedQueueResponseEntry> queueList;
+}
+
 enum Permission {
   NONE, /* Don't have any specific permission */
   SEND_MESSAGE, /* send messages */
@@ -505,6 +537,14 @@ struct TimeSeriesData {
   3: optional map<i64, double> data,
 }
 
+
+struct VerifyEMQAdminResponse {
+  /**
+   * Default prefix for admin
+   */
+  1: required string prefix;
+}
+
 service QueueService extends Common.EMQBaseService {
   /**
   * Create queue;
@@ -621,4 +661,14 @@ service QueueService extends Common.EMQBaseService {
   **/
   TimeSeriesData queryMetric(1: QueryMetricRequest request)
       throws(1: Common.GalaxyEmqServiceException e);
+
+  /**
+  * query privileged queues
+  * No permission required
+  **/
+  QueryPrivilegedQueueResponse queryPrivilegedQueue(1: QueryPrivilegedQueueRequest request)
+      throws(1: Common.GalaxyEmqServiceException e);
+
+  VerifyEMQAdminResponse verifyEMQAdmin() 
+      throws (1: Common.GalaxyEmqServiceException e);
 }
