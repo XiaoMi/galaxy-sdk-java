@@ -59,11 +59,16 @@ struct SendMessageRequest {
   **/
   5: optional map<string, MessageAttribute> messageAttributes;
 
-
   /**
   * Topic of this message
   **/
   6: optional string topic;
+
+  /**
+   * The priority of the message, default 8 (1 ~ 16);
+   **/
+  7: optional i32 priority;
+
 }
 
 struct SendMessageResponse {
@@ -119,6 +124,11 @@ struct SendMessageBatchRequestEntry {
   * User-defined attributes attached to message
   **/
   5: optional map<string, MessageAttribute> messageAttributes;
+
+  /**
+   * The priority of the message, default 8 (1 ~ 16);
+   **/
+  6: optional i32 priority;
 }
 
 struct SendMessageBatchRequest {
@@ -244,6 +254,7 @@ struct ReceiveMessageResponse {
   /**
   * Attributes of message, including:
   * - senderId
+  * - priority
   * - messageLength
   * - md5OfBody
   * - sendTimestamp

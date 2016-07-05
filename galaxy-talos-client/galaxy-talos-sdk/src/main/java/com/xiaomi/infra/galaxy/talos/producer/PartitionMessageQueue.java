@@ -13,6 +13,8 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.xiaomi.infra.galaxy.talos.thrift.Message;
+
 public class PartitionMessageQueue {
   private static final Logger LOG = LoggerFactory.getLogger(PartitionMessageQueue.class);
   private LinkedList<UserMessage> userMessageList;
@@ -53,7 +55,7 @@ public class PartitionMessageQueue {
   /**
    * return messageList, if not shouldPut, block in this method
    */
-  public synchronized List<UserMessage> getUserMessageList() {
+  public synchronized List<Message> getMessageList() {
     while (!shouldPut()) {
       try {
         long waitTime = getWaitTime();
@@ -67,13 +69,13 @@ public class PartitionMessageQueue {
       LOG.debug("getUserMessageList wake up for partition: " + partitionId);
     }
 
-    List<UserMessage> returnList = new ArrayList<UserMessage>();
+    List<Message> returnList = new ArrayList<Message>();
     int returnMsgBytes = 0, returnMsgNumber = 0;
 
     while (!userMessageList.isEmpty() &&
         returnMsgNumber < maxPutMsgNumber && returnMsgBytes < maxPutMsgBytes) {
       UserMessage userMessage = userMessageList.pollLast();
-      returnList.add(userMessage);
+      returnList.add(userMessage.getMessage());
       curMessageBytes -= userMessage.getMessageSize();
       returnMsgBytes += userMessage.getMessageSize();
       returnMsgNumber++;
@@ -88,10 +90,24 @@ public class PartitionMessageQueue {
   }
 
   private synchronized boolean shouldPut() {
-    return curMessageBytes >= maxPutMsgBytes ||
-        userMessageList.size() >= maxPutMsgNumber ||
-        (userMessageList.size() > 0 && (System.currentTimeMillis()
-            - userMessageList.peekLast().getTimestamp() >= maxBufferedTime));
+    // when TalosProducer is not active;
+    if (!producer.isActive()) {
+      return true;
+    }
+
+    // when we have enough bytes data or enough number data;
+    if (curMessageBytes >= maxPutMsgBytes ||
+        userMessageList.size() >= maxPutMsgNumber) {
+      return true;
+    }
+
+    // when there have at least one message and it has exist enough long time;
+    if (userMessageList.size() > 0 && (System.currentTimeMillis() -
+        userMessageList.peekLast().getTimestamp() >= maxBufferedTime)) {
+      return true;
+    }
+
+    return false;
   }
 
   /**

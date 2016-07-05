@@ -22,6 +22,7 @@ public enum StateCode implements libthrift091.TEnum {
   C_COMPLETED(7),
   C_TERMINATED(8),
   C_FAILED(9),
+  C_DELETED(10),
   G_INITED(100),
   G_PROCESSING(101),
   G_STARTING(102),
@@ -29,12 +30,14 @@ public enum StateCode implements libthrift091.TEnum {
   G_RESIZING(104),
   G_TERMINATING(105),
   G_TERMINATED(106),
+  G_DELETED(107),
   I_INITED(200),
   I_PROCESSING(201),
   I_STARTING(202),
   I_RUNNING(203),
   I_TERMINATING(204),
   I_TERMINATED(205),
+  I_DELETED(206),
   J_INITED(300),
   J_PROCESSING(301),
   J_SUBMITTED(302),
@@ -82,6 +85,8 @@ public enum StateCode implements libthrift091.TEnum {
         return C_TERMINATED;
       case 9:
         return C_FAILED;
+      case 10:
+        return C_DELETED;
       case 100:
         return G_INITED;
       case 101:
@@ -96,6 +101,8 @@ public enum StateCode implements libthrift091.TEnum {
         return G_TERMINATING;
       case 106:
         return G_TERMINATED;
+      case 107:
+        return G_DELETED;
       case 200:
         return I_INITED;
       case 201:
@@ -108,6 +115,8 @@ public enum StateCode implements libthrift091.TEnum {
         return I_TERMINATING;
       case 205:
         return I_TERMINATED;
+      case 206:
+        return I_DELETED;
       case 300:
         return J_INITED;
       case 301:

@@ -130,6 +130,11 @@ struct CreateQueueRequest {
   4: optional bool deadLetterQueue;
 
   /**
+   * Set the queue using priority of not;
+   **/
+  5: optional bool enablePriority;
+
+  /**
    * Set the queue be a topic queue or not;
    * All messages with the same topic in topic queue will be received one by one
    * Default: false
@@ -147,6 +152,7 @@ struct CreateQueueRequest {
    * You can use "" as default tag name while receiving messages if this field is not set
    **/
   8: optional string defaultTagName;
+
 }
 
 struct CreateQueueResponse {
@@ -171,6 +177,11 @@ struct CreateQueueResponse {
    * The queue is a dead letter queue or not;
    **/
   4: optional bool deadLetterQueue;
+
+  /**
+   * The queue is using priority of not;
+   **/
+  5: optional bool enablePriority;
 
   /**
    * Set the queue be a topic queue or not;
@@ -299,6 +310,11 @@ struct GetQueueInfoResponse {
   6: optional RedrivePolicy redrivePolicy;
 
   /**
+   * The queue using priority of not;
+   **/
+  7: optional bool enablePriority;
+
+  /**
    * Set the queue be a topic queue or not;
    **/
   8: optional bool topicQueue;
@@ -309,6 +325,9 @@ struct GetQueueInfoResponse {
   9: optional bool deleteMessageForce;
 
   10: optional string defaultTagName;
+
+  11: optional list<string> sourceQueues;
+
 }
 
 struct SetQueueRedrivePolicyRequest{
@@ -325,21 +344,6 @@ struct RemoveQueueRedrivePolicyRequest{
   1: required string queueName;
 }
 
-struct ListDeadLetterSourceQueuesRequest{
-  1: required string dlqName;
-}
-
-struct ListDeadLetterSourceQueuesResponse{
-  /**
-  * The dead letter queue name;
-  **/
-  1: required string dlqName;
-  /**
-  * The source queues, only a dead letter queue has source queues;
-  **/
-  2: optional list<string> sourceQueues;
-}
-
 struct ListQueueRequest {
   /**
   * The queue name prefix;
@@ -352,6 +356,38 @@ struct ListQueueResponse {
   * The queueName list with queueNamePrefix;
   **/
   1: required list<string> queueName;
+}
+
+struct QueryPrivilegedQueueRequest {
+  /**
+  * The queue name prefix;
+  **/
+  1: optional string queueNamePrefix = "";
+}
+
+struct QueryPrivilegedQueueResponseEntry {
+  1: required string queueName;
+
+  /**
+  * The approximate message number in this queue;
+  **/
+  2: required i64 approximateMessageNumber;
+
+  /**
+  * The available message number in this queue, this is for message that could
+  * be get using receivedMessage
+  **/
+  3: required i64 approximateAvailableMessageNumber;
+
+  /**
+  * The invisibility message number in this queue, this is for received message
+  * that in invisibilitySeconds and not deleted;
+  **/
+  4: required i64 approximateInvisibilityMessageNumber;
+}
+
+struct QueryPrivilegedQueueResponse {
+  1: required list<QueryPrivilegedQueueResponseEntry> queueList;
 }
 
 enum Permission {
@@ -501,6 +537,14 @@ struct TimeSeriesData {
   3: optional map<i64, double> data,
 }
 
+
+struct VerifyEMQAdminResponse {
+  /**
+   * Default prefix for admin
+   */
+  1: required string prefix;
+}
+
 service QueueService extends Common.EMQBaseService {
   /**
   * Create queue;
@@ -546,11 +590,6 @@ service QueueService extends Common.EMQBaseService {
   * Remove queue redrive policy;
   **/
   void removeQueueRedrivePolicy(1:RemoveQueueRedrivePolicyRequest  request) throws (1: Common.GalaxyEmqServiceException e);
-
-  /**
-  * List all the source queues of a dead letter queue;
-  **/
-  ListDeadLetterSourceQueuesResponse listDeadLetterSourceQueues(1: ListDeadLetterSourceQueuesRequest request) throws (1: Common.GalaxyEmqServiceException e);
 
   /**
   * Set permission for developer
@@ -622,4 +661,14 @@ service QueueService extends Common.EMQBaseService {
   **/
   TimeSeriesData queryMetric(1: QueryMetricRequest request)
       throws(1: Common.GalaxyEmqServiceException e);
+
+  /**
+  * query privileged queues
+  * No permission required
+  **/
+  QueryPrivilegedQueueResponse queryPrivilegedQueue(1: QueryPrivilegedQueueRequest request)
+      throws(1: Common.GalaxyEmqServiceException e);
+
+  VerifyEMQAdminResponse verifyEMQAdmin() 
+      throws (1: Common.GalaxyEmqServiceException e);
 }

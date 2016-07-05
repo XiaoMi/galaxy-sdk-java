@@ -5,13 +5,14 @@ import com.xiaomi.infra.galaxy.talos.admin.TalosAdmin
 import com.xiaomi.infra.galaxy.talos.client.TalosClientConfig
 import com.xiaomi.infra.galaxy.talos.consumer.{SimpleConsumer, TalosConsumerConfig}
 import com.xiaomi.infra.galaxy.talos.thrift.{DescribeTopicRequest, GetTopicOffsetRequest, TopicAndPartition, TopicTalosResourceName}
-import org.apache.hadoop.conf.Configuration
 import org.apache.spark.SparkException
 import org.apache.spark.streaming.talos.TalosCluster.Offset.Offset
 import org.apache.spark.streaming.talos.TalosCluster.{Err, Offset}
 
 import scala.collection.mutable.ArrayBuffer
 import scala.collection.mutable
+
+import java.util.Properties;
 
 /**
   * Created by jiasheng on 16-3-15.
@@ -22,7 +23,7 @@ class TalosCluster(
   val credential: Credential
 ) extends Serializable {
   @transient
-  private var _config: Configuration = null
+  private var _config: Properties = null
   @transient
   private var _talosAdmin: TalosAdmin = null
   @transient
@@ -30,11 +31,11 @@ class TalosCluster(
   @transient
   private var _topicResourceNames: mutable.Map[String, TopicTalosResourceName] = null
 
-  def config: Configuration = this.synchronized {
+  def config: Properties = this.synchronized {
     if (_config == null) {
-      _config = new Configuration()
+      _config = new Properties()
       talosParams.foreach { case (k, v) =>
-        _config.set(k, v)
+        _config.setProperty(k, v)
       }
     }
     _config

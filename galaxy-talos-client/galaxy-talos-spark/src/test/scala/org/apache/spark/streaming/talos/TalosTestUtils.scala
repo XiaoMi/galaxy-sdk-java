@@ -35,7 +35,7 @@ class TalosTestUtils(params: immutable.Map[String, String])
   // credential secret
   private val secret = ""
   val talosParams = immutable.Map[String, String](
-    TalosClientConfigKeys.GALAXY_TALOS_SECURE_SERVICE_ENDPOINT -> uri
+    TalosClientConfigKeys.GALAXY_TALOS_SERVICE_ENDPOINT -> uri
   ) ++ params
   val javaTalosParams = new util.HashMap[String, String]()
   talosParams.foreach { case (k, v) => javaTalosParams.put(k, v) }

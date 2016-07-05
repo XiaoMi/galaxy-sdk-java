@@ -6,11 +6,13 @@
 
 package com.xiaomi.infra.galaxy.talos.consumer;
 
+import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Properties;
 
-import org.apache.hadoop.conf.Configuration;
+import libthrift091.TException;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -24,6 +26,7 @@ import com.xiaomi.infra.galaxy.talos.thrift.GetMessageResponse;
 import com.xiaomi.infra.galaxy.talos.thrift.Message;
 import com.xiaomi.infra.galaxy.talos.thrift.MessageAndOffset;
 import com.xiaomi.infra.galaxy.talos.thrift.MessageBlock;
+import com.xiaomi.infra.galaxy.talos.thrift.MessageOffset;
 import com.xiaomi.infra.galaxy.talos.thrift.MessageService;
 import com.xiaomi.infra.galaxy.talos.thrift.TopicAndPartition;
 import com.xiaomi.infra.galaxy.talos.thrift.TopicTalosResourceName;
@@ -51,9 +54,10 @@ public class SimpleConsumerTest {
 
   @Before
   public void setUp() {
-    Configuration configuration = new Configuration();
-    producerConfig = new TalosProducerConfig(configuration);
-    consumerConfig = new TalosConsumerConfig(configuration, false);
+    Properties properties = new Properties();
+    properties.setProperty("galaxy.talos.service.endpoint", "testUrl");
+    producerConfig = new TalosProducerConfig(properties);
+    consumerConfig = new TalosConsumerConfig(properties);
     topicAndPartition = new TopicAndPartition(topicName,
         new TopicTalosResourceName(resourceName), partitionId);
     messageClientMock = Mockito.mock(MessageService.Iface.class);
@@ -91,7 +95,7 @@ public class SimpleConsumerTest {
   }
 
   @Test
-  public void testFetchMessage() throws Exception {
+  public void testCheckStartOffset() throws TException, IOException {
     Message message1 = new Message(ByteBuffer.wrap("message1".getBytes()));
     Message message2 = new Message(ByteBuffer.wrap("message2".getBytes()));
     Message message3 = new Message(ByteBuffer.wrap("message3".getBytes()));
@@ -111,12 +115,55 @@ public class SimpleConsumerTest {
     messageAndOffsetList.add(messageAndOffset3);
 
     GetMessageResponse response = new GetMessageResponse(messageBlockList, 3,
-        "testFetchMessageSequenceId");
+        "testCheckStartOffset");
+    when(messageClientMock.getMessage(any(GetMessageRequest.class)))
+        .thenReturn(response);
+    simpleConsumer.fetchMessage(MessageOffset.START_OFFSET.getValue(), 100);
+    simpleConsumer.fetchMessage(MessageOffset.LATEST_OFFSET.getValue(), 100);
+    simpleConsumer.fetchMessage(0, 100);
+    simpleConsumer.fetchMessage(2, 100);
+    simpleConsumer.fetchMessage(-1, 100);
+    simpleConsumer.fetchMessage(-2, 100);
+    try {
+      simpleConsumer.fetchMessage(-3, 100);
+      assertTrue("test check startOffset validity error", false);
+    } catch (Exception e) {
+      assertTrue(e instanceof IllegalArgumentException);
+    }
+  }
+
+  @Test
+  public void testFetchMessage() throws Exception {
+    Message message1 = new Message(ByteBuffer.wrap("message1".getBytes()));
+    Message message2 = new Message(ByteBuffer.wrap("message2".getBytes()));
+    Message message3 = new Message(ByteBuffer.wrap("message3".getBytes()));
+    messageList.add(message1);
+    messageList.add(message2);
+    messageList.add(message3);
+    MessageBlock messageBlock = Compression.compress(messageList, producerConfig.getCompressionType());
+    messageBlock.setStartMessageOffset(startOffset);
+    List<MessageBlock> messageBlockList = new ArrayList<MessageBlock>(1);
+    messageBlockList.add(messageBlock);
+
+    MessageAndOffset messageAndOffset1 = new MessageAndOffset(message1, startOffset);
+    MessageAndOffset messageAndOffset2 = new MessageAndOffset(message2, startOffset + 1);
+    MessageAndOffset messageAndOffset3 = new MessageAndOffset(message3, startOffset + 2);
+    messageAndOffsetList.add(messageAndOffset1);
+    messageAndOffsetList.add(messageAndOffset2);
+    messageAndOffsetList.add(messageAndOffset3);
+
+    long unHandledNumber = 117;
+    GetMessageResponse response = new GetMessageResponse(messageBlockList, 3,
+        "testFetchMessageSequenceId").setUnHandledMessageNumber(unHandledNumber);
     when(messageClientMock.getMessage(any(GetMessageRequest.class)))
         .thenReturn(response);
 
     List<MessageAndOffset> msgList = simpleConsumer.fetchMessage(startOffset);
-    assertEquals(messageAndOffsetList, msgList);
+    for (int i = 0; i < msgList.size(); ++i) {
+      assertEquals(messageAndOffsetList.get(i).getMessage(), msgList.get(i).getMessage());
+      assertEquals(messageAndOffsetList.get(i).getMessageOffset(), msgList.get(i).getMessageOffset());
+      assertEquals(msgList.get(i).getUnHandledMessageNumber(), unHandledNumber + msgList.size() - 1 - i);
+    }
 
     try {
       simpleConsumer.fetchMessage(startOffset, 3000);
@@ -147,13 +194,19 @@ public class SimpleConsumerTest {
     messageAndOffsetList.add(messageAndOffset2);
     messageAndOffsetList.add(messageAndOffset3);
 
+    long unHandledNumber = 117;
     GetMessageResponse response = new GetMessageResponse(messageBlockList, 3,
-        "testFetchMessageSequenceId");
+        "testFetchMessageSequenceId").setUnHandledMessageNumber(unHandledNumber);
     when(messageClientMock.getMessage(any(GetMessageRequest.class)))
         .thenReturn(response);
 
     List<MessageAndOffset> msgList = simpleConsumer.fetchMessage(startOffset + 1);
-    assertEquals(messageAndOffsetList, msgList);
+
+    for (int i = 0; i < msgList.size(); ++i) {
+      assertEquals(messageAndOffsetList.get(i).getMessage(), msgList.get(i).getMessage());
+      assertEquals(messageAndOffsetList.get(i).getMessageOffset(), msgList.get(i).getMessageOffset());
+      assertEquals(msgList.get(i).getUnHandledMessageNumber(), unHandledNumber + msgList.size() - 1 - i);
+    }
 
     try {
       simpleConsumer.fetchMessage(startOffset, 3000);

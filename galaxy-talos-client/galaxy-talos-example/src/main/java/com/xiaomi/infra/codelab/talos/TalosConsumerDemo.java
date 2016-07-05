@@ -10,7 +10,6 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
 
 import libthrift091.TException;
-import org.apache.hadoop.conf.Configuration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -19,7 +18,7 @@ import com.xiaomi.infra.galaxy.rpc.thrift.UserType;
 import com.xiaomi.infra.galaxy.talos.admin.TalosAdmin;
 import com.xiaomi.infra.galaxy.talos.client.SimpleTopicAbnormalCallback;
 import com.xiaomi.infra.galaxy.talos.client.TalosClientConfig;
-import com.xiaomi.infra.galaxy.talos.client.TalosClientConfigKeys;
+import com.xiaomi.infra.galaxy.talos.consumer.MessageCheckpointer;
 import com.xiaomi.infra.galaxy.talos.consumer.MessageProcessor;
 import com.xiaomi.infra.galaxy.talos.consumer.MessageProcessorFactory;
 import com.xiaomi.infra.galaxy.talos.consumer.TalosConsumer;
@@ -27,6 +26,7 @@ import com.xiaomi.infra.galaxy.talos.consumer.TalosConsumerConfig;
 import com.xiaomi.infra.galaxy.talos.thrift.DescribeTopicRequest;
 import com.xiaomi.infra.galaxy.talos.thrift.MessageAndOffset;
 import com.xiaomi.infra.galaxy.talos.thrift.Topic;
+import com.xiaomi.infra.galaxy.talos.thrift.TopicAndPartition;
 import com.xiaomi.infra.galaxy.talos.thrift.TopicTalosResourceName;
 
 public class TalosConsumerDemo {
@@ -35,13 +35,23 @@ public class TalosConsumerDemo {
   // callback for consumer to process messages, that is, consuming logic
   private static class MyMessageProcessor implements MessageProcessor {
     @Override
-    public void process(List<MessageAndOffset> messages) {
+    public void init(TopicAndPartition topicAndPartition, long messageOffset) {
+
+    }
+
+    @Override
+    public void process(List<MessageAndOffset> messages, MessageCheckpointer messageCheckpointer) {
       long count = successGetNumber.addAndGet(messages.size());
       if (messages.size() > 0) {
         LOG.info("Consuming total data so far: " + count +
             " and one message content: " +
             new String(messages.get(0).getMessage().getMessage()));
       }
+    }
+
+    @Override
+    public void shutdown(MessageCheckpointer messageCheckpointer) {
+
     }
   }
 
@@ -53,7 +63,7 @@ public class TalosConsumerDemo {
     }
   }
 
-  private static final String talosServiceURI = "$talosServiceURI";
+  private static final String propertyFileName = "$your_propertyFile";
   private static final String appKeyId = "$your_appKey";
   private static final String appKeySecret = "$your_appSecret";
   private static final String topicName = "testTopic";
@@ -69,12 +79,13 @@ public class TalosConsumerDemo {
   private TopicTalosResourceName topicTalosResourceName;
 
   public TalosConsumerDemo() throws TException {
-    // init client config
-    Configuration configuration = new Configuration();
-    configuration.set(TalosClientConfigKeys.GALAXY_TALOS_SECURE_SERVICE_ENDPOINT,
-        talosServiceURI);
-    TalosClientConfig clientConfig = new TalosClientConfig(configuration);
-    consumerConfig = new TalosConsumerConfig(configuration);
+    // init client config by put $your_propertyFile in your classpath
+    // with the content of:
+    /*
+      galaxy.talos.service.endpoint=$talosServiceURI
+    */
+    TalosClientConfig clientConfig = new TalosClientConfig(propertyFileName);
+    consumerConfig = new TalosConsumerConfig(propertyFileName);
 
     // credential
     credential = new Credential();

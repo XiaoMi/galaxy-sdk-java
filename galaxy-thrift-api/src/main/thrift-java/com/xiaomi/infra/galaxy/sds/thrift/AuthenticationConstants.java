@@ -68,6 +68,10 @@ public class AuthenticationConstants {
 
   public static final String HK_CONTENT_MD5 = "X-Xiaomi-Content-MD5";
 
+  public static final String MI_DATE = "x-xiaomi-date";
+
+  public static final String XIAOMI_HEADER_PREFIX = "x-xiaomi-";
+
   /**
    * 认证相关的HTTP头
    */

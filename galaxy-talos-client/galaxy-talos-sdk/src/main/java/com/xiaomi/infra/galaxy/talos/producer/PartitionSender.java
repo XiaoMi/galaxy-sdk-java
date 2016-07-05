@@ -12,6 +12,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
 import org.slf4j.Logger;
@@ -54,32 +55,49 @@ public class PartitionSender {
     public void run() {
       while (true) {
         try {
-          // getUserMessageList will block unless return value not null
-          List<UserMessage> userMessageList =
-              partitionMessageQueue.getUserMessageList();
-          putMessage(userMessageList);
+          List<Message> messageList =
+              partitionMessageQueue.getMessageList();
 
+          // when messageList return no message, this means TalosProducer not
+          // alive and there is no more message to send , then we should exit
+          // write message right now;
+          if (messageList.isEmpty()) {
+            // notify to wake up producer's global lock
+            synchronized (globalLock) {
+              globalLock.notifyAll();
+            }
+            break;
+          }
+
+          putMessage(messageList);
+
+
+        } catch (Throwable throwable) {
+          LOG.error("PutMessageTask for topicAndPartition: " +
+              topicAndPartition + " failed", throwable);
+        } finally {
           // notify to wake up producer's global lock
           synchronized (globalLock) {
             globalLock.notifyAll();
           }
-        } catch (Throwable throwable) {
-          LOG.error("PutMessageTask for topicAndPartition: " +
-              topicAndPartition + " error: " + throwable.toString());
         }
       } // while
     } // run
 
-    private void putMessage(List<UserMessage> userMessageList) {
-      List<Message> messageList = new ArrayList<Message>(userMessageList.size());
-      for (UserMessage userMessage : userMessageList) {
-        messageList.add(userMessage.getMessage());
-      }
-
+    private void putMessage(List<Message> messageList) {
       UserMessageResult userMessageResult = new UserMessageResult(
           messageList, partitionId);
 
       try {
+        // when TalosProducer is disabled, we just fail the message and inform user;
+        // but when TalosProducer is shutdown, we will send the left message.
+        if (producer.isDisabled()) {
+          throw new Throwable("The Topic: " + topicAndPartition.getTopicName() +
+              " with resourceName: " + topicAndPartition.getTopicTalosResourceName() +
+              " no longer exist. Please check the topic and reconstruct the" +
+              " TalosProducer again");
+        }
+
         simpleProducer.doPut(messageList);
         // putMessage success callback
         userMessageResult.setSuccessful(true);
@@ -91,7 +109,7 @@ public class PartitionSender {
         }
       } catch (Throwable e) {
         LOG.error("Failed to put " + messageList.size() +
-            " messages for partition: " + partitionId + " by: " + e.toString());
+            " messages for partition: " + partitionId, e);
         if (LOG.isDebugEnabled()) {
           for (Message message : messageList) {
             LOG.error(message.getSequenceNumber() + ": " +
@@ -135,6 +153,7 @@ public class PartitionSender {
   private ExecutorService messageCallbackExecutors;
 
   private final Object globalLock;
+  private TalosProducer producer;
 
   public PartitionSender(int partitionId, String topicName,
       TopicTalosResourceName topicTalosResourceName, AtomicLong requestId,
@@ -150,6 +169,8 @@ public class PartitionSender {
     this.userMessageCallback = userMessageCallback;
     this.messageCallbackExecutors = messageCallbackExecutors;
     this.globalLock = globalLock;
+    this.producer = producer;
+
     topicAndPartition = new TopicAndPartition(topicName,
         topicTalosResourceName, partitionId);
     partitionMessageQueue = new PartitionMessageQueue(talosProducerConfig,
@@ -158,9 +179,21 @@ public class PartitionSender {
     messageWriterFuture = singleExecutor.submit(new MessageWriter());
   }
 
-  public void cancel(boolean interrupt) {
-    messageWriterFuture.cancel(interrupt);
-    singleExecutor.shutdownNow();
+  public void shutdown() {
+    // notify PartitionMessageQueue::getMessageList return;
+    addMessage(new ArrayList<UserMessage>());
+
+    singleExecutor.shutdown();
+    while (true) {
+      try {
+        if (singleExecutor.awaitTermination(100, TimeUnit.MILLISECONDS)) {
+          break;
+        }
+      } catch (InterruptedException e) {
+
+      }
+    }
+    LOG.info("PartitionSender for partition: " + partitionId + " finish stop");
   }
 
   public void addMessage(List<UserMessage> userMessageList) {

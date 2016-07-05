@@ -18,6 +18,7 @@ public class Constants {
   public static final String TALOS_CONSUMER_SERVICE_PATH = TALOS_API_ROOT_PATH + "/consumer";
 
   public static final String TALOS_IDENTIFIER_DELIMITER = "#";
+  public static final String TALOS_NAME_REGEX = "^(?!_)(?!.*?_$)[a-zA-Z0-9_-]+$";
 
   /**
    * Constants for producer

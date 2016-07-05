@@ -1,5 +1,6 @@
 package com.xiaomi.infra.galaxy.sds.thrift;
 
+import libthrift091.TBase;
 import libthrift091.TDeserializer;
 import libthrift091.TException;
 import libthrift091.TSerializer;
@@ -368,6 +369,27 @@ public class DatumUtil {
       DatumMap datumMap = new DatumMap();
       deserializer.deserialize(datumMap, bytes);
       return datumMap.getData();
+    } catch (TException te) {
+      throw new RuntimeException("Failed to deserialize thrift object", te);
+    }
+  }
+
+  public static <T extends TBase> byte[] serialize(T t) {
+    try {
+      TSerializer serializer = new TSerializer(new TCompactProtocol.Factory());
+      return serializer.serialize(t);
+    } catch (TException te) {
+      throw new RuntimeException("Failed to serialize thrift object: " + t, te);
+    }
+  }
+
+  public static <T extends TBase> T deserialize(byte[] bytes, Class<T> clazz)
+      throws InstantiationException, IllegalAccessException {
+    try {
+      TDeserializer deserializer = new TDeserializer(new TCompactProtocol.Factory());
+      T instance = clazz.newInstance();
+      deserializer.deserialize(instance, bytes);
+      return instance;
     } catch (TException te) {
       throw new RuntimeException("Failed to deserialize thrift object", te);
     }

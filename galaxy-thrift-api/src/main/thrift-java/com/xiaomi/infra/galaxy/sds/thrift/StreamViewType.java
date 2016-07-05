@@ -15,9 +15,8 @@ import libthrift091.TEnum;
  * stream view type
  */
 public enum StreamViewType implements libthrift091.TEnum {
-  KEYS_ONLY(1),
-  EDITS(2),
-  NEW_IMAGE(3);
+  RECORD_IMAGE(1),
+  MUTATE_LOG(2);
 
   private final int value;
 
@@ -39,11 +38,9 @@ public enum StreamViewType implements libthrift091.TEnum {
   public static StreamViewType findByValue(int value) { 
     switch (value) {
       case 1:
-        return KEYS_ONLY;
+        return RECORD_IMAGE;
       case 2:
-        return EDITS;
-      case 3:
-        return NEW_IMAGE;
+        return MUTATE_LOG;
       default:
         return null;
     }

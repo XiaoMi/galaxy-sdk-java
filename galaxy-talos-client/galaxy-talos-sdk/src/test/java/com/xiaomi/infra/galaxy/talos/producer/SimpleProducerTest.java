@@ -10,10 +10,10 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Properties;
 import java.util.concurrent.atomic.AtomicLong;
 
 import libthrift091.TException;
-import org.apache.hadoop.conf.Configuration;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -49,15 +49,15 @@ public class SimpleProducerTest {
 
   @Before
   public void setUp() throws IOException {
-    Configuration configuration = new Configuration();
-    producerConfig = new TalosProducerConfig(configuration);
+    Properties properties = new Properties();
+    properties.setProperty("galaxy.talos.service.endpoint", "testUrl");
+    producerConfig = new TalosProducerConfig(properties);
     messageClientMock = Mockito.mock(MessageService.Iface.class);
     topicAndPartition = new TopicAndPartition(topicName,
         new TopicTalosResourceName(resourceName), partitionId);
     Message message = new Message(ByteBuffer.wrap("hello world".getBytes()));
     messageList = new ArrayList<Message>();
     messageList.add(message);
-
     simpleProducer = new SimpleProducer(producerConfig,
         topicAndPartition, messageClientMock, new AtomicLong(1));
   }
@@ -67,12 +67,25 @@ public class SimpleProducerTest {
 
   }
 
+  @Test (expected = RuntimeException.class)
+  public void testConfigWithoutServiceURI() throws Exception {
+    Properties properties = new Properties();
+    TalosProducerConfig producerConfig = new TalosProducerConfig(properties);
+  }
+
+  @Test (expected = RuntimeException.class)
+  public void testConfigWithFileNotFound() throws Exception {
+    TalosProducerConfig producerConfig = new TalosProducerConfig("test.file");
+  }
+
   @Test
   public void testPutMessage() throws TException {
     doReturn(new PutMessageResponse()).when(messageClientMock).putMessage(
         any(PutMessageRequest.class));
     boolean putSuccess = simpleProducer.putMessage(messageList);
     assertTrue(putSuccess);
+    assertTrue(simpleProducer.putMessage(new ArrayList<Message>()));
+    assertTrue(simpleProducer.putMessage(null));
 
     InOrder inOrder = inOrder(messageClientMock);
     inOrder.verify(messageClientMock, times(1)).putMessage(

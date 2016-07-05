@@ -14,13 +14,6 @@ public class TalosClientConfigKeys {
    */
   public static final String GALAXY_TALOS_SERVICE_ENDPOINT =
       "galaxy.talos.service.endpoint";
-  public static final String GALAXY_TALOS_SERVICE_ENDPOINT_DEFAULT =
-      "http://talos.api.xiaomi.com";
-
-  public static final String GALAXY_TALOS_SECURE_SERVICE_ENDPOINT =
-      "galaxy.talos.secure.service.endpoint";
-  public static final String GALAXY_TALOS_SECURE_SERVICE_ENDPOINT_DEFAULT =
-      "https://talos.api.xiaomi.com";
 
   /**
    * The http client connection params
@@ -303,5 +296,13 @@ public class TalosClientConfigKeys {
       "galaxy.talos.consumer.reset.latest.offset";
   public static final boolean GALAXY_TALOS_CONSUMER_RESET_LATEST_OFFSET_DEFAULT =
       true;
+
+  /**
+   * The consumer checkpoint auto commit;
+   */
+  public static final String GALAXY_TALOS_CONSUMER_CHECKPOINT_AUTO_COMMIT =
+      "galaxy.talos.consumer.checkpoint.auto.commit";
+  public static final boolean GALAXY_TALOS_CONSUMER_CHECKPOINT_AUTO_COMMIT_DEFAULT = true;
+
 
 }

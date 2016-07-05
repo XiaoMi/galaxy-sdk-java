@@ -270,7 +270,7 @@ public class TalosConsumer {
   private TopicTalosResourceName topicTalosResourceName;
   private Map<String, List<Integer>> workerInfoMap;
 
-  public TalosConsumer(String consumerGroupName, TalosConsumerConfig consumerConfig,
+  private TalosConsumer(String consumerGroupName, TalosConsumerConfig consumerConfig,
       Credential credential, TopicTalosResourceName topicTalosResourceName,
       MessageReaderFactory messageReaderFactory,
       MessageProcessorFactory messageProcessorFactory, String clientIdPrefix,

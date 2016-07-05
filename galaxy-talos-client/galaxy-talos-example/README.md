@@ -10,7 +10,7 @@
       <dependency>
         <groupId>com.xiaomi.infra.galaxy</groupId>
         <artifactId>galaxy-talos-sdk</artifactId>
-        <version>1.0.0</version>
+        <version>1.1.1</version>
       </dependency>
       ```
 
@@ -26,4 +26,4 @@
 
 ## Talos Book
 
-  [Talos Wiki](http://awsbj0.talos.api.xiaomi.com)
+  [Talos Wiki](http://docs.api.xiaomi.com/talos/index.html)

@@ -58,6 +58,10 @@ public class SimpleProducer {
   }
 
   public boolean putMessage(List<Message> msgList) {
+    if (msgList == null || msgList.size() == 0) {
+      return true;
+    }
+
     // check data validity
     for (Message message : msgList) {
       Utils.checkMessageLenValidity(message.getMessage());

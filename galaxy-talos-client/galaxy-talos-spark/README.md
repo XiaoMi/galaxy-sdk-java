@@ -46,7 +46,7 @@ JavaPairInputDStream<String, String> directTalosStream = TalosUtils.createDirect
 - Java: JavaPairInputDStream<String, String>
 
 参数(String, String)分别对应Talos消费数据中的(Key, Message)。
-对于[map of Talos parameters]，必须通过TalosClientConfigKeys.GALAXY_TALOS_SECURE_SERVICE_ENDPOINT指定Talos集群地址。
+对于[map of Talos parameters]，必须通过TalosClientConfigKeys.GALAXY_TALOS_SERVICE_ENDPOINT指定Talos集群地址。
 默认情况下，directTalosStream会从每个Talos topic partition的最新（largest）offset开始消费。如果想要从最旧（smallest）offset开始消费，需要在[map of Talos parameters]中设置auto.offset.reset为smallest。
 
 **Example**
@@ -74,7 +74,7 @@ object TalosTest extends App{
 
   val talosStream = TalosUtils.createDirectStream(
     ssc,
-    Map(TalosClientConfigKeys.GALAXY_TALOS_SECURE_SERVICE_ENDPOINT -> uri,
+    Map(TalosClientConfigKeys.GALAXY_TALOS_SERVICE_ENDPOINT -> uri,
      "auto.offset.reset" -> "smallest"), 
     credential,
     Set(topic)

@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 
 import com.google.common.base.Preconditions;
 import org.slf4j.Logger;
@@ -56,6 +57,7 @@ public class PartitionFetcher {
     LOCKED,
     UNLOCKING,
     UNLOCKED,
+    SHUTDOWNED,
   }
 
   private class FetcherStateMachine implements Runnable {
@@ -203,15 +205,28 @@ public class PartitionFetcher {
   }
 
   public void shutDown() {
+    // set UNLOCKING to stop read and wait fetcher gracefully quit
+    updateState(TASK_STATE.UNLOCKING);
+
     if (fetcherFuture != null) {
       LOG.info("worker: " + workerId + " try to shutdown partition: " +
           partitionId);
-      // set UNLOCKING to stop read and wait fetcher gracefully quit
-      updateState(TASK_STATE.UNLOCKING);
-      // 'false' means wait task done
+      // 'false' means not stop the running task;
       fetcherFuture.cancel(false);
     }
-    singleExecutor.shutdownNow();
+
+    singleExecutor.shutdown();
+    while (true) {
+      try {
+        if (singleExecutor.awaitTermination(100, TimeUnit.MILLISECONDS)) {
+          break;
+        }
+      } catch (InterruptedException e) {
+
+      }
+    }
+
+    updateState(TASK_STATE.SHUTDOWNED);
   }
 
   private synchronized TASK_STATE getCurState() {
@@ -219,6 +234,8 @@ public class PartitionFetcher {
   }
 
   private synchronized boolean updateState(TASK_STATE targetState) {
+    LOG.info("PartitionFetcher for Partition: " + partitionId + " update " +
+        "status from: " + curState + " to: " + targetState);
     switch (targetState) {
       case INIT:
         LOG.error("targetState can never be INIT, " +
@@ -248,6 +265,8 @@ public class PartitionFetcher {
         LOG.error("targetState is UNLOCKED, but curState is: " + curState +
             " for partition: " + partitionId);
         break;
+      case SHUTDOWNED:
+        curState = TASK_STATE.SHUTDOWNED;
       default:
     }
     return false;

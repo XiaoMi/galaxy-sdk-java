@@ -9,11 +9,11 @@ package com.xiaomi.infra.galaxy.talos.producer;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Properties;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicLong;
 
-import org.apache.hadoop.conf.Configuration;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -26,10 +26,14 @@ import com.xiaomi.infra.galaxy.talos.thrift.GalaxyTalosException;
 import com.xiaomi.infra.galaxy.talos.thrift.Message;
 import com.xiaomi.infra.galaxy.talos.thrift.MessageService;
 import com.xiaomi.infra.galaxy.talos.thrift.PutMessageRequest;
+import com.xiaomi.infra.galaxy.talos.thrift.PutMessageResponse;
 import com.xiaomi.infra.galaxy.talos.thrift.TopicTalosResourceName;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.when;
 
 public class PartitionSenderTest {
@@ -79,20 +83,22 @@ public class PartitionSenderTest {
 
   @Before
   public void setUp() {
-    Configuration configuration = new Configuration();
-    configuration.setInt(
+    Properties properties = new Properties();
+    properties.setProperty(
         TalosClientConfigKeys.GALAXY_TALOS_PRODUCER_MAX_BUFFERED_MILLI_SECS,
-        producerMaxBufferedMillSecs);
-    configuration.setInt(
+        String.valueOf(producerMaxBufferedMillSecs));
+    properties.setProperty(
         TalosClientConfigKeys.GALAXY_TALOS_PRODUCER_MAX_PUT_MESSAGE_NUMBER,
-        producerMaxPutMsgNumber);
-    configuration.setInt(
+        String.valueOf(producerMaxPutMsgNumber));
+    properties.setProperty(
         TalosClientConfigKeys.GALAXY_TALOS_PRODUCER_MAX_PUT_MESSAGE_BYTES,
-        producerMaxPutMsgBytes);
-    configuration.setInt(
+        String.valueOf(producerMaxPutMsgBytes));
+    properties.setProperty(
         TalosClientConfigKeys.GALAXY_TALOS_PRODUCER_MAX_BUFFERED_MESSAGE_NUMBER,
-        producerMaxBufferedMsgNum);
-    talosProducerConfig = new TalosProducerConfig(configuration);
+        String.valueOf(producerMaxBufferedMsgNum));
+    properties.setProperty(
+        TalosClientConfigKeys.GALAXY_TALOS_SERVICE_ENDPOINT, "testURI");
+    talosProducerConfig = new TalosProducerConfig(properties, false);
 
     talosResourceName = new TopicTalosResourceName(resourceName);
     messageCallback = new MessageCallback();
@@ -100,10 +106,7 @@ public class PartitionSenderTest {
         talosProducerConfig.getThreadPoolsize());
     messageClientMock = Mockito.mock(MessageService.Iface.class);
     producerMock = Mockito.mock(TalosProducer.class);
-    partitionSender = new PartitionSender(partitionId, topicName,
-        talosResourceName, requestId, Utils.generateClientId(),
-        talosProducerConfig, messageClientMock, messageCallback,
-        messageCallbackExecutors, globalLock, producerMock);
+
 
     userMessageList = new ArrayList<UserMessage>();
     userMessage1 = new UserMessage(
@@ -126,14 +129,19 @@ public class PartitionSenderTest {
     userMessageList.add(userMessage3);
     userMessageList.add(userMessage4);
 
-    when(messageClientMock.putMessage(any(PutMessageRequest.class)))
-        .thenReturn(null);
+    doReturn(new PutMessageResponse()).when(messageClientMock).putMessage(any(PutMessageRequest.class));
+    doReturn(true).doReturn(false).when(producerMock).isActive();
+
+    partitionSender = new PartitionSender(partitionId, topicName,
+        talosResourceName, requestId, Utils.generateClientId(),
+        talosProducerConfig, messageClientMock, messageCallback,
+        messageCallbackExecutors, globalLock, producerMock);
     int addCount = 50;
     while (addCount-- > 0) {
       partitionSender.addMessage(userMessageList);
     }
 
-    Thread.sleep(100);
+    partitionSender.shutdown();
     assertEquals(200, msgPutSuccessCount);
     clearCounter();
   }
@@ -147,9 +155,16 @@ public class PartitionSenderTest {
 
     when(messageClientMock.putMessage(any(PutMessageRequest.class)))
         .thenThrow(new GalaxyTalosException().setErrMsg("put failed"));
+    doReturn(true).doReturn(false).when(producerMock).isActive();
+
+    partitionSender = new PartitionSender(partitionId, topicName,
+        talosResourceName, requestId, Utils.generateClientId(),
+        talosProducerConfig, messageClientMock, messageCallback,
+        messageCallbackExecutors, globalLock, producerMock);
     partitionSender.addMessage(userMessageList);
 
-    Thread.sleep(100);
+    partitionSender.shutdown();
+    assertEquals(0, msgPutSuccessCount);
     assertEquals(4, msgPutFailureCount);
     clearCounter();
   }
@@ -159,11 +174,16 @@ public class PartitionSenderTest {
     userMessageList.add(userMessage1);
     userMessageList.add(userMessage2);
 
-    when(messageClientMock.putMessage(any(PutMessageRequest.class)))
-        .thenReturn(null);
-    partitionSender.addMessage(userMessageList);
+    doReturn(new PutMessageResponse()).when(messageClientMock).putMessage(any(PutMessageRequest.class));
+    doReturn(true).doReturn(false).when(producerMock).isActive();
 
-    Thread.sleep(110);
+    partitionSender = new PartitionSender(partitionId, topicName,
+        talosResourceName, requestId, Utils.generateClientId(),
+        talosProducerConfig, messageClientMock, messageCallback,
+        messageCallbackExecutors, globalLock, producerMock);
+    partitionSender.addMessage(userMessageList);
+    partitionSender.shutdown();
+
     assertEquals(2, msgPutSuccessCount);
     clearCounter();
   }
@@ -176,10 +196,19 @@ public class PartitionSenderTest {
     when(messageClientMock.putMessage(any(PutMessageRequest.class)))
         .thenThrow(new GalaxyTalosException().setErrorCode(
                 ErrorCode.PARTITION_NOT_SERVING));
-    partitionSender.addMessage(userMessageList);
+    doReturn(true).doReturn(false).when(producerMock).isActive();
 
-    Thread.sleep(110);
+    partitionSender = new PartitionSender(partitionId, topicName,
+        talosResourceName, requestId, Utils.generateClientId(),
+        talosProducerConfig, messageClientMock, messageCallback,
+        messageCallbackExecutors, globalLock, producerMock);
+
+    partitionSender.addMessage(userMessageList);
+    partitionSender.shutdown();
+
     assertEquals(2, msgPutFailureCount);
     clearCounter();
   }
+
+
 }

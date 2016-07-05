@@ -9,6 +9,7 @@ package com.xiaomi.infra.galaxy.talos.consumer;
 import java.util.List;
 
 import libthrift091.TException;
+import org.omg.CORBA.TRANSACTION_MODE;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -19,7 +20,7 @@ import com.xiaomi.infra.galaxy.talos.thrift.QueryOffsetResponse;
 import com.xiaomi.infra.galaxy.talos.thrift.UpdateOffsetRequest;
 import com.xiaomi.infra.galaxy.talos.thrift.UpdateOffsetResponse;
 
-public class TalosMessageReader extends MessageReader {
+public class TalosMessageReader extends MessageReader implements MessageCheckpointer {
   private static final Logger LOG = LoggerFactory.getLogger(TalosMessageReader.class);
 
   public TalosMessageReader(TalosConsumerConfig talosConsumerConfig) {
@@ -31,28 +32,13 @@ public class TalosMessageReader extends MessageReader {
     startOffset.set(queryStartOffset());
     // guarantee lastCommitOffset and finishedOffset correct
     lastCommitOffset = finishedOffset = startOffset.get() - 1;
+    messageProcessor.init(topicAndPartition, startOffset.get());
   }
 
   @Override
   public void commitCheckPoint() throws Exception {
-    CheckPoint checkPoint = new CheckPoint(consumerGroup, topicAndPartition,
-        finishedOffset, workerId);
-    // check whether to check last commit offset
-    if (consumerConfig.isCheckLastCommitOffset()) {
-      checkPoint.setLastCommitOffset(lastCommitOffset);
-    }
-
-    UpdateOffsetRequest updateOffsetRequest = new UpdateOffsetRequest(checkPoint);
-    UpdateOffsetResponse updateOffsetResponse = consumerClient.updateOffset(
-        updateOffsetRequest);
-    // update startOffset as next message
-    if (updateOffsetResponse.isSuccess()) {
-      lastCommitOffset = finishedOffset;
-      lastCommitTime = System.currentTimeMillis();
-    }
-    LOG.info("Worker: " + workerId + " commit offset: " +
-        lastCommitOffset + " for partition: " +
-        topicAndPartition.getPartitionId());
+    innerCheckpoint();
+    messageProcessor.shutdown(this);
   }
 
   @Override
@@ -84,11 +70,15 @@ public class TalosMessageReader extends MessageReader {
        * Note: We guarantee the committed offset must be the messages that
        * have been processed by user's MessageProcessor;
        */
-      messageProcessor.process(messageList);
       finishedOffset = messageList.get(messageList.size() - 1).getMessageOffset();
+      messageProcessor.process(messageList, this);
       startOffset.set(finishedOffset + 1);
       if (shoudCommit()) {
-        commitCheckPoint();
+        try {
+          innerCheckpoint();
+        } catch (TException e) {
+          // when commitOffset failed, we just do nothing;
+        }
       }
     } catch (Throwable e) {
       LOG.error("Error: " + e.toString() + " when getting messages from topic: " +
@@ -109,4 +99,63 @@ public class TalosMessageReader extends MessageReader {
     return queryOffsetResponse.getMsgOffset() + 1;
   }
 
+  private void innerCheckpoint() throws TException {
+    if (consumerConfig.isCheckpointAutoCommit()) {
+      commitOffset(finishedOffset);
+    }
+  }
+
+  @Override
+  public boolean checkpoint() {
+    return checkpoint(finishedOffset);
+  }
+
+  @Override
+  public boolean checkpoint(long messageOffset) {
+    LOG.info("start checkpoint: " + messageOffset);
+    if (consumerConfig.isCheckpointAutoCommit()) {
+      LOG.info("You can not checkpoint through MessageCheckpointer when you set " +
+          "\"galaxy.talos.consumer.checkpoint.message.offset\" as \"true\"");
+      return false;
+    }
+
+    if (messageOffset <= lastCommitOffset || messageOffset > finishedOffset) {
+      LOG.info("checkpoint messageOffset: " + messageOffset + " in wrong " +
+          "range, lastCheckpoint messageOffset: " + lastCommitOffset + ", last " +
+          "deliver messageOffset: " + finishedOffset);
+      return false;
+    }
+
+    try {
+      commitOffset(messageOffset);
+      return true;
+    } catch (TException e) {
+      return false;
+    }
+  }
+
+  private void commitOffset(long messageOffset) throws TException {
+    CheckPoint checkPoint = new CheckPoint(consumerGroup, topicAndPartition,
+        messageOffset, workerId);
+    // check whether to check last commit offset
+    if (consumerConfig.isCheckLastCommitOffset()) {
+      checkPoint.setLastCommitOffset(lastCommitOffset);
+    }
+
+    UpdateOffsetRequest updateOffsetRequest = new UpdateOffsetRequest(checkPoint);
+    UpdateOffsetResponse updateOffsetResponse = consumerClient.updateOffset(
+        updateOffsetRequest);
+    // update startOffset as next message
+    if (updateOffsetResponse.isSuccess()) {
+      lastCommitOffset = messageOffset;
+      lastCommitTime = System.currentTimeMillis();
+      LOG.info("Worker: " + workerId + " commit offset: " +
+          lastCommitOffset + " for partition: " +
+          topicAndPartition.getPartitionId());
+    } else {
+      LOG.info("Worker: " + workerId + " commit offset: " +
+          lastCommitOffset + " for partition: " +
+          topicAndPartition.getPartitionId() + " failed");
+    }
+  }
 }

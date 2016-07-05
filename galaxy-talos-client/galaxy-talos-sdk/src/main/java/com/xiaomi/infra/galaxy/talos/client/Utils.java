@@ -8,13 +8,16 @@ package com.xiaomi.infra.galaxy.talos.client;
 
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.regex.Pattern;
 
 import com.google.common.base.Preconditions;
 
 import com.xiaomi.infra.galaxy.talos.thrift.ErrorCode;
 import com.xiaomi.infra.galaxy.talos.thrift.GalaxyTalosException;
+import com.xiaomi.infra.galaxy.talos.thrift.MessageOffset;
 
 import static com.xiaomi.infra.galaxy.talos.client.Constants.TALOS_IDENTIFIER_DELIMITER;
+import static com.xiaomi.infra.galaxy.talos.client.Constants.TALOS_NAME_REGEX;
 
 public class Utils {
   /**
@@ -39,14 +42,26 @@ public class Utils {
     }
   }
 
+  public static void checkStartOffsetValidity(long startOffset) {
+    if (startOffset >= 0 || startOffset == MessageOffset.START_OFFSET.getValue() ||
+        startOffset == MessageOffset.LATEST_OFFSET.getValue()) {
+      return;
+    }
+    throw new IllegalArgumentException("invalid startOffset: " + startOffset +
+        ". It must be greater than or equal to 0, " +
+        "or equal to MessageOffset.START_OFFSET/MessageOffset.LATEST_OFFSET");
+  }
+
   public static String generateClientId() {
     return System.currentTimeMillis() + UUID.randomUUID().toString().substring(0, 8);
   }
 
   public static void checkNameValidity(String str) {
-    if (str.contains(TALOS_IDENTIFIER_DELIMITER)) {
+    if (!Pattern.matches(TALOS_NAME_REGEX, str) || str == null ||
+        str.length() <= 0 || str.length() > 80) {
       throw new IllegalArgumentException("invalid str: " + str +
-          ". please remove the character: " + TALOS_IDENTIFIER_DELIMITER);
+          ". please name the str only with the regex set: [a-zA-Z0-9_-]" +
+          ". And the str length must be [1, 80]");
     }
   }
 
