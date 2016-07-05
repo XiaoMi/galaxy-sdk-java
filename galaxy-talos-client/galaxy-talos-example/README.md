@@ -26,4 +26,4 @@
 
 ## Talos Book
 
-  [Talos Wiki](http://awsbj0.talos.api.xiaomi.com)
+  [Talos Wiki](http://docs.api.xiaomi.com/talos/index.html)
