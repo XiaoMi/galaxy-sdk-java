@@ -1,4 +1,4 @@
-package com.xiaomi.infra.galaxy.sds.client.examples.stream;
+package com.xiaomi.infra.galaxy.sds.examples.stream;
 
 import com.google.common.collect.Lists;
 import com.xiaomi.infra.galaxy.sds.thrift.CannedAcl;

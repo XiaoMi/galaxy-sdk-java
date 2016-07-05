@@ -13,7 +13,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 
-
 public class RequestMetrics {
   private static final Logger LOG = LoggerFactory.getLogger(RequestMetrics.class);
   private String queryString;

@@ -11,7 +11,6 @@ import com.xiaomi.infra.galaxy.sds.thrift.TableService;
 import com.xiaomi.infra.galaxy.sds.thrift.ThriftProtocol;
 import com.xiaomi.infra.galaxy.sds.thrift.Version;
 import com.xiaomi.infra.galaxy.sds.thrift.VersionUtil;
-import libthrift091.protocol.TProtocol;
 import org.apache.http.client.HttpClient;
 import org.apache.http.conn.ClientConnectionManager;
 import org.apache.http.conn.params.ConnManagerParams;

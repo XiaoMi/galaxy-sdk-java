@@ -1,4 +1,4 @@
-package com.xiaomi.infra.galaxy.sds.client.examples.stream;
+package com.xiaomi.infra.galaxy.sds.examples.stream;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
@@ -6,7 +6,6 @@ import com.google.common.collect.Maps;
 import com.xiaomi.infra.galaxy.rpc.thrift.GrantType;
 import com.xiaomi.infra.galaxy.rpc.thrift.Grantee;
 import com.xiaomi.infra.galaxy.sds.client.ClientFactory;
-import com.xiaomi.infra.galaxy.sds.client.TableScanner;
 import com.xiaomi.infra.galaxy.sds.thrift.AdminService;
 import com.xiaomi.infra.galaxy.sds.thrift.CommonConstants;
 import com.xiaomi.infra.galaxy.sds.thrift.Credential;
@@ -18,7 +17,6 @@ import com.xiaomi.infra.galaxy.sds.thrift.PutRequest;
 import com.xiaomi.infra.galaxy.sds.thrift.PutResult;
 import com.xiaomi.infra.galaxy.sds.thrift.RemoveRequest;
 import com.xiaomi.infra.galaxy.sds.thrift.RemoveResult;
-import com.xiaomi.infra.galaxy.sds.thrift.ScanRequest;
 import com.xiaomi.infra.galaxy.sds.thrift.StreamSpec;
 import com.xiaomi.infra.galaxy.sds.thrift.StreamViewType;
 import com.xiaomi.infra.galaxy.sds.thrift.TableInfo;
@@ -47,7 +45,6 @@ import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;

@@ -1,7 +1,6 @@
 package com.xiaomi.infra.galaxy.sds.examples;
 
 import com.xiaomi.infra.galaxy.sds.client.ClientFactory;
-import com.xiaomi.infra.galaxy.sds.thrift.AppUserAuthProvider;
 import com.xiaomi.infra.galaxy.sds.thrift.AuthService;
 import com.xiaomi.infra.galaxy.sds.thrift.CommonConstants;
 import com.xiaomi.infra.galaxy.sds.thrift.Credential;

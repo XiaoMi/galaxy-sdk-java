@@ -3,7 +3,10 @@ package com.xiaomi.infra.galaxy.sds.client;
 import com.xiaomi.infra.galaxy.sds.client.metrics.MetricsCollector;
 import com.xiaomi.infra.galaxy.sds.client.metrics.RequestMetrics;
 import com.xiaomi.infra.galaxy.sds.shared.clock.AdjustableClock;
-import com.xiaomi.infra.galaxy.sds.thrift.*;
+import com.xiaomi.infra.galaxy.sds.thrift.CommonConstants;
+import com.xiaomi.infra.galaxy.sds.thrift.Credential;
+import com.xiaomi.infra.galaxy.sds.thrift.LatencyMetricType;
+import com.xiaomi.infra.galaxy.sds.thrift.ThriftProtocol;
 import libthrift091.protocol.TProtocol;
 import libthrift091.transport.TTransport;
 import org.apache.http.client.HttpClient;
@@ -80,7 +83,7 @@ public class ThreadSafeClient<IFace, Impl> {
         sdsHttpClient.setSocketTimeout(socketTimeout)
             .setConnectTimeout(connTimeout)
             .setProtocol(protocol)
-            .setQueryString("type=" + method.getName())
+            .setQueryString(SdsRequestUtils.getQuery(method, args))
             .setSupportAccountKey(supportAccountKey)
             .setSid(sid);
         if (customHeaders != null) {

@@ -2,8 +2,6 @@ package com.xiaomi.infra.galaxy.sds.client;
 
 import com.xiaomi.infra.galaxy.sds.thrift.ErrorCode;
 import com.xiaomi.infra.galaxy.sds.thrift.ErrorsConstants;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.Random;
 

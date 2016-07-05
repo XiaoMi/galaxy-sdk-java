@@ -3,8 +3,8 @@ package com.xiaomi.infra.galaxy.sds.client.metrics;
 import com.xiaomi.infra.galaxy.sds.thrift.AdminService;
 import com.xiaomi.infra.galaxy.sds.thrift.ClientMetrics;
 import com.xiaomi.infra.galaxy.sds.thrift.MetricData;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.concurrent.BlockingDeque;
 import java.util.concurrent.BlockingQueue;
@@ -15,7 +15,7 @@ import java.util.concurrent.TimeUnit;
  * Created by haxiaolin on 15-5-12.
  */
 public class MetricsCollector {
-  private static final Log LOG = LogFactory.getLog(MetricsCollector.class);
+  private static final Logger LOG = LoggerFactory.getLogger(MetricsCollector.class);
   private AdminService.Iface adminService=null;
   private BlockingDeque<MetricData> queue;
   private MetricUploaderThread metricUploaderThread;

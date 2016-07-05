@@ -1,9 +1,8 @@
 package com.xiaomi.infra.galaxy.sds.client;
 
-import libthrift091.transport.TTransportException;
-
 import com.xiaomi.infra.galaxy.sds.thrift.ErrorCode;
 import com.xiaomi.infra.galaxy.sds.thrift.HttpStatusCode;
+import libthrift091.transport.TTransportException;
 
 public class HttpTTransportException extends TTransportException {
   private static final long serialVersionUID = -2806473721346391229L;

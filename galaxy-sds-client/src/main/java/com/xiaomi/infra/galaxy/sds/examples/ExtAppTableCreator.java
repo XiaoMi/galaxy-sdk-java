@@ -3,7 +3,6 @@ package com.xiaomi.infra.galaxy.sds.examples;
 import com.xiaomi.infra.galaxy.sds.client.ClientFactory;
 import com.xiaomi.infra.galaxy.sds.thrift.AdminService;
 import com.xiaomi.infra.galaxy.sds.thrift.AppInfo;
-import com.xiaomi.infra.galaxy.sds.thrift.AppUserAuthProvider;
 import com.xiaomi.infra.galaxy.sds.thrift.CannedAcl;
 import com.xiaomi.infra.galaxy.sds.thrift.CommonConstants;
 import com.xiaomi.infra.galaxy.sds.thrift.Credential;
@@ -28,7 +27,7 @@ import java.util.Map;
 
 public class ExtAppTableCreator {
   private static AdminService.Iface adminClient;
-  private static final UserType userType = UserType.DEV_XIAOMI;
+  private static final UserType userType = UserType.APP_SECRET;
   private String appId;
   private String secretKeyId;
   private String secretKey;

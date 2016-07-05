@@ -11,34 +11,24 @@
 
 package com.xiaomi.infra.galaxy.sds.client;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.SocketTimeoutException;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
-
 import com.google.common.collect.LinkedListMultimap;
-
 import com.xiaomi.infra.galaxy.client.authentication.HttpKeys;
 import com.xiaomi.infra.galaxy.client.authentication.HttpMethod;
 import com.xiaomi.infra.galaxy.client.authentication.HttpUtils;
 import com.xiaomi.infra.galaxy.client.authentication.signature.SignAlgorithm;
 import com.xiaomi.infra.galaxy.client.authentication.signature.Signer;
+import com.xiaomi.infra.galaxy.sds.shared.BytesUtil;
+import com.xiaomi.infra.galaxy.sds.shared.DigestUtil;
+import com.xiaomi.infra.galaxy.sds.shared.clock.AdjustableClock;
+import com.xiaomi.infra.galaxy.sds.thrift.AuthenticationConstants;
 import com.xiaomi.infra.galaxy.sds.thrift.CommonConstants;
+import com.xiaomi.infra.galaxy.sds.thrift.Credential;
+import com.xiaomi.infra.galaxy.sds.thrift.HttpStatusCode;
 import com.xiaomi.infra.galaxy.sds.thrift.ThriftProtocol;
 import com.xiaomi.infra.galaxy.sds.thrift.UserType;
-import libthrift091.TException;
 import libthrift091.transport.TTransport;
 import libthrift091.transport.TTransportException;
 import libthrift091.transport.TTransportFactory;
-
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpHost;
@@ -48,18 +38,18 @@ import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.ByteArrayEntity;
 import org.apache.http.params.CoreConnectionPNames;
-import org.apache.http.params.HttpParams;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.xiaomi.infra.galaxy.sds.shared.BytesUtil;
-import com.xiaomi.infra.galaxy.sds.shared.DigestUtil;
-import com.xiaomi.infra.galaxy.sds.shared.SignatureUtil;
-import com.xiaomi.infra.galaxy.sds.shared.clock.AdjustableClock;
-import com.xiaomi.infra.galaxy.sds.thrift.AuthenticationConstants;
-import com.xiaomi.infra.galaxy.sds.thrift.Credential;
-import com.xiaomi.infra.galaxy.sds.thrift.HttpStatusCode;
-import com.xiaomi.infra.galaxy.sds.thrift.MacAlgorithm;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
 
 /**
  * HTTP implementation of the TTransport interface. Used for working with a Thrift web services
