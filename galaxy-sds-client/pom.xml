@@ -25,6 +25,11 @@
       <version>${galaxy-sdk.version}</version>
     </dependency>
     <dependency>
+      <groupId>com.xiaomi.infra.galaxy</groupId>
+      <artifactId>galaxy-talos-sdk</artifactId>
+      <version>1.2-SNAPSHOT</version>
+    </dependency>
+    <dependency>
       <groupId>org.slf4j</groupId>
       <artifactId>slf4j-api</artifactId>
       <version>${slf4j.version}</version>

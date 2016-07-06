@@ -1,19 +1,18 @@
 package com.xiaomi.infra.galaxy.sds.client;
 
+import com.xiaomi.infra.galaxy.sds.thrift.Datum;
+import com.xiaomi.infra.galaxy.sds.thrift.ErrorCode;
+import com.xiaomi.infra.galaxy.sds.thrift.ScanRequest;
+import com.xiaomi.infra.galaxy.sds.thrift.ScanResult;
+import com.xiaomi.infra.galaxy.sds.thrift.TableService.Iface;
+
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 
-import com.xiaomi.infra.galaxy.sds.thrift.Datum;
-import com.xiaomi.infra.galaxy.sds.thrift.ErrorCode;
-import com.xiaomi.infra.galaxy.sds.thrift.ScanRequest;
-import com.xiaomi.infra.galaxy.sds.thrift.ScanResult;
-import com.xiaomi.infra.galaxy.sds.thrift.TableService;
-import com.xiaomi.infra.galaxy.sds.thrift.TableService.Iface;
-
 public class TableScanner implements Iterable<Map<String, Datum>> {
-  private final TableService.Iface tableClient;
+  private final Iface tableClient;
   private final ScanRequest scan;
 
   public TableScanner(Iface tableClient, ScanRequest scan) {
@@ -27,7 +26,7 @@ public class TableScanner implements Iterable<Map<String, Datum>> {
   }
 
   class RecordIterator implements Iterator<Map<String, Datum>> {
-    private final TableService.Iface tableClient;
+    private final Iface tableClient;
     private final ScanRequest scan;
     private boolean finished = false;
     private int retry = 0;
@@ -81,28 +80,23 @@ public class TableScanner implements Iterable<Map<String, Datum>> {
             bufferIterator = buffer.iterator();
           }
 
-          if ((result.getNextStartKey() == null ||
-              result.getNextStartKey().isEmpty()) &&
-              result.getNextSplitIndex() == -1) {
+          if (result.getNextStartKey() == null || result.getNextStartKey().isEmpty()) {
             // finish the whole scan request
             finished = true;
           } else {
-            if (scan.getLimit() == result.getRecordsSize()) {
-              // finish the current sub scan request
-              retry = 0;
-            } else {
+            if (result.getRecordsSize() < scan.getLimit() && result.isThrottled()) {
               // two possible cases: qps quota exceeds or scan limit is too large
               retry++;
               if (retry > MAX_RETRY) {
                 throw new RuntimeException("Scan request " + scan + " failed with "
                     + retry + " retries");
               }
+            } else {
+              // finish the current sub scan request
+              retry = 0;
             }
             lastResult = result;
             scan.setStartKey(result.getNextStartKey());
-            if (result.getNextSplitIndex() > 0) {
-              scan.setSplitIndex(result.getNextSplitIndex());
-            }
           }
           return hasNext();
         }

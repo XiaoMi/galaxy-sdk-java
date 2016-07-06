@@ -3,7 +3,6 @@ package com.xiaomi.infra.galaxy.sds.examples;
 import com.xiaomi.infra.galaxy.sds.client.ClientFactory;
 import com.xiaomi.infra.galaxy.sds.client.TableScanner;
 import com.xiaomi.infra.galaxy.sds.thrift.AdminService;
-import com.xiaomi.infra.galaxy.sds.thrift.CannedAcl;
 import com.xiaomi.infra.galaxy.sds.thrift.CommonConstants;
 import com.xiaomi.infra.galaxy.sds.thrift.Credential;
 import com.xiaomi.infra.galaxy.sds.thrift.DataType;
@@ -34,13 +33,12 @@ import java.util.Map;
 import java.util.Random;
 
 public class ScanWithActionExample {
+  private static ClientFactory clientFactory;
   private static AdminService.Iface adminClient;
   private static TableService.Iface tableClient;
-  private static String appId = ""; // Your AppId
-  private static String appKey = ""; // Your AppKey
-  private static String appSecret = ""; // Your AppSecret
-  private static String accountKey = ""; // Your AccountKey
-  private static String accountSecret = ""; // Your AccountSecret
+  private static String secretKeyId = ""; // Your AppKey
+  private static String secretKey = ""; // Your AppSecret
+  private static UserType userType = UserType.APP_SECRET;
   private static String endpoint = "http://cnbj-s0.sds.api.xiaomi.com";
   private static boolean isInit = false;
   private static String tableName = "java-test-weather1";
@@ -50,41 +48,16 @@ public class ScanWithActionExample {
       "Qingdao", "Qinhuangdao", "Rizhao", "Sanya", "Shanghai", "Shantou", "Shenzhen",
       "Tianjin", "Weihai", "Wenzhou", "Xiamen", "Yangzhou", "Yantai" };
 
-  private static Credential getCredential(String secretKeyId, String secretKey, UserType userType) {
-    return new Credential().setSecretKeyId(secretKeyId).setSecretKey(secretKey)
-        .setType(userType);
-  }
-
-  public static AdminService.Iface createAdminClient(String host) {
-    Credential credential = getCredential(accountKey, accountSecret, UserType.DEV_XIAOMI);
-    ClientFactory clientFactory = new ClientFactory().setCredential(credential);
-    return clientFactory.newAdminClient(host + CommonConstants.ADMIN_SERVICE_PATH,
-        50000, 3000);
-  }
-
-  public static TableService.Iface createTableClient(String host) {
-    Credential credential = getCredential(appKey, appSecret, UserType.APP_SECRET);
-    // based on JSON transport protocol
-    // clientFactory = new ClientFactory().setCredential(credential).setProtocol(ThriftProtocol.TJSON);
-
-    // based on Compact Binary transport protocol
-    // clientFactory = new ClientFactory().setCredential(credential).setProtocol(ThriftProtocol.TCOMPACT);
-
-    // based on default Binary transport protocol
-    ClientFactory clientFactory = new ClientFactory().setCredential(credential);
-    return clientFactory.newTableClient(host + CommonConstants.TABLE_SERVICE_PATH,
-        10000, 3000, true, 5);
-  }
-
-  public static Map<String, List<CannedAcl>> cannedAclGrant(String appId, CannedAcl... cannedAcls) {
-    Map<String, List<CannedAcl>> appGrant = new HashMap<String, List<CannedAcl>>();
-    appGrant.put(appId, Arrays.asList(cannedAcls));
-    return appGrant;
-  }
-
   private static void init() {
-    adminClient = createAdminClient(endpoint);
-    tableClient = createTableClient(endpoint);
+    Credential credential = new Credential().setSecretKey(secretKey).setSecretKeyId(secretKeyId)
+        .setType(userType);
+    clientFactory = new ClientFactory().setCredential(credential);
+    // socket timeout 10000 ms and connection timeout 3000
+    adminClient = clientFactory
+        .newAdminClient(endpoint + CommonConstants.ADMIN_SERVICE_PATH, 50000, 3000);
+    // 5 retries at most
+    tableClient = clientFactory
+        .newTableClient(endpoint + CommonConstants.TABLE_SERVICE_PATH, 10000, 3000, true, 5);
     isInit = true;
   }
 
@@ -105,7 +78,6 @@ public class ScanWithActionExample {
     TableMetadata tableMetadata = new TableMetadata();
     tableMetadata
         .setQuota(new TableQuota().setSize(100 * 1024 * 1024))
-        .setAppAcl(cannedAclGrant(appId, CannedAcl.APP_SECRET_READ, CannedAcl.APP_SECRET_WRITE))
         .setThroughput(new ProvisionThroughput().setReadCapacity(200).setWriteCapacity(200));
 
     return new TableSpec().setSchema(tableSchema)

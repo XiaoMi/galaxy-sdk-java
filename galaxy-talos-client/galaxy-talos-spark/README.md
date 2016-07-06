@@ -12,7 +12,7 @@
   <groupId>org.apache.spark</groupId>
   <artifactId>spark-streaming_2.10</artifactId>
   <version>${spark.version}</version>
-  <scope>provided</scope>
+  <scope>compile</scope>
 </dependency>
 <dependency>
   <groupId>com.xiaomi.infra.galaxy</groupId>
