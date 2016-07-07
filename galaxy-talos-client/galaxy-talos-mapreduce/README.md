@@ -44,7 +44,7 @@
   <pre><code>
   ```
   $HADOOP_HOME/bin/yarn jar 
-  target/galaxy-talos-mapreduce-1.2.jar 
+  target/galaxy-talos-mapreduce-1.2-SNAPSHOT-jar-with-dependencies.jar
   com.xiaomi.infra.galaxy.talos.mapreduce.example.TalosMessageCount 
   -Dmapreduce.framework.name=local 
   -Dfs.defaultFS=file:/// 
@@ -55,7 +55,7 @@
   -Dgalaxy.talos.mapreduce.secret.key=xxx
   -Dgalaxy.talos.mapreduce.user.type=xxx
   [-Dgalaxy.talos.mapreduce.consume.data.max.retrys.before.fail.map.task=xxx]
-  hdfs output path
+  $your_local_output_path
   ```
   </code></pre>
 
@@ -63,7 +63,7 @@
   <pre><code>
   ```
   $HADOOP_HOME/bin/yarn jar 
-  target/galaxy-talos-mapreduce-1.2.jar 
+  target/galaxy-talos-mapreduce-1.2-SNAPSHOT-jar-with-dependencies.jar
   com.xiaomi.infra.galaxy.talos.mapreduce.example.TalosMessageCount 
   -Dgalaxy.talos.mapreduce.service.endpoint=xxx 
   -Dgalaxy.talos.mapreduce.topic.resource.name=xxx
@@ -72,6 +72,18 @@
   -Dgalaxy.talos.mapreduce.secret.key=xxx
   -Dgalaxy.talos.mapreduce.user.type=xxx
   [-Dgalaxy.talos.mapreduce.consume.data.max.retrys.before.fail.map.task=xxx]
-  hdfs output path
+  $hdfs_cluster_user_path
   ```
+  </code></pre>
+
+  Using '-conf' to run job on cluster
+
+  <pre><code>
+    ```
+    $HADOOP_HOME/bin/yarn jar
+    target/galaxy-talos-mapreduce-1.2-SNAPSHOT-jar-with-dependencies.jar
+    com.xiaomi.infra.galaxy.talos.mapreduce.example.TalosMessageCount
+    -conf $your_talos-mr-site-xml_path
+    $hdfs_cluster_user_path
+    ```
   </code></pre>

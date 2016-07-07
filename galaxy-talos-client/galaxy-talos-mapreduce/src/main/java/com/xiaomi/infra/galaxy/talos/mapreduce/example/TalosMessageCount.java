@@ -7,8 +7,6 @@
 package com.xiaomi.infra.galaxy.talos.mapreduce.example;
 
 import java.io.IOException;
-import java.util.List;
-import java.util.Properties;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
@@ -20,19 +18,10 @@ import org.apache.hadoop.mapreduce.Reducer;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.util.GenericOptionsParser;
 
-import com.xiaomi.infra.galaxy.rpc.thrift.Credential;
-import com.xiaomi.infra.galaxy.rpc.thrift.UserType;
-import com.xiaomi.infra.galaxy.talos.client.TalosClientConfigKeys;
-import com.xiaomi.infra.galaxy.talos.client.Utils;
-import com.xiaomi.infra.galaxy.talos.consumer.SimpleConsumer;
-import com.xiaomi.infra.galaxy.talos.consumer.TalosConsumerConfig;
 import com.xiaomi.infra.galaxy.talos.mapreduce.input.TalosTopicInputFormat;
 import com.xiaomi.infra.galaxy.talos.mapreduce.input.TalosTopicMapper;
 import com.xiaomi.infra.galaxy.talos.mapreduce.input.model.TalosTopicKeyWritable;
 import com.xiaomi.infra.galaxy.talos.mapreduce.input.model.TalosTopicMessageWritable;
-import com.xiaomi.infra.galaxy.talos.thrift.MessageAndOffset;
-import com.xiaomi.infra.galaxy.talos.thrift.TopicAndPartition;
-import com.xiaomi.infra.galaxy.talos.thrift.TopicTalosResourceName;
 
 public class TalosMessageCount {
   public static class TalosMessageCountMapper extends
