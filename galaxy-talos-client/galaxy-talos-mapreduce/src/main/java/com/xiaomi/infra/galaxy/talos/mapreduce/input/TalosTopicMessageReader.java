@@ -138,6 +138,8 @@ public class TalosTopicMessageReader extends RecordReader<TalosTopicKeyWritable,
             " fetchMessage with startMessageOffset: " + nextMessageOffset + " failed", e);
         exception = e;
       }
+
+      ++retryTimes;
     }
 
     throw new IOException("TopicAndPartition: " + topicAndPartition +

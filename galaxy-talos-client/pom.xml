@@ -47,7 +47,6 @@
         <module>galaxy-talos-example</module>
         <module>galaxy-talos-storm</module>
         <module>galaxy-talos-mapreduce</module>
-        <module>snappy-test</module>
     </modules>
 
     <properties>
