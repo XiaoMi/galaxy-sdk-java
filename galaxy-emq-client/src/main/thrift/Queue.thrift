@@ -537,12 +537,94 @@ struct TimeSeriesData {
   3: optional map<i64, double> data,
 }
 
-
 struct VerifyEMQAdminResponse {
   /**
    * Default prefix for admin
    */
   1: required string prefix;
+}
+
+struct QueueMeta{
+  /**
+  * The queue name, prefix is developerId, must has prefix;
+  **/
+  1: required string queueName;
+
+  /**
+  * The queue attribute;
+  **/
+  2: required QueueAttribute queueAttribute;
+
+  /**
+   * The queue quota, including space quota, read qps, and write qps;
+   **/
+  3: optional QueueQuota queueQuota;
+
+  /**
+   * Set the queue using priority of not;
+   **/
+  4: optional bool enablePriority;
+
+  /**
+   * Set the queue be a topic queue or not;
+   * All messages with the same topic in topic queue will be received one by one
+   * Default: false
+   **/
+  5: optional bool topicQueue;
+
+  /**
+   * Purge expired messages even if they have not been received by users
+   * Default: true
+   **/
+  6: optional bool deleteMessageForce = true;
+
+  /**
+   * Name default tag
+   * You can use "" as default tag name while receiving messages if this field is not set
+   **/
+  7: optional string defaultTagName;
+
+  /* map contains developerId => Permission pair */
+  8: optional map<string, Permission> permissionList;
+
+  9: optional RedrivePolicy redrivePolicy;
+
+  10: optional list<string> sourceQueues;
+
+  /**
+  * Queue create timestamp;
+  **/
+  11: optional i64 createTimestamp;
+
+  /**
+  * Queue last modified timestamp;
+  **/
+  12: optional i64 lastModifiedTimestamp;
+  /**
+  * Tag ids must be unique in the map
+  **/
+  13: optional map<string, QueueTag> queueTagMap;
+}
+
+struct QueueTag{
+  1: required string queueName;
+  2: required string tagName;
+  /**
+  * Tag id must be more than zero
+  **/
+  3: required i32 tagId;
+  4: optional i64 startTimestamp;
+  5: optional i64 createTimestamp;
+  6: optional string attributeName;
+  7: optional Message.MessageAttribute attributeValue;
+  8: optional map<string, string> userAttributes;
+}
+struct GetQueueMetaResponse{
+  1: required QueueMeta queueMeta;
+}
+
+struct CopyQueueRequest{
+  1: required QueueMeta queueMeta;
 }
 
 service QueueService extends Common.EMQBaseService {
@@ -671,4 +753,14 @@ service QueueService extends Common.EMQBaseService {
 
   VerifyEMQAdminResponse verifyEMQAdmin() 
       throws (1: Common.GalaxyEmqServiceException e);
+
+  /**
+  * copy queues using queues meta
+  **/
+  void copyQueue(1: CopyQueueRequest request)
+      throws(1: Common.GalaxyEmqServiceException e);
+
+  GetQueueMetaResponse getQueueMeta(1: string queueName)
+      throws(1: Common.GalaxyEmqServiceException e);
+
 }
