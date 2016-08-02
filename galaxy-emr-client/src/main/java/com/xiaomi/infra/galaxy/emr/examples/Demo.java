@@ -1,4 +1,4 @@
-package com.xiaomi.infra.galaxy.emr.client.examples;
+package com.xiaomi.infra.galaxy.emr.examples;
 
 import java.util.ArrayList;
 import java.util.List;

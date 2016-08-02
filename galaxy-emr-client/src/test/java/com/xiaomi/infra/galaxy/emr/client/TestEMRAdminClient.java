@@ -1,7 +1,6 @@
 package com.xiaomi.infra.galaxy.emr.client;
 
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 
 import com.xiaomi.infra.galaxy.emr.thrift.EMRAdminService;
