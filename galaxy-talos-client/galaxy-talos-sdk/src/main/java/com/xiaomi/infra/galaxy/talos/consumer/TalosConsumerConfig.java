@@ -28,6 +28,10 @@ public class TalosConsumerConfig extends TalosClientConfig {
   private boolean resetLatestOffset;
   private boolean checkpointAutoCommit;
 
+  public TalosConsumerConfig() {
+    super();
+  }
+
   public TalosConsumerConfig(String fileName) {
     super(fileName);
     init();
@@ -182,5 +186,97 @@ public class TalosConsumerConfig extends TalosClientConfig {
 
   public boolean isCheckpointAutoCommit() {
     return checkpointAutoCommit;
+  }
+
+  public void setPartitionCheckInterval(int partitionCheckInterval) {
+    this.partitionCheckInterval = partitionCheckInterval;
+    Utils.checkParameterRange(
+        TalosClientConfigKeys.GALAXY_TALOS_CONSUMER_CHECK_PARTITION_INTERVAL,
+        this.partitionCheckInterval,
+        TalosClientConfigKeys.GALAXY_TALOS_CONSUMER_CHECK_PARTITION_INTERVAL_MINIMUM,
+        TalosClientConfigKeys.GALAXY_TALOS_CONSUMER_CHECK_PARTITION_INTERVAL_MAXIMUM);
+  }
+
+  public void setWorkerInfoCheckInterval(int workerInfoCheckInterval) {
+    this.workerInfoCheckInterval = workerInfoCheckInterval;
+    Utils.checkParameterRange(
+        TalosClientConfigKeys.GALAXY_TALOS_CONSUMER_CHECK_WORKER_INFO_INTERVAL,
+        this.workerInfoCheckInterval,
+        TalosClientConfigKeys.GALAXY_TALOS_CONSUMER_CHECK_WORKER_INFO_INTERVAL_MINIMUM,
+        TalosClientConfigKeys.GALAXY_TALOS_CONSUMER_CHECK_WORKER_INFO_INTERVAL_MAXIMUM);
+  }
+
+  public void setReNewCheckInterval(int reNewCheckInterval) {
+    this.reNewCheckInterval = reNewCheckInterval;
+    Utils.checkParameterRange(
+        TalosClientConfigKeys.GALAXY_TALOS_CONSUMER_RENEW_INTERVAL,
+        this.reNewCheckInterval,
+        TalosClientConfigKeys.GALAXY_TALOS_CONSUMER_RENEW_INTERVAL_MINIMUM,
+        TalosClientConfigKeys.GALAXY_TALOS_CONSUMER_RENEW_INTERVAL_MAXIMUM);
+  }
+
+  public void setReNewMaxRetry(int reNewMaxRetry) {
+    this.reNewMaxRetry = reNewMaxRetry;
+    Utils.checkParameterRange(
+        TalosClientConfigKeys.GALAXY_TALOS_CONSUMER_RENEW_MAX_RETRY,
+        this.reNewMaxRetry,
+        TalosClientConfigKeys.GALAXY_TALOS_CONSUMER_RENEW_MAX_RETRY_MINIMUM,
+        TalosClientConfigKeys.GALAXY_TALOS_CONSUMER_RENEW_MAX_RETRY_MAXIMUM);
+  }
+
+  public void setMaxFetchRecords(int maxFetchRecords) {
+    this.maxFetchRecords = maxFetchRecords;
+    Utils.checkParameterRange(
+        TalosClientConfigKeys.GALAXY_TALOS_CONSUMER_MAX_FETCH_RECORDS,
+        this.maxFetchRecords,
+        TalosClientConfigKeys.GALAXY_TALOS_CONSUMER_MAX_FETCH_RECORDS_MINIMUM,
+        TalosClientConfigKeys.GALAXY_TALOS_CONSUMER_MAX_FETCH_RECORDS_MAXIMUM);
+  }
+
+  public void setSelfRegisterMaxRetry(int selfRegisterMaxRetry) {
+    this.selfRegisterMaxRetry = selfRegisterMaxRetry;
+  }
+
+  public void setCommitOffsetThreshold(int commitOffsetThreshold) {
+    this.commitOffsetThreshold = commitOffsetThreshold;
+    Utils.checkParameterRange(
+        TalosClientConfigKeys.GALAXY_TALOS_CONSUMER_COMMIT_OFFSET_THRESHOLD,
+        this.commitOffsetThreshold,
+        TalosClientConfigKeys.GALAXY_TALOS_CONSUMER_COMMIT_OFFSET_THRESHOLD_MINIMUM,
+        TalosClientConfigKeys.GALAXY_TALOS_CONSUMER_COMMIT_OFFSET_THRESHOLD_MAXIMUM);
+  }
+
+  public void setCommitOffsetInterval(int commitOffsetInterval) {
+    this.commitOffsetInterval = commitOffsetInterval;
+    Utils.checkParameterRange(
+        TalosClientConfigKeys.GALAXY_TALOS_CONSUMER_COMMIT_OFFSET_INTERVAL,
+        this.commitOffsetInterval,
+        TalosClientConfigKeys.GALAXY_TALOS_CONSUMER_COMMIT_OFFSET_INTERVAL_MINIMUM,
+        TalosClientConfigKeys.GALAXY_TALOS_CONSUMER_COMMIT_OFFSET_INTERVAL_MAXIMUM);
+  }
+
+  public void setFetchMessageInterval(int fetchMessageInterval) {
+    this.fetchMessageInterval = fetchMessageInterval;
+    Utils.checkParameterRange(
+        TalosClientConfigKeys.GALAXY_TALOS_CONSUMER_FETCH_INTERVAL,
+        this.fetchMessageInterval,
+        TalosClientConfigKeys.GALAXY_TALOS_CONSUMER_FETCH_INTERVAL_MINIMUM,
+        TalosClientConfigKeys.GALAXY_TALOS_CONSUMER_FETCH_INTERVAL_MAXIMUM);
+  }
+
+  public void setCheckLastCommitOffset(boolean checkLastCommitOffset) {
+    this.checkLastCommitOffset = checkLastCommitOffset;
+  }
+
+  public void setWaitPartitionWorkingTime(long waitPartitionWorkingTime) {
+    this.waitPartitionWorkingTime = waitPartitionWorkingTime;
+  }
+
+  public void setResetLatestOffset(boolean resetLatestOffset) {
+    this.resetLatestOffset = resetLatestOffset;
+  }
+
+  public void setCheckpointAutoCommit(boolean checkpointAutoCommit) {
+    this.checkpointAutoCommit = checkpointAutoCommit;
   }
 }
