@@ -5,13 +5,13 @@
     <parent>
         <artifactId>galaxy-talos-client</artifactId>
         <groupId>com.xiaomi.infra.galaxy</groupId>
-        <version>1.1.4</version>
+        <version>1.2-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>com.xiaomi.infra</groupId>
     <artifactId>galaxy-talos-example</artifactId>
-    <version>1.1.4</version>
+    <version>1.2-SNAPSHOT</version>
     <description>Talos codelab : talos demo</description>
     <name>talos demo</name>
     <packaging>jar</packaging>
