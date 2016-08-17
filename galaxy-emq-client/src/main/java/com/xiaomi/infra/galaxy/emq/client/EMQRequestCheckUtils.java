@@ -12,6 +12,7 @@ import com.xiaomi.infra.galaxy.emq.thrift.AddQueueAlertPolicyRequest;
 import com.xiaomi.infra.galaxy.emq.thrift.ChangeMessageVisibilityBatchRequest;
 import com.xiaomi.infra.galaxy.emq.thrift.ChangeMessageVisibilityBatchRequestEntry;
 import com.xiaomi.infra.galaxy.emq.thrift.ChangeMessageVisibilityRequest;
+import com.xiaomi.infra.galaxy.emq.thrift.CopyQueueRequest;
 import com.xiaomi.infra.galaxy.emq.thrift.CreateQueueRequest;
 import com.xiaomi.infra.galaxy.emq.thrift.CreateTagRequest;
 import com.xiaomi.infra.galaxy.emq.thrift.DeadMessageBatchRequest;
@@ -93,6 +94,20 @@ public class EMQRequestCheckUtils {
     } else if (objects.length > 1) {
       throw new GalaxyEmqServiceException().setErrMsg("Number of request" +
           " parameters is more than one:" + objects.length);
+    }
+  }
+
+  public static void check(String queueName) throws GalaxyEmqServiceException {
+    validateQueueName(queueName);
+  }
+
+  public static void check(CopyQueueRequest request) throws GalaxyEmqServiceException {
+    validateQueueName(request.getQueueMeta().getQueueName());
+    if (request.getQueueMeta().getQueueAttribute() != null) {
+      validateQueueAttribute(request.getQueueMeta().getQueueAttribute());
+    }
+    if (request.getQueueMeta().getQueueQuota() != null) {
+      validateQueueQuota(request.getQueueMeta().getQueueQuota());
     }
   }
 

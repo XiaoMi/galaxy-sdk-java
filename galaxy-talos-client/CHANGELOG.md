@@ -3,6 +3,15 @@
 
   ...
 
+## 1.1.4
+
+  * D37901: udpate config init method
+  * D35369: Replace 'mdh' dependency with community dependency for spark and storm
+  * D35632: fix sdk may put null msg
+  * D35648/D35864: fix sdk naming checking
+  * D35735/D36159/D36783: add TalosTopicInputFormat for mapreduce job
+  * D35961: Change scope of spark-streaming to compile
+
 
 ## 1.1.3
 

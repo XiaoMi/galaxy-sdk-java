@@ -37,6 +37,7 @@
     <httpcomponents.version>4.2.2</httpcomponents.version>
     <log4j.version>1.2.4</log4j.version>
     <junit.version>4.11</junit.version>
+    <testng.version>6.8.8</testng.version>
     <servlet-api.version>2.5</servlet-api.version>
     <slf4j.version>1.6.1</slf4j.version>
     <snappy.version>1.1.1.6</snappy.version>
@@ -166,5 +167,6 @@
     <module>galaxy-sds-client</module>
     <module>galaxy-emq-client</module>
     <module>galaxy-storm-emq</module>
+    <module>galaxy-emr-client</module>
   </modules>
 </project>

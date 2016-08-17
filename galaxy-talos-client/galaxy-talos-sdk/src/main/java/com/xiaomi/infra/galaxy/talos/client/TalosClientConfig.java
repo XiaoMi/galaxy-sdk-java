@@ -28,6 +28,8 @@ public class TalosClientConfig implements Serializable {
 
   protected Properties properties;
 
+  public TalosClientConfig() {}
+
   public TalosClientConfig(String fileName) {
     this(loadProperties(fileName));
   }
@@ -115,4 +117,37 @@ public class TalosClientConfig implements Serializable {
 
     return properties;
   }
+
+  public void setMaxRetry(int maxRetry) {
+    this.maxRetry = maxRetry;
+  }
+
+  public void setClientTimeout(int clientTimeout) {
+    this.clientTimeout = clientTimeout;
+  }
+
+  public void setClientConnTimeout(int clientConnTimeout) {
+    this.clientConnTimeout = clientConnTimeout;
+  }
+
+  public void setAdminOperationTimeout(int adminOperationTimeout) {
+    this.adminOperationTimeout = adminOperationTimeout;
+  }
+
+  public void setServiceEndpoint(String serviceEndpoint) {
+    this.serviceEndpoint = serviceEndpoint;
+  }
+
+  public void setMaxTotalConnections(int maxTotalConnections) {
+    this.maxTotalConnections = maxTotalConnections;
+  }
+
+  public void setMaxTotalConnectionsPerRoute(int maxTotalConnectionsPerRoute) {
+    this.maxTotalConnectionsPerRoute = maxTotalConnectionsPerRoute;
+  }
+
+  public void setRetry(boolean isRetry) {
+    this.isRetry = isRetry;
+  }
+
 }

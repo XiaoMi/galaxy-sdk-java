@@ -28,6 +28,10 @@ public class TalosProducerConfig extends TalosClientConfig {
   private long updatePartitionMsgNum;
   private String compressionType;
 
+  public TalosProducerConfig() {
+    super();
+  }
+
   public TalosProducerConfig(String fileName) {
     super(fileName);
     init();
@@ -160,5 +164,69 @@ public class TalosProducerConfig extends TalosClientConfig {
       Preconditions.checkArgument(compressionType.equals("GZIP"));
       return MessageCompressionType.GZIP;
     }
+  }
+
+  public void setMaxBufferedMsgNumber(int maxBufferedMsgNumber) {
+    this.maxBufferedMsgNumber = maxBufferedMsgNumber;
+  }
+
+  public void setMaxBufferedMsgBytes(int maxBufferedMsgBytes) {
+    this.maxBufferedMsgBytes = maxBufferedMsgBytes;
+  }
+
+  public void setMaxBufferedMsgTime(int maxBufferedMsgTime) {
+    this.maxBufferedMsgTime = maxBufferedMsgTime;
+  }
+
+  public void setMaxPutMsgNumber(int maxPutMsgNumber) {
+    this.maxPutMsgNumber = maxPutMsgNumber;
+    Utils.checkParameterRange(
+        TalosClientConfigKeys.GALAXY_TALOS_PRODUCER_MAX_PUT_MESSAGE_NUMBER,
+        this.maxPutMsgNumber,
+        TalosClientConfigKeys.GALAXY_TALOS_PRODUCER_MAX_PUT_MESSAGE_NUMBER_MINIMUM,
+        TalosClientConfigKeys.GALAXY_TALOS_PRODUCER_MAX_PUT_MESSAGE_NUMBER_MAXIMUM);
+  }
+
+  public void setMaxPutMsgBytes(int maxPutMsgBytes) {
+    this.maxPutMsgBytes = maxPutMsgBytes;
+    Utils.checkParameterRange(
+        TalosClientConfigKeys.GALAXY_TALOS_PRODUCER_MAX_PUT_MESSAGE_BYTES,
+        this.maxPutMsgBytes,
+        TalosClientConfigKeys.GALAXY_TALOS_PRODUCER_MAX_PUT_MESSAGE_BYTES_MINIMUM,
+        TalosClientConfigKeys.GALAXY_TALOS_PRODUCER_MAX_PUT_MESSAGE_BYTES_MAXIMUM);
+  }
+
+  public void setThreadPoolsize(int threadPoolsize) {
+    this.threadPoolsize = threadPoolsize;
+  }
+
+  public void setCheckPartitionInterval(int checkPartitionInterval) {
+    this.checkPartitionInterval = checkPartitionInterval;
+    Utils.checkParameterRange(
+        TalosClientConfigKeys.GALAXY_TALOS_PRODUCER_CHECK_PARTITION_INTERVAL,
+        this.checkPartitionInterval,
+        TalosClientConfigKeys.GALAXY_TALOS_PRODUCER_CHECK_PARTITION_INTERVAL_MINIMUM,
+        TalosClientConfigKeys.GALAXY_TALOS_PRODUCER_CHECK_PARTITION_INTERVAL_MAXIMUM);
+  }
+
+  public void setUpdatePartitionIdInterval(long updatePartitionIdInterval) {
+    this.updatePartitionIdInterval = updatePartitionIdInterval;
+    Utils.checkParameterRange(
+        TalosClientConfigKeys.GALAXY_TALOS_PRODUCER_UPDATE_PARTITIONID_INTERVAL,
+        (int) updatePartitionIdInterval,
+        (int) TalosClientConfigKeys.GALAXY_TALOS_PRODUCER_UPDATE_PARTITIONID_INTERVAL_MINIMUM,
+        (int) TalosClientConfigKeys.GALAXY_TALOS_PRODUCER_UPDATE_PARTITIONID_INTERVAL_MAXIMUM);
+  }
+
+  public void setWaitPartitionWorkingTime(long waitPartitionWorkingTime) {
+    this.waitPartitionWorkingTime = waitPartitionWorkingTime;
+  }
+
+  public void setUpdatePartitionMsgNum(long updatePartitionMsgNum) {
+    this.updatePartitionMsgNum = updatePartitionMsgNum;
+  }
+
+  public void setCompressionType(String compressionType) {
+    this.compressionType = compressionType;
   }
 }

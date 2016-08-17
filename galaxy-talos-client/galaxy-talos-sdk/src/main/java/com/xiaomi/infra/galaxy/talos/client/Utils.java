@@ -57,11 +57,13 @@ public class Utils {
   }
 
   public static void checkNameValidity(String str) {
-    if (!Pattern.matches(TALOS_NAME_REGEX, str) || str == null ||
-        str.length() <= 0 || str.length() > 80) {
+    if (str == null || str.length() <= 0) {
+      return;
+    }
+    if (!Pattern.matches(TALOS_NAME_REGEX, str) || str.length() > 80) {
       throw new IllegalArgumentException("invalid str: " + str +
           ". please name the str only with the regex set: [a-zA-Z0-9_-]" +
-          ". And the str length must be [1, 80]");
+          ". Its length must be [1, 80] and cannot start with '_' or '-'.");
     }
   }
 

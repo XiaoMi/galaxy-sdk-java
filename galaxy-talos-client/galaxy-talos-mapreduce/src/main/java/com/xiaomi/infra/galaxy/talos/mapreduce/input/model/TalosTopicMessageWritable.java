@@ -40,4 +40,8 @@ public class TalosTopicMessageWritable implements Writable {
     message.setSequenceNumber(WritableUtils.readString(dataInput));
     message.setMessage(WritableUtils.readCompressedByteArray(dataInput));
   }
+
+  public Message getMessage() {
+    return message;
+  }
 }

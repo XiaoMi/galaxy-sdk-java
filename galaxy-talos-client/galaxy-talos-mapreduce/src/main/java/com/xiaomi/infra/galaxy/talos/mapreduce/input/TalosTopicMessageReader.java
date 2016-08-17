@@ -129,14 +129,20 @@ public class TalosTopicMessageReader extends RecordReader<TalosTopicKeyWritable,
       try {
         messageAndOffsetList.addAll(
             simpleConsumer.fetchMessage(nextMessageOffset, fetchMessageNumber));
-        System.out.println("TopicAndPartition: " + topicAndPartition +
-            " fetchMessage with startMessageOffset: " + nextMessageOffset +
-            " success, messageNumber: " + messageAndOffsetList.size());
-        return;
+        if (messageAndOffsetList.size() == 0) {
+          retryTimes = 0;
+          try {
+            Thread.sleep(200);
+          } catch (InterruptedException e) {
+          }
+        } else {
+          return;
+        }
       } catch (TException e) {
         LOG.info("TopicAndPartition: " + topicAndPartition +
             " fetchMessage with startMessageOffset: " + nextMessageOffset + " failed", e);
         exception = e;
+        ++retryTimes;
       }
     }
 
