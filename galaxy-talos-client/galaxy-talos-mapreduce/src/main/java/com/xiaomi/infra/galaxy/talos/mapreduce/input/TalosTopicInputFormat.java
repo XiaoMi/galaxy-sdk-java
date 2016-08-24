@@ -61,6 +61,10 @@ public class TalosTopicInputFormat extends InputFormat<TalosTopicKeyWritable, Ta
         throw new IllegalArgumentException("startMessageOffset must be Long, should not be: " + partitionData[1], e);
       }
 
+      if (startMessageOffset < 0) {
+        throw new IllegalArgumentException("startMessageOffset must be positive, should not be: " + startMessageOffset);
+      }
+
       long endMessageOffset;
       try {
         endMessageOffset = Long.valueOf(partitionData[2]);

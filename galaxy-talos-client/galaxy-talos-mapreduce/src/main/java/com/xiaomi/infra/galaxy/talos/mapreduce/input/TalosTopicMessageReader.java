@@ -83,7 +83,7 @@ public class TalosTopicMessageReader extends RecordReader<TalosTopicKeyWritable,
   @Override
   public boolean nextKeyValue() throws IOException, InterruptedException {
     System.out.println("nextMessageOffset: " + nextMessageOffset + ", endMessageOffset: " + inputSplit.getEndMessageOffset());
-    return nextMessageOffset < inputSplit.getEndMessageOffset();
+    return nextMessageOffset <= inputSplit.getEndMessageOffset();
   }
 
   @Override

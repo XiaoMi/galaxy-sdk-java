@@ -15,7 +15,7 @@
   **galaxy.talos.mapreduce.topic.resource.name:**  The TopicTalosResrouceName to use, ***not the TopicName***;
   </pre></code>
   <pre><code>
-  **galaxy.talos.maprduce.partition.offset:**  The partition offset info, it must in format "partition1:startMessageOffset:endMessageOffset,partition2:startMessageOffset:endMessageOffset"
+  **galaxy.talos.maprduce.partition.offset:**  The partition offset info, it must in format "partition1:startMessageOffset:endMessageOffset,partition2:startMessageOffset:endMessageOffset", when will means we will consume partition1 and partition2 with offset [startMessageOffset, endMessageOffset]
   </pre></code>
   <pre><code>
   **galaxy.talos.mapreduce.secret.id:**  The SecretId for visit talos topic, for more information, please visit: http://docs.api.xiaomi.com/talos/api/auth.html"

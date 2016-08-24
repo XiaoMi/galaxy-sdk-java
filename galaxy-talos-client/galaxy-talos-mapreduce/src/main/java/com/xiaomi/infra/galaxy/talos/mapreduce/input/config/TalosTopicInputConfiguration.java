@@ -20,6 +20,7 @@ public class TalosTopicInputConfiguration {
   /**
    * The partition offset info, it must in format list below:
    * "partition1:startMessageOffset:endMessageOffset,partition2:startMessageOffset:endMessageOffset"
+   * when will means we will consume partition1 and partition2 with offset [startMessageOffset, endMessageOffset]
    */
   public static final String GALAXY_TALOS_MAPREDUCE_PARTITION_OFFSET =
       "galaxy.talos.maprduce.partition.offset";
