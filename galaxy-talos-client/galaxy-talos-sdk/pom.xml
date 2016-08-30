@@ -23,6 +23,10 @@
                     <groupId>com.xiaomi.infra.galaxy</groupId>
                     <artifactId>galaxy-thrift-api</artifactId>
                 </exclusion>
+                <exclusion>
+                    <groupId>org.testng</groupId>
+                    <artifactId>testng</artifactId>
+                </exclusion>
             </exclusions>
         </dependency>
         <dependency>
