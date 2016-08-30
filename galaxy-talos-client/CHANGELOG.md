@@ -1,7 +1,14 @@
 
-## 1.2-SNAPSHOT
+## 1.3-SNAPSHOT
 
   ...
+
+
+## 1.2.0
+  * D39621: exclude org.testng from talos sdk
+  * D38896: Autoset checkpointing of StreamingContext
+  * D39223: Format talos mapreduce config: fetch message with endMessageOffset
+
 
 ## 1.1.4
 
