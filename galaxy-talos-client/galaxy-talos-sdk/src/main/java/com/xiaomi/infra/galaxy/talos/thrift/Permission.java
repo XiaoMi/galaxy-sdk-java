@@ -38,6 +38,16 @@ public enum Permission implements libthrift091.TEnum {
    */
   DESCRIBE_TOPIC(4),
   /**
+   * PUT_MESSAGE and DESCRIBE_TOPIC
+   * 
+   */
+  PUT_MESSAGE_AND_DESCRIBE_TOPIC(5),
+  /**
+   * GET_MESSAGE and DESCRIBE_TOPIC
+   * 
+   */
+  GET_MESSAGE_AND_DESCRIBE_TOPIC(6),
+  /**
    * Topic read and Message full control;
    * 
    */
@@ -101,6 +111,10 @@ public enum Permission implements libthrift091.TEnum {
         return FULL_MESSAGE_CONTROL;
       case 4:
         return DESCRIBE_TOPIC;
+      case 5:
+        return PUT_MESSAGE_AND_DESCRIBE_TOPIC;
+      case 6:
+        return GET_MESSAGE_AND_DESCRIBE_TOPIC;
       case 7:
         return TOPIC_READ_AND_MESSAGE_FULL_CONTROL;
       case 8:
