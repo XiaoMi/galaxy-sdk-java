@@ -544,6 +544,20 @@ struct VerifyEMQAdminResponse {
   1: required string prefix;
 }
 
+struct QueueTag{
+  1: required string queueName;
+  2: required string tagName;
+  /**
+  * Tag id must be more than zero
+  **/
+  3: required i32 tagId;
+  4: optional i64 startTimestamp;
+  5: optional i64 createTimestamp;
+  6: optional string attributeName;
+  7: optional Message.MessageAttribute attributeValue;
+  8: optional map<string, string> userAttributes;
+}
+
 struct QueueMeta{
   /**
   * The queue name, prefix is developerId, must has prefix;
@@ -606,19 +620,7 @@ struct QueueMeta{
   13: optional map<string, QueueTag> queueTagMap;
 }
 
-struct QueueTag{
-  1: required string queueName;
-  2: required string tagName;
-  /**
-  * Tag id must be more than zero
-  **/
-  3: required i32 tagId;
-  4: optional i64 startTimestamp;
-  5: optional i64 createTimestamp;
-  6: optional string attributeName;
-  7: optional Message.MessageAttribute attributeValue;
-  8: optional map<string, string> userAttributes;
-}
+
 struct GetQueueMetaResponse{
   1: required QueueMeta queueMeta;
 }
