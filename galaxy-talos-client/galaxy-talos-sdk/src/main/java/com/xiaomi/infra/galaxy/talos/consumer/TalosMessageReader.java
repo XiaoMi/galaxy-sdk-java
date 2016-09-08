@@ -9,7 +9,6 @@ package com.xiaomi.infra.galaxy.talos.consumer;
 import java.util.List;
 
 import libthrift091.TException;
-import org.omg.CORBA.TRANSACTION_MODE;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -29,9 +28,24 @@ public class TalosMessageReader extends MessageReader implements MessageCheckpoi
 
   @Override
   public void initStartOffset() throws Exception {
-    startOffset.set(queryStartOffset());
+    // get last commit offset
+    long readingStartOffset = queryStartOffset();
+
+    // when consumer starting up, checking:
+    // 1) whether not exist last commit offset, which means 'readingStartOffset==-1'
+    // 2) whether reset offset
+    if (readingStartOffset == -1 || consumerConfig.isResetOffsetWhenStart()) {
+      startOffset.set(consumerConfig.getResetOffsetValueWhenStart());
+    } else {
+      startOffset.set(readingStartOffset);
+    }
+
     // guarantee lastCommitOffset and finishedOffset correct
-    lastCommitOffset = finishedOffset = startOffset.get() - 1;
+    if (startOffset.longValue() > 0) {
+      lastCommitOffset = finishedOffset = startOffset.get() - 1;
+    }
+    LOG.info("Init startOffset: " + startOffset + " lastCommitOffset: " +
+        lastCommitOffset + " for partition: " + topicAndPartition);
     messageProcessor.init(topicAndPartition, startOffset.get());
   }
 
@@ -95,8 +109,11 @@ public class TalosMessageReader extends MessageReader implements MessageCheckpoi
         consumerGroup, topicAndPartition);
     QueryOffsetResponse queryOffsetResponse = consumerClient.queryOffset(
         queryOffsetRequest);
-    // startOffset = queryOffset + 1
-    return queryOffsetResponse.getMsgOffset() + 1;
+
+    long committedOffset = queryOffsetResponse.getMsgOffset();
+    // 'committedOffset == -1' means not exist last committed offset
+    // startOffset = committedOffset + 1
+    return ((committedOffset == -1) ? -1 : committedOffset + 1);
   }
 
   private void innerCheckpoint() throws TException {
@@ -137,8 +154,8 @@ public class TalosMessageReader extends MessageReader implements MessageCheckpoi
   private void commitOffset(long messageOffset) throws TException {
     CheckPoint checkPoint = new CheckPoint(consumerGroup, topicAndPartition,
         messageOffset, workerId);
-    // check whether to check last commit offset
-    if (consumerConfig.isCheckLastCommitOffset()) {
+    // check whether to check last commit offset, firstCommit do not check
+    if ((lastCommitOffset != -1) && consumerConfig.isCheckLastCommitOffset()) {
       checkPoint.setLastCommitOffset(lastCommitOffset);
     }
 

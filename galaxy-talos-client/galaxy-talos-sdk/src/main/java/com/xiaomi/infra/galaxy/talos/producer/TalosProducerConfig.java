@@ -30,6 +30,7 @@ public class TalosProducerConfig extends TalosClientConfig {
 
   public TalosProducerConfig() {
     super();
+    init(); // parameterChecking will be done in set function
   }
 
   public TalosProducerConfig(String fileName) {

@@ -28,15 +28,24 @@ public class TalosClientConfig implements Serializable {
 
   protected Properties properties;
 
-  public TalosClientConfig() {}
+  public TalosClientConfig() {
+    initClientConfig(new Properties());
+  }
 
   public TalosClientConfig(String fileName) {
     this(loadProperties(fileName));
   }
 
   public TalosClientConfig(Properties pro) {
-    this.properties = pro;
+    initClientConfig(pro);
+    if (serviceEndpoint == null) {
+      throw new RuntimeException(
+          "The property of 'galaxy.talos.service.endpoint' must be set");
+    }
+  }
 
+  private void initClientConfig(Properties pro) {
+    this.properties = pro;
     maxRetry = Integer.parseInt(properties.getProperty(
         TalosClientConfigKeys.GALAXY_TALOS_CLIENT_MAX_RETRY, String.valueOf(
             TalosClientConfigKeys.GALAXY_TALOS_CLIENT_MAX_RETRY_DEFAULT)));
@@ -51,12 +60,6 @@ public class TalosClientConfig implements Serializable {
         String.valueOf(TalosClientConfigKeys.GALAXY_TALOS_CLIENT_ADMIN_TIMEOUT_MILLI_SECS_DEFAULT)));
     serviceEndpoint = properties.getProperty(
         TalosClientConfigKeys.GALAXY_TALOS_SERVICE_ENDPOINT, null);
-
-    if (serviceEndpoint == null) {
-      throw new RuntimeException(
-          "The property of 'galaxy.talos.service.endpoint' must be set");
-    }
-
     maxTotalConnections = Integer.parseInt(properties.getProperty(
         TalosClientConfigKeys.GALAXY_TALOS_HTTP_MAX_TOTAL_CONNECTION,
         String.valueOf(TalosClientConfigKeys.GALAXY_TALOS_HTTP_MAX_TOTAL_CONNECTION_DEFAULT)));

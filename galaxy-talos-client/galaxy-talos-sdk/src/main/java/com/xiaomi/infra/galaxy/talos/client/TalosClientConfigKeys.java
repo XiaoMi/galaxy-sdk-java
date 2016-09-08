@@ -292,10 +292,35 @@ public class TalosClientConfigKeys {
   /**
    * The consumer reset offset by the latest offset when out of range
    */
-  public static final String GALAXY_TALOS_CONSUMER_RESET_LATEST_OFFSET =
-      "galaxy.talos.consumer.reset.latest.offset";
-  public static final boolean GALAXY_TALOS_CONSUMER_RESET_LATEST_OFFSET_DEFAULT =
-      true;
+  public static final String GALAXY_TALOS_CONSUMER_OUT_OF_RANGE_RESET_LATEST_OFFSET =
+      "galaxy.talos.consumer.out.of.range.reset.latest.offset";
+  public static final boolean GALAXY_TALOS_CONSUMER_OUT_OF_RANGE_RESET_LATEST_OFFSET_DEFAULT =
+      false;
+
+  /**
+   * When the consumer starts up (including first start and restart),
+   * this configuration indicates whether reset the offset which from reading.
+   * The default value is false which means reading messages from the
+   * 'last commit offset'(restart) or 'MessageOffset.START_OFFSET'(firstly start).
+   */
+  public static final String GALAXY_TALOS_CONSUMER_START_WHETHER_RESET_OFFSET =
+      "galaxy.talos.consumer.start.whether.reset.offset";
+  public static final boolean GALAXY_TALOS_CONSUMER_START_WHETHER_RESET_OFFSET_DEFAULT = false;
+
+  /**
+   * In the following conditions, this configuration will be effective:
+   * 1) 'galaxy.talos.consumer.restart.whether.reset.offset' is 'true';
+   * 2) the consumer is firstly starting which means there is not historical committed offset
+   * Either condition above will lead to the consumer reading messages from the 'reset offset'.
+   *
+   * The value of 'reset offset' has two kinds: -1, -2.
+   * '-1' represents reading message from 'MessageOffset.START_OFFSET'
+   * '-2' represents reading message from 'MessageOffset.LATEST_OFFSET'
+   */
+  public static final String GALAXY_TALOS_CONSUMER_START_RESET_OFFSET_VALUE =
+      "galaxy.talos.consumer.start.reset.offset.value";
+  public static final long GALAXY_TALOS_CONSUMER_START_RESET_OFFSET_AS_START = -1;
+  public static final long GALAXY_TALOS_CONSUMER_START_RESET_OFFSET_AS_END = -2;
 
   /**
    * The consumer checkpoint auto commit;
@@ -303,6 +328,5 @@ public class TalosClientConfigKeys {
   public static final String GALAXY_TALOS_CONSUMER_CHECKPOINT_AUTO_COMMIT =
       "galaxy.talos.consumer.checkpoint.auto.commit";
   public static final boolean GALAXY_TALOS_CONSUMER_CHECKPOINT_AUTO_COMMIT_DEFAULT = true;
-
 
 }

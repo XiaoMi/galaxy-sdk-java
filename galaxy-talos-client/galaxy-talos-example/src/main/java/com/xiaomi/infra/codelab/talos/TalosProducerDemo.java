@@ -102,10 +102,10 @@ public class TalosProducerDemo {
     Message message = new Message(ByteBuffer.wrap(messageStr.getBytes()));
     List<Message> messageList = new ArrayList<Message>();
     messageList.add(message);
-    // a toy demo for putting messages to Talos server continuously
-    while (true) {
-      talosProducer.addUserMessage(messageList);
-    }
+    talosProducer.addUserMessage(messageList);
+    // when call shutdown function,
+    // the producer will wait all the messages in buffer to send to server
+    talosProducer.shutdown();
   }
 
   public static void main(String[] args) throws Exception {

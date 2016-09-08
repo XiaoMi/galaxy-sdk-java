@@ -25,11 +25,14 @@ public class TalosConsumerConfig extends TalosClientConfig {
   private int fetchMessageInterval;
   private boolean checkLastCommitOffset;
   private long waitPartitionWorkingTime;
-  private boolean resetLatestOffset;
+  private boolean resetLatestOffsetWhenOutOfRange;
   private boolean checkpointAutoCommit;
+  private boolean resetOffsetWhenStart;
+  private long resetOffsetValueWhenStart;
 
   public TalosConsumerConfig() {
     super();
+    init(); // parameterChecking will be done in set function
   }
 
   public TalosConsumerConfig(String fileName) {
@@ -85,12 +88,18 @@ public class TalosConsumerConfig extends TalosClientConfig {
     waitPartitionWorkingTime = Long.parseLong(properties.getProperty(
         TalosClientConfigKeys.GALAXY_TALOS_CONSUMER_WAIT_PARTITION_WORKING_TIME,
         String.valueOf(TalosClientConfigKeys.GALAXY_TALOS_CONSUMER_WAIT_PARTITION_WORKING_TIME_DEFAULT)));
-    resetLatestOffset = Boolean.parseBoolean(properties.getProperty(
-        TalosClientConfigKeys.GALAXY_TALOS_CONSUMER_RESET_LATEST_OFFSET,
-        String.valueOf(TalosClientConfigKeys.GALAXY_TALOS_CONSUMER_RESET_LATEST_OFFSET_DEFAULT)));
+    resetLatestOffsetWhenOutOfRange = Boolean.parseBoolean(properties.getProperty(
+        TalosClientConfigKeys.GALAXY_TALOS_CONSUMER_OUT_OF_RANGE_RESET_LATEST_OFFSET,
+        String.valueOf(TalosClientConfigKeys.GALAXY_TALOS_CONSUMER_OUT_OF_RANGE_RESET_LATEST_OFFSET_DEFAULT)));
     checkpointAutoCommit = Boolean.parseBoolean(properties.getProperty(
         TalosClientConfigKeys.GALAXY_TALOS_CONSUMER_CHECKPOINT_AUTO_COMMIT,
         String.valueOf(TalosClientConfigKeys.GALAXY_TALOS_CONSUMER_CHECKPOINT_AUTO_COMMIT_DEFAULT)));
+    resetOffsetWhenStart = Boolean.parseBoolean(properties.getProperty(
+        TalosClientConfigKeys.GALAXY_TALOS_CONSUMER_START_WHETHER_RESET_OFFSET,
+        String.valueOf(TalosClientConfigKeys.GALAXY_TALOS_CONSUMER_START_WHETHER_RESET_OFFSET_DEFAULT)));
+    resetOffsetValueWhenStart = Long.parseLong(properties.getProperty(
+        TalosClientConfigKeys.GALAXY_TALOS_CONSUMER_START_RESET_OFFSET_VALUE,
+        String.valueOf(TalosClientConfigKeys.GALAXY_TALOS_CONSUMER_START_RESET_OFFSET_AS_START)));
   }
 
   private void parameterChecking() {
@@ -134,6 +143,11 @@ public class TalosConsumerConfig extends TalosClientConfig {
         commitOffsetInterval,
         TalosClientConfigKeys.GALAXY_TALOS_CONSUMER_COMMIT_OFFSET_INTERVAL_MINIMUM,
         TalosClientConfigKeys.GALAXY_TALOS_CONSUMER_COMMIT_OFFSET_INTERVAL_MAXIMUM);
+    Utils.checkParameterRange(
+        TalosClientConfigKeys.GALAXY_TALOS_CONSUMER_START_RESET_OFFSET_VALUE,
+        (int) resetOffsetValueWhenStart,
+        (int) TalosClientConfigKeys.GALAXY_TALOS_CONSUMER_START_RESET_OFFSET_AS_END,
+        (int) TalosClientConfigKeys.GALAXY_TALOS_CONSUMER_START_RESET_OFFSET_AS_START);
   }
 
   public int getPartitionCheckInterval() {
@@ -180,12 +194,20 @@ public class TalosConsumerConfig extends TalosClientConfig {
     return waitPartitionWorkingTime;
   }
 
-  public boolean isResetLatestOffset() {
-    return resetLatestOffset;
+  public boolean isResetLatestOffsetWhenOutOfRange() {
+    return resetLatestOffsetWhenOutOfRange;
   }
 
   public boolean isCheckpointAutoCommit() {
     return checkpointAutoCommit;
+  }
+
+  public boolean isResetOffsetWhenStart() {
+    return resetOffsetWhenStart;
+  }
+
+  public long getResetOffsetValueWhenStart() {
+    return resetOffsetValueWhenStart;
   }
 
   public void setPartitionCheckInterval(int partitionCheckInterval) {
@@ -272,11 +294,24 @@ public class TalosConsumerConfig extends TalosClientConfig {
     this.waitPartitionWorkingTime = waitPartitionWorkingTime;
   }
 
-  public void setResetLatestOffset(boolean resetLatestOffset) {
-    this.resetLatestOffset = resetLatestOffset;
+  public void setResetLatestOffsetWhenOutOfRange(boolean resetLatestOffsetWhenOutOfRange) {
+    this.resetLatestOffsetWhenOutOfRange = resetLatestOffsetWhenOutOfRange;
   }
 
   public void setCheckpointAutoCommit(boolean checkpointAutoCommit) {
     this.checkpointAutoCommit = checkpointAutoCommit;
+  }
+
+  public void setResetOffsetWhenStart(boolean resetOffsetWhenStart) {
+    this.resetOffsetWhenStart = resetOffsetWhenStart;
+  }
+
+  public void setResetOffsetValueWhenStart(long resetOffsetValueWhenStart) {
+    this.resetOffsetValueWhenStart = resetOffsetValueWhenStart;
+    Utils.checkParameterRange(
+        TalosClientConfigKeys.GALAXY_TALOS_CONSUMER_START_RESET_OFFSET_VALUE,
+        (int) resetOffsetValueWhenStart,
+        (int) TalosClientConfigKeys.GALAXY_TALOS_CONSUMER_START_RESET_OFFSET_AS_END,
+        (int) TalosClientConfigKeys.GALAXY_TALOS_CONSUMER_START_RESET_OFFSET_AS_START);
   }
 }

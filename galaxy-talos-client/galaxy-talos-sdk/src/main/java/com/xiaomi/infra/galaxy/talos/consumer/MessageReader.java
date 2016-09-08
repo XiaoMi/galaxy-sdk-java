@@ -118,17 +118,17 @@ public abstract class MessageReader {
 
     // process message offset out of range, reset start offset
     if (Utils.isOffsetOutOfRange(e)) {
-      if (consumerConfig.isResetLatestOffset()) {
+      if (consumerConfig.isResetLatestOffsetWhenOutOfRange()) {
         LOG.warn("Got PartitionOutOfRange error, " +
             " offset by current latest offset");
         startOffset.set(MessageOffset.LATEST_OFFSET.getValue());
-        lastCommitOffset = finishedOffset = startOffset.get() - 1;
+        lastCommitOffset = finishedOffset = - 1;
         lastCommitTime = System.currentTimeMillis();
       } else {
         LOG.warn("Got PartitionOutOfRange error," +
             " reset offset by current start offset");
         startOffset.set(MessageOffset.START_OFFSET.getValue());
-        lastCommitOffset = finishedOffset = startOffset.get() - 1;
+        lastCommitOffset = finishedOffset = - 1;
         lastCommitTime = System.currentTimeMillis();
       }
     } // if
