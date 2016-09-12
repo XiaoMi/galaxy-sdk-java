@@ -40,6 +40,10 @@ public class TalosProducerDemo {
     public void onSuccess(UserMessageResult userMessageResult) {
       long count = successPutNumber.addAndGet(
           userMessageResult.getMessageList().size());
+
+      for (Message message : userMessageResult.getMessageList()) {
+        LOG.info("success to put message: " + new String(message.getMessage()));
+      }
       LOG.info("success to put message: " + count + " so far.");
     }
 
@@ -47,6 +51,9 @@ public class TalosProducerDemo {
     @Override
     public void onError(UserMessageResult userMessageResult) {
       try {
+        for (Message message : userMessageResult.getMessageList()) {
+          LOG.info("failed to put message: " + message + " we will retry to put it.");
+        }
         talosProducer.addUserMessage(userMessageResult.getMessageList());
       } catch (ProducerNotActiveException e) {
         e.printStackTrace();
@@ -58,6 +65,7 @@ public class TalosProducerDemo {
   private static final String appKeyId = "$your_appKey";
   private static final String appKeySecret = "$your_appSecret";
   private static final String topicName = "testTopic";
+  private static final int toPutMsgNumber = 7;
   private static final AtomicLong successPutNumber = new AtomicLong(0);
 
   private TalosClientConfig clientConfig;
@@ -79,7 +87,8 @@ public class TalosProducerDemo {
 
     // credential
     credential = new Credential();
-    credential.setSecretKeyId(appKeyId).setSecretKey(appKeySecret)
+    credential.setSecretKeyId(appKeyId)  // using 'AppKey'
+        .setSecretKey(appKeySecret)      // using 'AppSecret'
         .setType(UserType.APP_SECRET);
 
     // init admin and try to get or create topic info
@@ -98,10 +107,12 @@ public class TalosProducerDemo {
         topicTalosResourceName, new SimpleTopicAbnormalCallback(),
         new MyMessageCallback());
 
-    String messageStr = "test message: this message is a text string.";
-    Message message = new Message(ByteBuffer.wrap(messageStr.getBytes()));
     List<Message> messageList = new ArrayList<Message>();
-    messageList.add(message);
+    for (int i = 0; i < toPutMsgNumber; ++i) {
+      String messageStr = "message id: " + i + ": this message is a text string.";
+      Message message = new Message(ByteBuffer.wrap(messageStr.getBytes()));
+      messageList.add(message);
+    }
     talosProducer.addUserMessage(messageList);
     // when call shutdown function,
     // the producer will wait all the messages in buffer to send to server

@@ -8,9 +8,10 @@ package com.xiaomi.infra.codelab.talos;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Properties;
 
 import libthrift091.TException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.xiaomi.infra.galaxy.rpc.thrift.Credential;
 import com.xiaomi.infra.galaxy.rpc.thrift.GrantType;
@@ -29,6 +30,7 @@ import com.xiaomi.infra.galaxy.talos.thrift.TopicAttribute;
 import com.xiaomi.infra.galaxy.talos.thrift.TopicTalosResourceName;
 
 public class TalosAdminDemo {
+  private static final Logger LOG = LoggerFactory.getLogger(TalosAdminDemo.class);
   // authenticate for Developer, using to createTopic/setPermission etc.
   private static final String accountKeyId = "$your_accountKey";
   private static final String accountSecret = "$your_accountKeySecret";
@@ -69,7 +71,8 @@ public class TalosAdminDemo {
 
     // credential
     credential = new Credential();
-    credential.setSecretKeyId(accountKeyId).setSecretKey(accountSecret)
+    credential.setSecretKeyId(accountKeyId) // using the 'AccountKey'
+        .setSecretKey(accountSecret)        // using the 'AccountSecret'
         .setType(UserType.DEV_XIAOMI);
 
     // init admin
@@ -97,6 +100,7 @@ public class TalosAdminDemo {
   public TopicTalosResourceName getTopicTalosResourceName() throws TException {
     Topic topic = talosAdmin.describeTopic(new DescribeTopicRequest(topicName));
     resourceName = topic.getTopicInfo().getTopicTalosResourceName();
+    LOG.info("Topic resourceName is: " + resourceName);
     return resourceName;
   }
 
@@ -119,7 +123,7 @@ public class TalosAdminDemo {
     TalosAdminDemo adminDemo = new TalosAdminDemo();
     adminDemo.createTopic();
     adminDemo.getTopicTalosResourceName();
-    adminDemo.changeTopicAttribute();
+    // adminDemo.changeTopicAttribute();
     // adminDemo.deleteTopic();
   }
 }

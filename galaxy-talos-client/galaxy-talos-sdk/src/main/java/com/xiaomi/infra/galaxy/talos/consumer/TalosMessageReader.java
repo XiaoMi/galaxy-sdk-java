@@ -92,6 +92,7 @@ public class TalosMessageReader extends MessageReader implements MessageCheckpoi
           innerCheckpoint();
         } catch (TException e) {
           // when commitOffset failed, we just do nothing;
+          LOG.error("commit offset error: " + e.toString() + " skip to it");
         }
       }
     } catch (Throwable e) {
@@ -170,7 +171,7 @@ public class TalosMessageReader extends MessageReader implements MessageCheckpoi
           lastCommitOffset + " for partition: " +
           topicAndPartition.getPartitionId());
     } else {
-      LOG.info("Worker: " + workerId + " commit offset: " +
+      LOG.error("Worker: " + workerId + " commit offset: " +
           lastCommitOffset + " for partition: " +
           topicAndPartition.getPartitionId() + " failed");
     }
