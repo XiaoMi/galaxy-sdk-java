@@ -50,7 +50,11 @@ public enum TableState implements libthrift091.TEnum {
   /**
    * 正在重命名，不可操作
    */
-  RENAMING(9);
+  RENAMING(9),
+  /**
+   * 正在恢复，不可操作
+   */
+  RECOVERING(10);
 
   private final int value;
 
@@ -89,6 +93,8 @@ public enum TableState implements libthrift091.TEnum {
         return LAZY_DELETE;
       case 9:
         return RENAMING;
+      case 10:
+        return RECOVERING;
       default:
         return null;
     }
