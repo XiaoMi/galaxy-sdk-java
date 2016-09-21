@@ -1,8 +1,10 @@
 
 ## 1.3-SNAPSHOT
 
-  ...
-
+## 1.2.1
+  * D40435: update demo by user-return-visit
+  * D40143: wrap query offset logic & make offset setting flexible for user start/restart consumer
+  * D39981: update sdk permission def
 
 ## 1.2.0
   * D39621: exclude org.testng from talos sdk
@@ -11,7 +13,6 @@
 
 
 ## 1.1.4
-
   * D37901: udpate config init method
   * D35369: Replace 'mdh' dependency with community dependency for spark and storm
   * D35632: fix sdk may put null msg
@@ -21,18 +22,15 @@
 
 
 ## 1.1.3
-
   * D34943/D35154: SDK support SDS Stream Auth
 
 
 ## 1.1.2
-
   * D33949: Add talos-storm plugin
   * D34377: Make config serializable
 
 
 ## 1.1.1
-
   * D34190: Fix log info boring to application
   * D33815: Add unhandled msg number for fetched messages
   * D33736: Using Properties instead of hadoop.conf
@@ -44,7 +42,6 @@
 
 
 ## 1.1.0
-
   * D32867: Enlarge message bytes limit
   * D32717: Change SimplePartitioner to adjust range partition
   * D32260: Bug fix: SimpleConsumer fetchMessage sometimes return some old data
