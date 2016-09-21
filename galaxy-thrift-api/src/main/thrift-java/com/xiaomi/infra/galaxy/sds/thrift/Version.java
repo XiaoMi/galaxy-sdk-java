@@ -173,7 +173,7 @@ public class Version implements libthrift091.TBase<Version, Version._Fields>, ja
 
     this.minor = 0;
 
-    this.patch = "bfe1d0d0";
+    this.patch = "c672f44b";
 
     this.comments = "";
 
@@ -204,7 +204,7 @@ public class Version implements libthrift091.TBase<Version, Version._Fields>, ja
 
     this.minor = 0;
 
-    this.patch = "bfe1d0d0";
+    this.patch = "c672f44b";
 
     this.comments = "";
 
