@@ -10,6 +10,7 @@ import java.io.IOException;
 import java.util.LinkedList;
 import java.util.Properties;
 
+import com.google.common.base.Preconditions;
 import libthrift091.TException;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.mapreduce.InputSplit;
@@ -118,7 +119,7 @@ public class TalosTopicMessageReader extends RecordReader<TalosTopicKeyWritable,
   }
 
   private void fetchMessage() throws IOException {
-    int fetchMessageNumber = (int)(inputSplit.getEndMessageOffset() - nextMessageOffset);
+    int fetchMessageNumber = (int)(inputSplit.getEndMessageOffset() - nextMessageOffset + 1);
     if (fetchMessageNumber > TalosClientConfigKeys.GALAXY_TALOS_CONSUMER_MAX_FETCH_RECORDS_DEFAULT) {
       fetchMessageNumber = TalosClientConfigKeys.GALAXY_TALOS_CONSUMER_MAX_FETCH_RECORDS_DEFAULT;
     }
