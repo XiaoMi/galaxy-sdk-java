@@ -309,7 +309,7 @@ public class StreamDemo {
     Map<String, StreamSpec> streamSpecs = new HashMap<String, StreamSpec>();
     streamSpecs.put(topicName, streamSpec);
     TableSpec tableSpec = DataProvider.createTableSpec(appId, enableEntityGroup,
-        enableEntityGroupHash, streamSpecs);
+        enableEntityGroupHash, streamSpecs, null);
 
     TableInfo tableInfo = adminClient.createTable(tableName, tableSpec);
     LOG.info("Src table " + tableName + " is created");
