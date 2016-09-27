@@ -7,6 +7,7 @@ import com.xiaomi.infra.galaxy.sds.thrift.Datum;
 import com.xiaomi.infra.galaxy.sds.thrift.DatumUtil;
 import com.xiaomi.infra.galaxy.sds.thrift.EntityGroupSpec;
 import com.xiaomi.infra.galaxy.sds.thrift.KeySpec;
+import com.xiaomi.infra.galaxy.sds.thrift.PointInTimeRecovery;
 import com.xiaomi.infra.galaxy.sds.thrift.ProvisionThroughput;
 import com.xiaomi.infra.galaxy.sds.thrift.StreamSpec;
 import com.xiaomi.infra.galaxy.sds.thrift.TableMetadata;
@@ -53,11 +54,11 @@ public class DataProvider {
 
   public static TableSpec createTableSpec(String appId, boolean enableEntityGroup,
       boolean enableEntityGroupHash) {
-    return createTableSpec(appId, enableEntityGroup, enableEntityGroupHash, null);
+    return createTableSpec(appId, enableEntityGroup, enableEntityGroupHash, null, null);
   }
 
-  public static TableSpec createTableSpec(String appId, boolean enableEntityGroup,
-      boolean enableEntityGroupHash, Map<String, StreamSpec> streamSpecs) {
+  public static TableSpec createTableSpec(String appId, boolean enableEntityGroup, boolean enableEntityGroupHash,
+      Map<String, StreamSpec> streamSpecs, PointInTimeRecovery pitr) {
     EntityGroupSpec groupSpec = enableEntityGroup ?
         new EntityGroupSpec().setAttributes(ENTITY_GROUP_KEYS)
             .setEnableHash(enableEntityGroupHash) : null;
@@ -80,6 +81,10 @@ public class DataProvider {
             .setWriteCapacity(exceededWriteCapacity));
     if (streamSpecs != null) {
       tableSchema.setStreams(streamSpecs);
+    }
+
+    if (pitr != null) {
+      tableMetadata.setPitr(pitr);
     }
 
     return new TableSpec().setSchema(tableSchema).setMetadata(tableMetadata);
