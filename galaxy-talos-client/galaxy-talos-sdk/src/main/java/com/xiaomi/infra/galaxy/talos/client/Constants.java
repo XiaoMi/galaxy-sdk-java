@@ -29,4 +29,12 @@ public class Constants {
   public static final int TALOS_PARTITION_KEY_LENGTH_MINIMAL = 1;
   public static final int TALOS_PARTITION_KEY_LENGTH_MAXIMAL = 256;
 
+  /**
+   * Constants for cloud-manager auth
+   */
+  public static final String TALOS_CLOUD_TOPIC_NAME_DELIMITER = "/";
+  public static final String TALOS_CLOUD_ORG_PREFIX = "CL";
+  public static final String TALOS_CLOUD_TEAM_PREFIX = "CI";
+  public static final String TALOS_CLOUD_AK_PREFIX = "AK";
+
 }

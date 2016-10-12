@@ -36,6 +36,7 @@ public class SimpleProducer {
   public SimpleProducer(TalosProducerConfig producerConfig,
       TopicAndPartition topicAndPartition, MessageService.Iface messageClient,
       String clientId, AtomicLong requestId) {
+    Utils.checkTopicAndPartition(topicAndPartition);
     this.producerConfig = producerConfig;
     this.topicAndPartition = topicAndPartition;
     this.messageClient = messageClient;

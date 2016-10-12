@@ -37,6 +37,7 @@ public class SimpleConsumer {
   public SimpleConsumer(TalosConsumerConfig consumerConfig,
       TopicAndPartition topicAndPartition, MessageService.Iface messageClient,
       String consumerIdPrefix) {
+    Utils.checkTopicAndPartition(topicAndPartition);
     this.consumerConfig = consumerConfig;
     this.topicAndPartition = topicAndPartition;
     this.messageClient = messageClient;

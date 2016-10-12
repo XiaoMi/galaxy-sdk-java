@@ -15,9 +15,12 @@ import com.google.common.base.Preconditions;
 import com.xiaomi.infra.galaxy.talos.thrift.ErrorCode;
 import com.xiaomi.infra.galaxy.talos.thrift.GalaxyTalosException;
 import com.xiaomi.infra.galaxy.talos.thrift.MessageOffset;
+import com.xiaomi.infra.galaxy.talos.thrift.TopicAndPartition;
 
+import static com.xiaomi.infra.galaxy.talos.client.Constants.TALOS_CLOUD_ORG_PREFIX;
 import static com.xiaomi.infra.galaxy.talos.client.Constants.TALOS_IDENTIFIER_DELIMITER;
 import static com.xiaomi.infra.galaxy.talos.client.Constants.TALOS_NAME_REGEX;
+import static com.xiaomi.infra.galaxy.talos.client.Constants.TALOS_CLOUD_TOPIC_NAME_DELIMITER;
 
 public class Utils {
   /**
@@ -54,6 +57,31 @@ public class Utils {
 
   public static String generateClientId() {
     return System.currentTimeMillis() + UUID.randomUUID().toString().substring(0, 8);
+  }
+
+  public static void checkTopicAndPartition(TopicAndPartition topicAndPartition) {
+    if (topicAndPartition.getTopicName().contains(TALOS_CLOUD_TOPIC_NAME_DELIMITER)) {
+      throw new IllegalArgumentException(
+          "The topic name format in TopicAndPartition should not be: orgId/topicName");
+    }
+  }
+
+  // The format of cloud topicName is: orgId/topicName
+  public static void checkCloudTopicNameValidity(String topicName) {
+    if (topicName == null || topicName.length() == 0) {
+      throw new IllegalArgumentException("Got null topicName");
+    }
+
+    String[] items = topicName.split(TALOS_CLOUD_TOPIC_NAME_DELIMITER);
+    // either 'xxx/xxx/'(split 2), '/xxx'(split 2) or 'xx//xx'(split 3) are invalid
+    if (items.length != 2 || topicName.endsWith(TALOS_CLOUD_TOPIC_NAME_DELIMITER)
+        || !topicName.startsWith(TALOS_CLOUD_ORG_PREFIX)) {
+      throw new IllegalArgumentException(
+          "The format of topicName used by cloud-manager must be: orgId/topicName");
+    }
+
+    // check real topic name validity
+    checkNameValidity(items[1]);
   }
 
   public static void checkNameValidity(String str) {

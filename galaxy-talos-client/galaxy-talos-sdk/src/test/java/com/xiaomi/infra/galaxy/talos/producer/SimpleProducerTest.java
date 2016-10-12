@@ -93,6 +93,15 @@ public class SimpleProducerTest {
     inOrder.verifyNoMoreInteractions();
   }
 
+  @Test (expected = IllegalArgumentException.class)
+  public void testTopicAndPartition() throws Exception {
+    TopicAndPartition topicAndPartition1 = new TopicAndPartition(
+        "CL777/" + topicName, new TopicTalosResourceName(resourceName),
+        partitionId);
+    SimpleProducer simpleProducer1 = new SimpleProducer(producerConfig,
+        topicAndPartition1, messageClientMock, new AtomicLong());
+  }
+
   @Test
   public void testPutMessageException() throws TException {
     doThrow(new GalaxyTalosException()).doReturn(new PutMessageResponse())

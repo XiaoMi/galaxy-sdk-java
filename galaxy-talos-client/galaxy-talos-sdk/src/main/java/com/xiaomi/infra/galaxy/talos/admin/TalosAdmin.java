@@ -51,11 +51,14 @@ import com.xiaomi.infra.galaxy.talos.thrift.TopicService;
 import com.xiaomi.infra.galaxy.talos.thrift.TopicTalosResourceName;
 import com.xiaomi.infra.galaxy.talos.thrift.UserQuota;
 
+import static com.xiaomi.infra.galaxy.talos.client.Constants.TALOS_CLOUD_AK_PREFIX;
+
 public class TalosAdmin {
   private static final Logger LOG = LoggerFactory.getLogger(TalosAdmin.class);
   private TopicService.Iface topicClient;
   private MessageService.Iface messageClient;
   private QuotaService.Iface quotaClient;
+  private Credential credential;
 
   // used by guest
   public TalosAdmin(TalosClientConfig talosClientConfig) {
@@ -72,12 +75,17 @@ public class TalosAdmin {
     topicClient = talosClientFactory.newTopicClient();
     messageClient = talosClientFactory.newMessageClient();
     quotaClient = talosClientFactory.newQuotaClient();
+    credential = talosClientFactory.getCredential();
   }
 
   // topicAttribute for partitionNumber required
   public CreateTopicResponse createTopic(CreateTopicRequest request)
       throws GalaxyTalosException, TException {
-    Utils.checkNameValidity(request.getTopicName());
+    if (credential.getSecretKeyId().startsWith(TALOS_CLOUD_AK_PREFIX)) {
+      Utils.checkCloudTopicNameValidity(request.getTopicName());
+    } else {
+      Utils.checkNameValidity(request.getTopicName());
+    }
     return topicClient.createTopic(request);
   }
 
