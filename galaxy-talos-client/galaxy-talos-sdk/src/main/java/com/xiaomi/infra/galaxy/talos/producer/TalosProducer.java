@@ -258,6 +258,8 @@ public class TalosProducer {
         }
         partitionBufferMap.get(partitionId).add(new UserMessage(message));
       }
+
+      Utils.checkMessageSequenceNumberValidity(message);
     }
 
     // add to partitionSender

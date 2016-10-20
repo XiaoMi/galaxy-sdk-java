@@ -14,6 +14,7 @@ import com.google.common.base.Preconditions;
 
 import com.xiaomi.infra.galaxy.talos.thrift.ErrorCode;
 import com.xiaomi.infra.galaxy.talos.thrift.GalaxyTalosException;
+import com.xiaomi.infra.galaxy.talos.thrift.Message;
 import com.xiaomi.infra.galaxy.talos.thrift.MessageOffset;
 import com.xiaomi.infra.galaxy.talos.thrift.TopicAndPartition;
 
@@ -134,6 +135,20 @@ public class Utils {
       throw new IllegalArgumentException("Data must be less than or equal to " +
           Constants.TALOS_SINGLE_MESSAGE_BYTES_MAXIMAL + " bytes, got bytes: " +
           data.length);
+    }
+  }
+
+  public static void checkMessageSequenceNumberValidity(Message message) {
+    if (!message.isSetSequenceNumber()) {
+      return;
+    }
+
+    String sequenceNumber = message.getSequenceNumber();
+    if (sequenceNumber.length() < Constants.TALOS_PARTITION_KEY_LENGTH_MINIMAL ||
+        sequenceNumber.length() > Constants.TALOS_PARTITION_KEY_LENGTH_MAXIMAL) {
+      throw new IllegalArgumentException("Invalid sequenceNumber which length " +
+          "must be at least " + Constants.TALOS_PARTITION_KEY_LENGTH_MINIMAL + " and at most " +
+          Constants.TALOS_PARTITION_KEY_LENGTH_MAXIMAL + ", got " + sequenceNumber.length());
     }
   }
 }

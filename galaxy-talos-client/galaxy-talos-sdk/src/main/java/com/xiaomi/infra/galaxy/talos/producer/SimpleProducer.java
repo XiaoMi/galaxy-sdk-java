@@ -66,6 +66,7 @@ public class SimpleProducer {
     // check data validity
     for (Message message : msgList) {
       Utils.checkMessageLenValidity(message.getMessage());
+      Utils.checkMessageSequenceNumberValidity(message);
     }
 
     try {
