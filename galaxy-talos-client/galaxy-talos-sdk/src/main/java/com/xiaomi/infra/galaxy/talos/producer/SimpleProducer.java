@@ -58,6 +58,7 @@ public class SimpleProducer {
         producerConfig, credential).newMessageClient(), new AtomicLong(1));
   }
 
+  @Deprecated
   public boolean putMessage(List<Message> msgList) {
     if (msgList == null || msgList.size() == 0) {
       return true;
@@ -77,6 +78,20 @@ public class SimpleProducer {
           ", please try to put again");
     }
     return false;
+  }
+
+  public void putMessageList(List<Message> msgList) throws IOException, TException {
+    if (msgList == null || msgList.size() == 0) {
+      return;
+    }
+
+    // check data validity
+    for (Message message : msgList) {
+      Utils.checkMessageLenValidity(message.getMessage());
+      Utils.checkMessageSequenceNumberValidity(message);
+    }
+
+    doPut(msgList);
   }
 
   protected void doPut(List<Message> msgList) throws IOException, TException {

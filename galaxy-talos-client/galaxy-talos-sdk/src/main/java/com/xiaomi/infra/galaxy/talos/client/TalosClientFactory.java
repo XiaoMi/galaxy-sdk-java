@@ -35,6 +35,7 @@ public class TalosClientFactory {
   private static final String USER_AGENT_HEADER = "User-Agent";
   private static final Version VERSION = new Version();
   private static final String SID = "galaxytalos";
+  private static final int DEFAULT_CLIENT_CONN_TIMEOUT = 5000;
 
   private TalosClientConfig talosClientConfig;
   private Credential credential;
@@ -44,16 +45,17 @@ public class TalosClientFactory {
 
   private HttpClient generateHttpClient() {
     return generateHttpClient(talosClientConfig.getMaxTotalConnections(),
-        talosClientConfig.getMaxTotalConnectionsPerRoute());
-  }
-
-  public HttpClient generateHttpClient(final int maxTotalConnections,
-      final int maxTotalConnectionsPerRoute) {
-    return generateHttpClient(maxTotalConnections, maxTotalConnectionsPerRoute,
+        talosClientConfig.getMaxTotalConnectionsPerRoute(),
         talosClientConfig.getClientConnTimeout());
   }
 
-  public HttpClient generateHttpClient(final int maxTotalConnections,
+  public static HttpClient generateHttpClient(final int maxTotalConnections,
+      final int maxTotalConnectionsPerRoute) {
+    return generateHttpClient(maxTotalConnections, maxTotalConnectionsPerRoute,
+        DEFAULT_CLIENT_CONN_TIMEOUT);
+  }
+
+  public static HttpClient generateHttpClient(final int maxTotalConnections,
       final int maxTotalConnectionsPerRoute, int connTimeout) {
     SchemeRegistry schemeRegistry = new SchemeRegistry();
     schemeRegistry.register(new Scheme("http", 80, PlainSocketFactory.getSocketFactory()));
@@ -68,16 +70,22 @@ public class TalosClientFactory {
     return new DefaultHttpClient(conMgr, httpParams);
   }
 
-  public TalosClientFactory(TalosClientConfig talosClientConfig) {
-    this(talosClientConfig, new Credential());
-  }
-
   public TalosClientFactory(TalosClientConfig talosClientConfig,
       Credential credential) {
     this.talosClientConfig = talosClientConfig;
     this.credential = credential;
     this.customHeaders = null;
     this.httpClient = generateHttpClient();
+    this.clock = new AdjustableClock();
+  }
+
+  public TalosClientFactory(TalosClientConfig talosClientConfig,
+      Credential credential, HttpClient httpClient) {
+    this.talosClientConfig = talosClientConfig;
+    this.credential = credential;
+    this.httpClient = httpClient;
+
+    this.customHeaders = null;
     this.clock = new AdjustableClock();
   }
 
