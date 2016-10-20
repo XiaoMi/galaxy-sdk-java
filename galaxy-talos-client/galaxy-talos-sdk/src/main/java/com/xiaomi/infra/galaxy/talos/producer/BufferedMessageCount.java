@@ -31,6 +31,10 @@ public class BufferedMessageCount {
     this.bufferedMsgBytes -= diffBufferedMsgBytes;
   }
 
+  synchronized public boolean isEmpty() {
+    return bufferedMsgNumber == 0;
+  }
+
   synchronized public boolean isFull() {
     return (bufferedMsgNumber >= maxBufferedMsgNumber ||
         bufferedMsgBytes >= maxBufferedMsgBytes);

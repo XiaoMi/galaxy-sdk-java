@@ -20,6 +20,7 @@ import com.google.common.base.Preconditions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.xiaomi.infra.galaxy.talos.client.serialization.MessageSerialization;
 import com.xiaomi.infra.galaxy.talos.thrift.Message;
 import com.xiaomi.infra.galaxy.talos.thrift.MessageAndOffset;
 import com.xiaomi.infra.galaxy.talos.thrift.MessageBlock;
@@ -27,7 +28,6 @@ import com.xiaomi.infra.galaxy.talos.thrift.MessageCompressionType;
 
 public class Compression {
   private static final Logger LOG = LoggerFactory.getLogger(Compression.class);
-  private static final Charset CHARSET = Charset.forName("UTF-8");
 
   public static MessageBlock compress(List<Message> messageList,
       MessageCompressionType compressionType) throws IOException {
@@ -41,19 +41,7 @@ public class Compression {
       DataOutputStream dataOutputStream = CompressionFactory.
           getConpressedOutputStream(compressionType, outputStream);
       for (Message message : messageList) {
-        // write sequence number;
-        if (message.isSetSequenceNumber()) {
-          byte[] sequenceNumberBytes = message.getSequenceNumber().getBytes(CHARSET);
-          dataOutputStream.writeInt(sequenceNumberBytes.length);
-          dataOutputStream.write(sequenceNumberBytes);
-        } else {
-          dataOutputStream.writeInt(0);
-        }
-
-        // write data;
-        dataOutputStream.writeInt(message.getMessage().length);
-        dataOutputStream.write(message.getMessage());
-
+        MessageSerialization.serializeMessage(message, dataOutputStream);
       }
 
       // close dataOutputStream;
@@ -97,33 +85,20 @@ public class Compression {
       for (int i = 0; i < messageNumber; ++i) {
         MessageAndOffset messageAndOffset = new MessageAndOffset();
         messageAndOffset.setMessageOffset(messageBlock.getStartMessageOffset() + i);
-        Message message = new Message();
+        Message message = MessageSerialization.deserializeMessage(dataInputStream);
         messageAndOffset.setMessage(message);
         messageAndOffset.setUnHandledMessageNumber(unHandledNumber + messageNumber - 1 - i);
-
-        // read sequence number;
-        int sequenceNumberSize = dataInputStream.readInt();
-        if (sequenceNumberSize != 0) {
-          byte[] sequenceNumberBytes = new byte[sequenceNumberSize];
-          dataInputStream.readFully(sequenceNumberBytes);
-          message.setSequenceNumber(new String(sequenceNumberBytes, CHARSET));
-        }
-
-        // read message data;
-        int messageSize = dataInputStream.readInt();
-        Preconditions.checkArgument(messageSize != 0);
-        byte[] messageData = new byte[messageSize];
-        dataInputStream.readFully(messageData);
-        message.setMessage(messageData);
 
         // add message to messageList;
         messageAndOffsetList.add(messageAndOffset);
       }
     } catch (EOFException e) {
       LOG.error("Decompress messageBlock failed", e);
-      Preconditions.checkArgument(false, "Decompress messageBlock failed, " + e);
+      throw e;
+//      Preconditions.checkArgument(false, "Decompress messageBlock failed, " + e);
     } catch (IOException e) {
       LOG.error("Decompress messageBlock failed", e);
+      throw e;
     }
 
     return messageAndOffsetList;
@@ -132,12 +107,7 @@ public class Compression {
   private static int getMessageListSize(List<Message> messageList) {
     int size = 0;
     for (Message message : messageList) {
-      size += 8;
-      if (message.isSetSequenceNumber()) {
-        size += message.getSequenceNumber().length();
-      }
-
-      size += message.getMessage().length;
+      size += MessageSerialization.getMessageSize(message);
     }
 
     return size;

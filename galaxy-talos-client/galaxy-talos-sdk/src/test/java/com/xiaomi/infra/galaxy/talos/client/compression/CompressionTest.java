@@ -21,28 +21,30 @@ import com.xiaomi.infra.galaxy.talos.thrift.MessageAndOffset;
 import com.xiaomi.infra.galaxy.talos.thrift.MessageBlock;
 import com.xiaomi.infra.galaxy.talos.thrift.MessageCompressionType;
 
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 public class CompressionTest {
   private static final Logger LOG = LoggerFactory.getLogger(CompressionTest.class);
 
   private List<Message> messageList;
-  private int rowMessageSize;
 
   @Before
   public void setUp() throws Exception {
     messageList = new ArrayList<Message>(100);
-    rowMessageSize = 0;
     for (int i = 1; i <= 100; ++i) {
       Message message = new Message();
+
+      message.setCreateTimestamp(System.currentTimeMillis());
+      message.setPartitionKey(String.valueOf(i));
 
       // set sequence number;
       if (i % 2 == 0) {
         message.setSequenceNumber(String.valueOf(i));
-        rowMessageSize += 4 + String.valueOf(i).getBytes(Charset.forName("UTF-8")).length;
       } else {
-        rowMessageSize += 4;
+        message.setSequenceNumber(String.valueOf(i * 200));
       }
 
       // set message data;
@@ -51,7 +53,6 @@ public class CompressionTest {
         data[index] = (byte)i;
       }
       message.setMessage(data);
-      rowMessageSize += 4 + data.length;
 
       messageList.add(message);
     }
@@ -63,7 +64,6 @@ public class CompressionTest {
 
   @Test
   public void testNoCompression() throws Exception {
-    LOG.info("message Bytes: " + rowMessageSize);
     long unHandledMessageNumber = 117;
     MessageBlock messageBlock = Compression.compress(messageList, MessageCompressionType.NONE);
     assertEquals(MessageCompressionType.NONE, messageBlock.getCompressionType());
@@ -75,7 +75,12 @@ public class CompressionTest {
     List<MessageAndOffset> verifyMessageList = Compression.decompress(messageBlock, unHandledMessageNumber);
     assertEquals(messageList.size(), verifyMessageList.size());
     for (int index = 0; index < messageList.size(); ++index) {
-      assertEquals(messageList.get(index), verifyMessageList.get(index).getMessage());
+      Message message = messageList.get(index);
+      Message verifyMessage = verifyMessageList.get(index).getMessage();
+      assertFalse(verifyMessage.isSetPartitionKey());
+      assertEquals(message.getCreateTimestamp(), verifyMessage.getCreateTimestamp());
+      assertEquals(message.getSequenceNumber(), verifyMessage.getSequenceNumber());
+      assertArrayEquals(message.getMessage(), verifyMessage.getMessage());
       assertEquals(startOffset + index, verifyMessageList.get(index).getMessageOffset());
       assertTrue(verifyMessageList.get(index).getUnHandledMessageNumber() ==
           (unHandledMessageNumber + messageList.size() - 1 - index));
@@ -84,7 +89,6 @@ public class CompressionTest {
 
   @Test
   public void testSnappy() throws Exception {
-    LOG.info("message Bytes: " + rowMessageSize);
     MessageBlock messageBlock = Compression.compress(messageList, MessageCompressionType.SNAPPY);
     assertEquals(MessageCompressionType.SNAPPY, messageBlock.getCompressionType());
     assertEquals(messageList.size(), messageBlock.getMessageNumber());
@@ -96,7 +100,12 @@ public class CompressionTest {
     List<MessageAndOffset> verifyMessageList = Compression.decompress(messageBlock, unHandledMessageNumber);
     assertEquals(messageList.size(), verifyMessageList.size());
     for (int index = 0; index < messageList.size(); ++index) {
-      assertEquals(messageList.get(index), verifyMessageList.get(index).getMessage());
+      Message message = messageList.get(index);
+      Message verifyMessage = verifyMessageList.get(index).getMessage();
+      assertFalse(verifyMessage.isSetPartitionKey());
+      assertEquals(message.getCreateTimestamp(), verifyMessage.getCreateTimestamp());
+      assertEquals(message.getSequenceNumber(), verifyMessage.getSequenceNumber());
+      assertArrayEquals(message.getMessage(), verifyMessage.getMessage());
       assertEquals(startOffset + index, verifyMessageList.get(index).getMessageOffset());
       assertTrue(verifyMessageList.get(index).getUnHandledMessageNumber() ==
           (unHandledMessageNumber + messageList.size() - 1 - index));
@@ -105,7 +114,6 @@ public class CompressionTest {
 
   @Test
   public void testGzip() throws Exception {
-    LOG.info("message Bytes: " + rowMessageSize);
     MessageBlock messageBlock = Compression.compress(messageList, MessageCompressionType.GZIP);
     assertEquals(MessageCompressionType.GZIP, messageBlock.getCompressionType());
     assertEquals(messageList.size(), messageBlock.getMessageNumber());
@@ -117,7 +125,12 @@ public class CompressionTest {
     List<MessageAndOffset> verifyMessageList = Compression.decompress(messageBlock, unHandledMessageNumber);
     assertEquals(messageList.size(), verifyMessageList.size());
     for (int index = 0; index < messageList.size(); ++index) {
-      assertEquals(messageList.get(index), verifyMessageList.get(index).getMessage());
+      Message message = messageList.get(index);
+      Message verifyMessage = verifyMessageList.get(index).getMessage();
+      assertFalse(verifyMessage.isSetPartitionKey());
+      assertEquals(message.getCreateTimestamp(), verifyMessage.getCreateTimestamp());
+      assertEquals(message.getSequenceNumber(), verifyMessage.getSequenceNumber());
+      assertArrayEquals(message.getMessage(), verifyMessage.getMessage());
       assertEquals(startOffset + index, verifyMessageList.get(index).getMessageOffset());
       assertTrue(verifyMessageList.get(index).getUnHandledMessageNumber() ==
           (unHandledMessageNumber + messageList.size() - 1 - index));
@@ -143,7 +156,12 @@ public class CompressionTest {
     List<MessageAndOffset> messageAndOffsetList = Compression.decompress(messageBlockList, unHandledMessageNumber);
     assertEquals(messageList.size() * 3, messageAndOffsetList.size());
     for (int index = 0; index < messageAndOffsetList.size(); ++index) {
-      assertEquals(messageList.get(index % messageList.size()), messageAndOffsetList.get(index).getMessage());
+      Message message = messageList.get(index % messageList.size());
+      Message verifyMessage = messageAndOffsetList.get(index).getMessage();
+      assertFalse(verifyMessage.isSetPartitionKey());
+      assertEquals(message.getCreateTimestamp(), verifyMessage.getCreateTimestamp());
+      assertEquals(message.getSequenceNumber(), verifyMessage.getSequenceNumber());
+      assertArrayEquals(message.getMessage(), verifyMessage.getMessage());
       assertEquals(startOffset + index, messageAndOffsetList.get(index).getMessageOffset());
       assertTrue(messageAndOffsetList.get(index).getUnHandledMessageNumber() ==
           (unHandledMessageNumber + messageAndOffsetList.size() - 1 - index));

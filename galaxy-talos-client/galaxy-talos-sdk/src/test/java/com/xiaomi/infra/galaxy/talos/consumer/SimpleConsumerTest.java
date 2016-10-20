@@ -99,6 +99,10 @@ public class SimpleConsumerTest {
     Message message1 = new Message(ByteBuffer.wrap("message1".getBytes()));
     Message message2 = new Message(ByteBuffer.wrap("message2".getBytes()));
     Message message3 = new Message(ByteBuffer.wrap("message3".getBytes()));
+    message1.setCreateTimestamp(System.currentTimeMillis());
+    message2.setCreateTimestamp(System.currentTimeMillis());
+    message3.setCreateTimestamp(System.currentTimeMillis());
+
     messageList.add(message1);
     messageList.add(message2);
     messageList.add(message3);
@@ -137,6 +141,9 @@ public class SimpleConsumerTest {
     Message message1 = new Message(ByteBuffer.wrap("message1".getBytes()));
     Message message2 = new Message(ByteBuffer.wrap("message2".getBytes()));
     Message message3 = new Message(ByteBuffer.wrap("message3".getBytes()));
+    message1.setCreateTimestamp(System.currentTimeMillis());
+    message2.setCreateTimestamp(System.currentTimeMillis());
+    message3.setCreateTimestamp(System.currentTimeMillis());
     messageList.add(message1);
     messageList.add(message2);
     messageList.add(message3);
@@ -181,6 +188,9 @@ public class SimpleConsumerTest {
     Message message1 = new Message(ByteBuffer.wrap("message1".getBytes()));
     Message message2 = new Message(ByteBuffer.wrap("message2".getBytes()));
     Message message3 = new Message(ByteBuffer.wrap("message3".getBytes()));
+    message1.setCreateTimestamp(System.currentTimeMillis());
+    message2.setCreateTimestamp(System.currentTimeMillis());
+    message3.setCreateTimestamp(System.currentTimeMillis());
     messageList.add(message1);
     messageList.add(message2);
     messageList.add(message3);
