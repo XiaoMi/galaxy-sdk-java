@@ -128,8 +128,18 @@ public class Utils {
     return getErrorCode(throwable) == ErrorCode.MESSAGE_OFFSET_OUT_OF_RANGE;
   }
 
-  public static void checkMessageLenValidity(byte[] data) {
-    Preconditions.checkNotNull(data);
+  public static void checkMessageValidity(Message message) {
+    checkMessageLenValidity(message);
+    checkMessageSequenceNumberValidity(message);
+    checkMessageTypeValidity(message);
+  }
+
+  private static void checkMessageLenValidity(Message message) {
+    if (!message.isSetMessage()) {
+      throw new IllegalArgumentException("Field \"message\" must be set");
+    }
+
+    byte[] data = message.getMessage();
     if (data.length > Constants.TALOS_SINGLE_MESSAGE_BYTES_MAXIMAL ||
         data.length < Constants.TALOS_SINGLE_MESSAGE_BYTES_MINIMAL) {
       throw new IllegalArgumentException("Data must be less than or equal to " +
@@ -138,7 +148,7 @@ public class Utils {
     }
   }
 
-  public static void checkMessageSequenceNumberValidity(Message message) {
+  private static void checkMessageSequenceNumberValidity(Message message) {
     if (!message.isSetSequenceNumber()) {
       return;
     }
@@ -149,6 +159,12 @@ public class Utils {
       throw new IllegalArgumentException("Invalid sequenceNumber which length " +
           "must be at least " + Constants.TALOS_PARTITION_KEY_LENGTH_MINIMAL + " and at most " +
           Constants.TALOS_PARTITION_KEY_LENGTH_MAXIMAL + ", got " + sequenceNumber.length());
+    }
+  }
+
+  private static void checkMessageTypeValidity(Message message) {
+    if (!message.isSetMessageType()) {
+      throw new IllegalArgumentException("Filed \"messageType\" must be set");
     }
   }
 }

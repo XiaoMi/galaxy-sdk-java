@@ -20,6 +20,7 @@ import com.xiaomi.infra.galaxy.talos.thrift.Message;
 import com.xiaomi.infra.galaxy.talos.thrift.MessageAndOffset;
 import com.xiaomi.infra.galaxy.talos.thrift.MessageBlock;
 import com.xiaomi.infra.galaxy.talos.thrift.MessageCompressionType;
+import com.xiaomi.infra.galaxy.talos.thrift.MessageType;
 
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
@@ -39,6 +40,7 @@ public class CompressionTest {
 
       message.setCreateTimestamp(System.currentTimeMillis());
       message.setPartitionKey(String.valueOf(i));
+      message.setMessageType(MessageType.BINARY);
 
       // set sequence number;
       if (i % 2 == 0) {

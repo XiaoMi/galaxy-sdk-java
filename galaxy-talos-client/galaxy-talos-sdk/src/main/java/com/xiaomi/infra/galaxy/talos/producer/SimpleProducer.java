@@ -22,6 +22,7 @@ import com.xiaomi.infra.galaxy.talos.client.compression.Compression;
 import com.xiaomi.infra.galaxy.talos.thrift.Message;
 import com.xiaomi.infra.galaxy.talos.thrift.MessageBlock;
 import com.xiaomi.infra.galaxy.talos.thrift.MessageService;
+import com.xiaomi.infra.galaxy.talos.thrift.MessageType;
 import com.xiaomi.infra.galaxy.talos.thrift.PutMessageRequest;
 import com.xiaomi.infra.galaxy.talos.thrift.TopicAndPartition;
 
@@ -64,10 +65,12 @@ public class SimpleProducer {
       return true;
     }
 
-    // check data validity
     for (Message message : msgList) {
-      Utils.checkMessageLenValidity(message.getMessage());
-      Utils.checkMessageSequenceNumberValidity(message);
+      // when user direct add Message to producer, we will reset it's MessageType
+      // to MessageType.BINARY,
+      message.setMessageType(MessageType.BINARY);
+      // check data validity
+      Utils.checkMessageValidity(message);
     }
 
     try {
@@ -87,8 +90,7 @@ public class SimpleProducer {
 
     // check data validity
     for (Message message : msgList) {
-      Utils.checkMessageLenValidity(message.getMessage());
-      Utils.checkMessageSequenceNumberValidity(message);
+      Utils.checkMessageValidity(message);
     }
 
     doPut(msgList);

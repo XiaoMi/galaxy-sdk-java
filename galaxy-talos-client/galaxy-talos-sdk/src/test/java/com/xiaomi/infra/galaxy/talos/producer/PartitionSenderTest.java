@@ -25,6 +25,7 @@ import com.xiaomi.infra.galaxy.talos.thrift.ErrorCode;
 import com.xiaomi.infra.galaxy.talos.thrift.GalaxyTalosException;
 import com.xiaomi.infra.galaxy.talos.thrift.Message;
 import com.xiaomi.infra.galaxy.talos.thrift.MessageService;
+import com.xiaomi.infra.galaxy.talos.thrift.MessageType;
 import com.xiaomi.infra.galaxy.talos.thrift.PutMessageRequest;
 import com.xiaomi.infra.galaxy.talos.thrift.PutMessageResponse;
 import com.xiaomi.infra.galaxy.talos.thrift.TopicTalosResourceName;
@@ -110,13 +111,13 @@ public class PartitionSenderTest {
 
     userMessageList = new ArrayList<UserMessage>();
     userMessage1 = new UserMessage(
-        new Message(ByteBuffer.wrap("hello".getBytes())));
+        new Message(ByteBuffer.wrap("hello".getBytes())).setMessageType(MessageType.BINARY));
     userMessage2 = new UserMessage(
-        new Message(ByteBuffer.wrap("world".getBytes())));
+        new Message(ByteBuffer.wrap("world".getBytes())).setMessageType(MessageType.BINARY));
     userMessage3 = new UserMessage(
-        new Message(ByteBuffer.wrap("nice day".getBytes())));
+        new Message(ByteBuffer.wrap("nice day".getBytes())).setMessageType(MessageType.BINARY));
     userMessage4 = new UserMessage(
-        new Message(ByteBuffer.wrap("good guy".getBytes())));
+        new Message(ByteBuffer.wrap("good guy".getBytes())).setMessageType(MessageType.BINARY));
   }
 
   @After

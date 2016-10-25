@@ -34,6 +34,7 @@ import com.xiaomi.infra.galaxy.talos.client.TopicAbnormalCallback;
 import com.xiaomi.infra.galaxy.talos.client.Utils;
 import com.xiaomi.infra.galaxy.talos.thrift.DescribeTopicRequest;
 import com.xiaomi.infra.galaxy.talos.thrift.Message;
+import com.xiaomi.infra.galaxy.talos.thrift.MessageType;
 import com.xiaomi.infra.galaxy.talos.thrift.Topic;
 import com.xiaomi.infra.galaxy.talos.thrift.TopicTalosResourceName;
 
@@ -242,8 +243,11 @@ public class TalosProducer {
     partitionBufferMap.put(currentPartitionId, new ArrayList<UserMessage>());
 
     for (Message message : msgList) {
+      // when user direct add Message to producer, we will reset it's MessageType
+      // to MessageType.BINARY,
+      message.setMessageType(MessageType.BINARY);
       // check data validity
-      Utils.checkMessageLenValidity(message.getMessage());
+      Utils.checkMessageValidity(message);
 
       // check partitionKey setting and validity
       if (!message.isSetPartitionKey()) {
@@ -259,7 +263,6 @@ public class TalosProducer {
         partitionBufferMap.get(partitionId).add(new UserMessage(message));
       }
 
-      Utils.checkMessageSequenceNumberValidity(message);
     }
 
     // add to partitionSender

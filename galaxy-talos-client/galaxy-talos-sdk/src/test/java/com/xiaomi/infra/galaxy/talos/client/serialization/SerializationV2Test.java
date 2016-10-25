@@ -18,6 +18,7 @@ import com.xiaomi.infra.galaxy.talos.client.compression.ByteBufferBackedInputStr
 import com.xiaomi.infra.galaxy.talos.client.serialization.MessageSerialization;
 import com.xiaomi.infra.galaxy.talos.client.serialization.MessageSerializerV2;
 import com.xiaomi.infra.galaxy.talos.thrift.Message;
+import com.xiaomi.infra.galaxy.talos.thrift.MessageType;
 
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
@@ -45,31 +46,35 @@ public class SerializationV2Test {
 
     message1 = new Message();
     message1.setCreateTimestamp(System.currentTimeMillis());
+    message1.setMessageType(MessageType.BINARY);
     message1.setPartitionKey("P1");
     message1.setSequenceNumber("S1");
     message1.setMessage("M1".getBytes());
 
     message2 = new Message();
     message2.setCreateTimestamp(System.currentTimeMillis());
+    message2.setMessageType(MessageType.BINARY);
     message2.setPartitionKey("P2");
     message2.setMessage("M2".getBytes());
 
     message3 = new Message();
     message3.setCreateTimestamp(System.currentTimeMillis());
+    message3.setMessageType(MessageType.BINARY);
     message3.setSequenceNumber("S3");
     message3.setMessage("M3".getBytes());
 
     message4 = new Message();
     message4.setCreateTimestamp(System.currentTimeMillis());
-    message4.setMessage("M3".getBytes());
+    message4.setMessageType(MessageType.BINARY);
+    message4.setMessage("M4".getBytes());
   }
 
   @Test
   public void testGetMessageSize() throws Exception {
-    assertEquals(22, messageSerializer.getMessageSize(message1));
-    assertEquals(20, messageSerializer.getMessageSize(message2));
-    assertEquals(22, messageSerializer.getMessageSize(message3));
-    assertEquals(20, messageSerializer.getMessageSize(message4));
+    assertEquals(24, messageSerializer.getMessageSize(message1));
+    assertEquals(22, messageSerializer.getMessageSize(message2));
+    assertEquals(24, messageSerializer.getMessageSize(message3));
+    assertEquals(22, messageSerializer.getMessageSize(message4));
   }
 
   @Test
@@ -94,6 +99,7 @@ public class SerializationV2Test {
     Message verifyMessage1 = MessageSerialization.deserializeMessage(dataInputStream);
     assertFalse(verifyMessage1.isSetPartitionKey());
     assertEquals(message1.getCreateTimestamp(), verifyMessage1.getCreateTimestamp());
+    assertEquals(MessageType.BINARY, verifyMessage1.getMessageType());
     assertEquals(message1.getSequenceNumber(), verifyMessage1.getSequenceNumber());
     assertArrayEquals(message1.getMessage(), verifyMessage1.getMessage());
 
@@ -101,11 +107,13 @@ public class SerializationV2Test {
     assertFalse(verifyMessage2.isSetPartitionKey());
     assertFalse(verifyMessage2.isSetSequenceNumber());
     assertEquals(message2.getCreateTimestamp(), verifyMessage2.getCreateTimestamp());
+    assertEquals(MessageType.BINARY, verifyMessage1.getMessageType());
     assertArrayEquals(message2.getMessage(), verifyMessage2.getMessage());
 
     Message verifyMessage3 = MessageSerialization.deserializeMessage(dataInputStream);
     assertFalse(verifyMessage3.isSetPartitionKey());
     assertEquals(message3.getCreateTimestamp(), verifyMessage3.getCreateTimestamp());
+    assertEquals(MessageType.BINARY, verifyMessage1.getMessageType());
     assertEquals(message3.getSequenceNumber(), verifyMessage3.getSequenceNumber());
     assertArrayEquals(message3.getMessage(), verifyMessage3.getMessage());
 
@@ -113,6 +121,7 @@ public class SerializationV2Test {
     assertFalse(verifyMessage4.isSetPartitionKey());
     assertFalse(verifyMessage4.isSetSequenceNumber());
     assertEquals(message4.getCreateTimestamp(), verifyMessage4.getCreateTimestamp());
+    assertEquals(MessageType.BINARY, verifyMessage1.getMessageType());
     assertArrayEquals(message4.getMessage(), verifyMessage4.getMessage());
   }
 }

@@ -28,6 +28,7 @@ import com.xiaomi.infra.galaxy.talos.thrift.MessageAndOffset;
 import com.xiaomi.infra.galaxy.talos.thrift.MessageBlock;
 import com.xiaomi.infra.galaxy.talos.thrift.MessageOffset;
 import com.xiaomi.infra.galaxy.talos.thrift.MessageService;
+import com.xiaomi.infra.galaxy.talos.thrift.MessageType;
 import com.xiaomi.infra.galaxy.talos.thrift.TopicAndPartition;
 import com.xiaomi.infra.galaxy.talos.thrift.TopicTalosResourceName;
 
@@ -102,7 +103,9 @@ public class SimpleConsumerTest {
     message1.setCreateTimestamp(System.currentTimeMillis());
     message2.setCreateTimestamp(System.currentTimeMillis());
     message3.setCreateTimestamp(System.currentTimeMillis());
-
+    message1.setMessageType(MessageType.BINARY);
+    message2.setMessageType(MessageType.BINARY);
+    message3.setMessageType(MessageType.BINARY);
     messageList.add(message1);
     messageList.add(message2);
     messageList.add(message3);
@@ -144,6 +147,9 @@ public class SimpleConsumerTest {
     message1.setCreateTimestamp(System.currentTimeMillis());
     message2.setCreateTimestamp(System.currentTimeMillis());
     message3.setCreateTimestamp(System.currentTimeMillis());
+    message1.setMessageType(MessageType.BINARY);
+    message2.setMessageType(MessageType.BINARY);
+    message3.setMessageType(MessageType.BINARY);
     messageList.add(message1);
     messageList.add(message2);
     messageList.add(message3);
@@ -191,6 +197,9 @@ public class SimpleConsumerTest {
     message1.setCreateTimestamp(System.currentTimeMillis());
     message2.setCreateTimestamp(System.currentTimeMillis());
     message3.setCreateTimestamp(System.currentTimeMillis());
+    message1.setMessageType(MessageType.BINARY);
+    message2.setMessageType(MessageType.BINARY);
+    message3.setMessageType(MessageType.BINARY);
     messageList.add(message1);
     messageList.add(message2);
     messageList.add(message3);

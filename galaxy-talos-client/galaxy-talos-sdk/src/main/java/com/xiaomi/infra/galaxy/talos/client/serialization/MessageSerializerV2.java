@@ -11,15 +11,17 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 
 import com.xiaomi.infra.galaxy.talos.thrift.Message;
+import com.xiaomi.infra.galaxy.talos.thrift.MessageType;
 
 public class MessageSerializerV2 extends MessageSerializer {
   private static final int CREATE_TIMESTAMP_BYTES = 8;
+  private static final int MESSAGE_TYPE_BYTES = 2;
   private static final int SEQUENCE_NUMBER_LENGTH_BYTES = 2;
   private static final int MESSAGE_DATA_LENGTH_BYTES = 4;
 
   public static final int MESSAGE_HEADER_BYTES = VERSION_NUMBER_LENGTH +
-      CREATE_TIMESTAMP_BYTES + SEQUENCE_NUMBER_LENGTH_BYTES +
-      MESSAGE_DATA_LENGTH_BYTES;
+      MESSAGE_TYPE_BYTES + CREATE_TIMESTAMP_BYTES +
+      SEQUENCE_NUMBER_LENGTH_BYTES + MESSAGE_DATA_LENGTH_BYTES;
 
   private static final MessageSerializerV2 INSTANCE = new MessageSerializerV2();
 
@@ -41,6 +43,12 @@ public class MessageSerializerV2 extends MessageSerializer {
     } else {
       dataOutputStream.writeLong(System.currentTimeMillis());
     }
+
+    // write messageType
+    if (!message.isSetMessageType()) {
+      throw new RuntimeException("message must set messageType");
+    }
+    dataOutputStream.writeShort(message.getMessageType().getValue());
 
 
     // write sequenceNumber;
@@ -64,6 +72,9 @@ public class MessageSerializerV2 extends MessageSerializer {
     long timestamp = dataInputStream.readLong();
     message.setCreateTimestamp(timestamp);
 
+    // read message type
+    short messageType = dataInputStream.readShort();
+    message.setMessageType(MessageType.findByValue(messageType));
 
     // read sequence number
     short sequenceNumberSize = dataInputStream.readShort();
