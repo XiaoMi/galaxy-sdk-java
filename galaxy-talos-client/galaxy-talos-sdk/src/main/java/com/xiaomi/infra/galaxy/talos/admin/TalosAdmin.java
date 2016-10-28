@@ -18,6 +18,7 @@ import com.xiaomi.infra.galaxy.rpc.thrift.Credential;
 import com.xiaomi.infra.galaxy.talos.client.TalosClientConfig;
 import com.xiaomi.infra.galaxy.talos.client.TalosClientFactory;
 import com.xiaomi.infra.galaxy.talos.client.Utils;
+import com.xiaomi.infra.galaxy.talos.thrift.AddSubResourceNameRequest;
 import com.xiaomi.infra.galaxy.talos.thrift.ChangeTopicAttributeRequest;
 import com.xiaomi.infra.galaxy.talos.thrift.CreateTopicRequest;
 import com.xiaomi.infra.galaxy.talos.thrift.CreateTopicResponse;
@@ -205,5 +206,11 @@ public class TalosAdmin {
   public void deleteTopicQuota(DeleteTopicQuotaRequest request)
       throws GalaxyTalosException, TException {
     topicClient.deleteTopicQuota(request);
+  }
+
+  public void addSubResourceName(AddSubResourceNameRequest request)
+      throws GalaxyTalosException, TException {
+    Utils.checkAddSubResourceNameRequest(credential, request);
+    topicClient.addSubResourceName(request);
   }
 }

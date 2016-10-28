@@ -42,7 +42,9 @@ public enum ErrorCode implements libthrift091.TEnum {
   EXCESSIVE_PENDING_MESSAGE(27),
   PERMISSION_DENIED_ERROR(28),
   HDFS_FILE_NOT_EXIST(29),
-  INVALID_AUTH_INFO(30);
+  INVALID_AUTH_INFO(30),
+  SUB_RESOURCE_NAME_EXIST(31),
+  SUB_RESOURCE_NAME_NOT_EXIST(32);
 
   private final int value;
 
@@ -125,6 +127,10 @@ public enum ErrorCode implements libthrift091.TEnum {
         return HDFS_FILE_NOT_EXIST;
       case 30:
         return INVALID_AUTH_INFO;
+      case 31:
+        return SUB_RESOURCE_NAME_EXIST;
+      case 32:
+        return SUB_RESOURCE_NAME_NOT_EXIST;
       default:
         return null;
     }

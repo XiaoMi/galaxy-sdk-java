@@ -12,13 +12,17 @@ import java.util.regex.Pattern;
 
 import com.google.common.base.Preconditions;
 
+import com.xiaomi.infra.galaxy.rpc.thrift.Credential;
+import com.xiaomi.infra.galaxy.talos.thrift.AddSubResourceNameRequest;
 import com.xiaomi.infra.galaxy.talos.thrift.ErrorCode;
 import com.xiaomi.infra.galaxy.talos.thrift.GalaxyTalosException;
 import com.xiaomi.infra.galaxy.talos.thrift.Message;
 import com.xiaomi.infra.galaxy.talos.thrift.MessageOffset;
 import com.xiaomi.infra.galaxy.talos.thrift.TopicAndPartition;
 
+import static com.xiaomi.infra.galaxy.talos.client.Constants.TALOS_CLOUD_AK_PREFIX;
 import static com.xiaomi.infra.galaxy.talos.client.Constants.TALOS_CLOUD_ORG_PREFIX;
+import static com.xiaomi.infra.galaxy.talos.client.Constants.TALOS_CLOUD_TEAM_PREFIX;
 import static com.xiaomi.infra.galaxy.talos.client.Constants.TALOS_IDENTIFIER_DELIMITER;
 import static com.xiaomi.infra.galaxy.talos.client.Constants.TALOS_NAME_REGEX;
 import static com.xiaomi.infra.galaxy.talos.client.Constants.TALOS_CLOUD_TOPIC_NAME_DELIMITER;
@@ -165,6 +169,32 @@ public class Utils {
   private static void checkMessageTypeValidity(Message message) {
     if (!message.isSetMessageType()) {
       throw new IllegalArgumentException("Filed \"messageType\" must be set");
+    }
+  }
+
+  public static void checkAddSubResourceNameRequest(Credential credential,
+      AddSubResourceNameRequest request) {
+    // check principal
+    if (credential.getSecretKeyId().startsWith(TALOS_CLOUD_AK_PREFIX)) {
+      throw new IllegalArgumentException(
+          "Only Developer principal can add subResourceName");
+    }
+
+    // check topic
+    if (request.getTopicTalosResourceName().getTopicTalosResourceName()
+        .startsWith(TALOS_CLOUD_ORG_PREFIX)) {
+      throw new IllegalArgumentException(
+          "The topic created by cloud-manager role can not add subResourceName");
+    }
+
+    // check orgId
+    if (!request.getOrgId().startsWith(TALOS_CLOUD_ORG_PREFIX)) {
+      throw new IllegalArgumentException("The orgId must starts with 'CL'");
+    }
+
+    // check teamId
+    if (!request.getAdminTeamId().startsWith(TALOS_CLOUD_TEAM_PREFIX)) {
+      throw new IllegalArgumentException("The teamId must starts with 'CI'");
     }
   }
 }
