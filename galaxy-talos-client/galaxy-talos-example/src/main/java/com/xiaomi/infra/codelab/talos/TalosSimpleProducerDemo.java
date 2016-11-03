@@ -6,6 +6,7 @@
 
 package com.xiaomi.infra.codelab.talos;
 
+import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
@@ -81,12 +82,18 @@ public class TalosSimpleProducerDemo {
     List<Message> messageList = new ArrayList<Message>();
     messageList.add(message);
     // a toy demo for putting messages to Talos server continuously
+    // by using a infinite loop
     while (true) {
-      boolean putState = simpleProducer.putMessage(messageList);
-      while (!putState) {
-        LOG.warn("put message failed, try again");
-        putState = simpleProducer.putMessage(messageList);
+
+      while (true) {
+        try {
+          simpleProducer.putMessageList(messageList);
+          break;
+        } catch (IOException e) {
+          LOG.warn("put message failed, try again");
+        }
       }
+
       LOG.info("success put message count: " + successPutNumber.getAndIncrement());
     }
   }

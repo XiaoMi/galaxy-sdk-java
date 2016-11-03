@@ -1,5 +1,14 @@
 
-## 1.3-SNAPSHOT
+## 2.1-SNAPSHOT
+
+## 2.0.0
+  * D43226: add messageVersion for MessageCompression interface
+  * D42885: sdk update for smooth upgrade
+  * D42597: add MessageType for talos SerializationV2
+  * D42329: add check message sequenceNumber logic
+  * D42328: add serialization for talos
+  * D41637: sdk support cloud-auth topic name check
+  * D41038: fix talos mapreduce bug
 
 ## 1.2.1
   * D40435: update demo by user-return-visit
