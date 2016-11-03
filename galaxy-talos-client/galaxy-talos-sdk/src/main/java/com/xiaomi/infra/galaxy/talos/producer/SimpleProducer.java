@@ -97,8 +97,7 @@ public class SimpleProducer {
   }
 
   protected void doPut(List<Message> msgList) throws IOException, TException {
-    MessageBlock messageBlock = Compression.compress(msgList,
-        producerConfig.getCompressionType());
+    MessageBlock messageBlock = compressMessageList(msgList);
     List<MessageBlock> messageBlockList = new ArrayList<MessageBlock>(1);
     messageBlockList.add(messageBlock);
 
@@ -107,5 +106,10 @@ public class SimpleProducer {
         topicAndPartition, messageBlockList,
         msgList.size(), requestSequenceId);
     messageClient.putMessage(putMessageRequest);
+  }
+
+  protected MessageBlock compressMessageList(List<Message> messageList) throws IOException {
+    return Compression.compress(messageList,
+        producerConfig.getCompressionType());
   }
 }

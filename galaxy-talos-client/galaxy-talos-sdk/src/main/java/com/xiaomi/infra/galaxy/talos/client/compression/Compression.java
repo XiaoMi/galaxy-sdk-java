@@ -21,6 +21,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.xiaomi.infra.galaxy.talos.client.serialization.MessageSerialization;
+import com.xiaomi.infra.galaxy.talos.client.serialization.MessageSerializationFactory;
+import com.xiaomi.infra.galaxy.talos.client.serialization.MessageSerializer;
+import com.xiaomi.infra.galaxy.talos.client.serialization.MessageVersion;
 import com.xiaomi.infra.galaxy.talos.thrift.Message;
 import com.xiaomi.infra.galaxy.talos.thrift.MessageAndOffset;
 import com.xiaomi.infra.galaxy.talos.thrift.MessageBlock;
@@ -31,17 +34,23 @@ public class Compression {
 
   public static MessageBlock compress(List<Message> messageList,
       MessageCompressionType compressionType) throws IOException {
+    return compress(messageList, compressionType, MessageSerializationFactory.getDefaultMessageVersion());
+  }
+
+  public static MessageBlock compress(List<Message> messageList,
+      MessageCompressionType compressionType,
+      MessageVersion messageVersion) throws IOException {
     MessageBlock messageBlock = new MessageBlock();
     messageBlock.setCompressionType(compressionType);
     messageBlock.setMessageNumber(messageList.size());
 
-    int size = getMessageListSize(messageList);
+    int size = getMessageListSize(messageList, messageVersion);
     try {
       ByteArrayOutputStream outputStream = new ByteArrayOutputStream(size);
       DataOutputStream dataOutputStream = CompressionFactory.
           getConpressedOutputStream(compressionType, outputStream);
       for (Message message : messageList) {
-        MessageSerialization.serializeMessage(message, dataOutputStream);
+        MessageSerialization.serializeMessage(message, dataOutputStream, messageVersion);
       }
 
       // close dataOutputStream;
@@ -104,10 +113,10 @@ public class Compression {
     return messageAndOffsetList;
   }
 
-  private static int getMessageListSize(List<Message> messageList) {
+  private static int getMessageListSize(List<Message> messageList, MessageVersion messageVersion) {
     int size = 0;
     for (Message message : messageList) {
-      size += MessageSerialization.getMessageSize(message);
+      size += MessageSerialization.getMessageSize(message, messageVersion);
     }
 
     return size;

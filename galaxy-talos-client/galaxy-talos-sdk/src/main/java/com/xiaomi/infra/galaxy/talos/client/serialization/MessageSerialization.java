@@ -17,8 +17,10 @@ import com.google.common.base.Preconditions;
 import com.xiaomi.infra.galaxy.talos.thrift.Message;
 
 public class MessageSerialization  {
-  public static void serializeMessage(Message message, DataOutputStream dataOutputStream) throws IOException {
-    MessageSerializationFactory.getMessageSerializer().serialize(message, dataOutputStream);
+  public static void serializeMessage(Message message,
+      DataOutputStream dataOutputStream,
+      MessageVersion messageVersion) throws IOException {
+    MessageSerializationFactory.getMessageSerializer(messageVersion).serialize(message, dataOutputStream);
   }
 
   public static Message deserializeMessage(DataInputStream dataInputStream) throws IOException {
@@ -30,7 +32,7 @@ public class MessageSerialization  {
         .deserialize(header, dataInputStream);
   }
 
-  public static int getMessageSize(Message message) {
-    return MessageSerializationFactory.getMessageSerializer().getMessageSize(message);
+  public static int getMessageSize(Message message, MessageVersion messageVersion) {
+    return MessageSerializationFactory.getMessageSerializer(messageVersion).getMessageSize(message);
   }
 }

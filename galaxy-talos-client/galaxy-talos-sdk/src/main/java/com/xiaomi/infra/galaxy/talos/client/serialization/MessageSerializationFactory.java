@@ -18,8 +18,7 @@ public class MessageSerializationFactory {
     }
   }
 
-  public static MessageSerializer getMessageSerializer() {
-    return MessageSerializerV2.get();
+  public static MessageVersion getDefaultMessageVersion() {
+    return MessageVersion.V2;
   }
-
 }
