@@ -1,6 +1,10 @@
 
 ## 2.1-SNAPSHOT
 
+## 2.0.1
+  * D43656: add timestamp for Message when Message not set timestamp
+  * D43579: add data migrate demo
+
 ## 2.0.0
   * D43226: add messageVersion for MessageCompression interface
   * D42885: sdk update for smooth upgrade
