@@ -18,6 +18,7 @@ import com.xiaomi.infra.galaxy.talos.thrift.ErrorCode;
 import com.xiaomi.infra.galaxy.talos.thrift.GalaxyTalosException;
 import com.xiaomi.infra.galaxy.talos.thrift.Message;
 import com.xiaomi.infra.galaxy.talos.thrift.MessageOffset;
+import com.xiaomi.infra.galaxy.talos.thrift.MessageType;
 import com.xiaomi.infra.galaxy.talos.thrift.TopicAndPartition;
 
 import static com.xiaomi.infra.galaxy.talos.client.Constants.TALOS_CLOUD_AK_PREFIX;
@@ -130,6 +131,14 @@ public class Utils {
 
   public static boolean isOffsetOutOfRange(Throwable throwable) {
     return getErrorCode(throwable) == ErrorCode.MESSAGE_OFFSET_OUT_OF_RANGE;
+  }
+
+  public static void updateMessage(Message message, MessageType messageType) {
+    if (!message.isSetCreateTimestamp()) {
+      message.setCreateTimestamp(System.currentTimeMillis());
+    }
+
+    message.setMessageType(messageType);
   }
 
   public static void checkMessageValidity(Message message) {
