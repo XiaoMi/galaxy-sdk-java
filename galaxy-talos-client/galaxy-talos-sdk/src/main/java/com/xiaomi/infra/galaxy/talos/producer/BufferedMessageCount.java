@@ -7,13 +7,13 @@
 package com.xiaomi.infra.galaxy.talos.producer;
 
 public class BufferedMessageCount {
-  private int maxBufferedMsgNumber;
-  private int maxBufferedMsgBytes;
+  private long maxBufferedMsgNumber;
+  private long maxBufferedMsgBytes;
 
-  private int bufferedMsgNumber;
-  private int bufferedMsgBytes;
+  private long bufferedMsgNumber;
+  private long bufferedMsgBytes;
 
-  public BufferedMessageCount(int maxBufferedMsgNumber, int maxBufferedMsgBytes) {
+  public BufferedMessageCount(long maxBufferedMsgNumber, long maxBufferedMsgBytes) {
     this.maxBufferedMsgNumber = maxBufferedMsgNumber;
     this.maxBufferedMsgBytes = maxBufferedMsgBytes;
 
@@ -21,12 +21,12 @@ public class BufferedMessageCount {
     bufferedMsgBytes = 0;
   }
 
-  synchronized public void increase(int diffBufferedMsgNumber, int diffBufferedMsgBytes) {
+  synchronized public void increase(long diffBufferedMsgNumber, long diffBufferedMsgBytes) {
     this.bufferedMsgNumber += diffBufferedMsgNumber;
     this.bufferedMsgBytes += diffBufferedMsgBytes;
   }
 
-  synchronized public void descrease(int diffBufferedMsgNumber, int diffBufferedMsgBytes) {
+  synchronized public void descrease(long diffBufferedMsgNumber, long diffBufferedMsgBytes) {
     this.bufferedMsgNumber -= diffBufferedMsgNumber;
     this.bufferedMsgBytes -= diffBufferedMsgBytes;
   }
@@ -40,11 +40,11 @@ public class BufferedMessageCount {
         bufferedMsgBytes >= maxBufferedMsgBytes);
   }
 
-  public int getBufferedMsgNumber() {
+  public long getBufferedMsgNumber() {
     return bufferedMsgNumber;
   }
 
-  public int getBufferedMsgBytes() {
+  public long getBufferedMsgBytes() {
     return bufferedMsgBytes;
   }
 }
