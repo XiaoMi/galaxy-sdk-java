@@ -34,7 +34,8 @@ public class Compression {
 
   public static MessageBlock compress(List<Message> messageList,
       MessageCompressionType compressionType) throws IOException {
-    return compress(messageList, compressionType, MessageSerializationFactory.getDefaultMessageVersion());
+    return compress(messageList, compressionType,
+        MessageSerializationFactory.getDefaultMessageVersion());
   }
 
   public static MessageBlock compress(List<Message> messageList,
@@ -44,14 +45,22 @@ public class Compression {
     messageBlock.setCompressionType(compressionType);
     messageBlock.setMessageNumber(messageList.size());
 
+    long createTime = System.currentTimeMillis();
+    if (messageList.size() > 0) {
+      createTime = messageList.get(0).getCreateTimestamp();
+    }
+
     int size = getMessageListSize(messageList, messageVersion);
     try {
       ByteArrayOutputStream outputStream = new ByteArrayOutputStream(size);
       DataOutputStream dataOutputStream = CompressionFactory.
           getConpressedOutputStream(compressionType, outputStream);
-      for (Message message : messageList) {
-        MessageSerialization.serializeMessage(message, dataOutputStream, messageVersion);
+      for (int i = 0; i < messageList.size(); i++) {
+        MessageSerialization.serializeMessage(messageList.get(i),
+            dataOutputStream, messageVersion);
+        createTime += (messageList.get(i).getCreateTimestamp() - createTime) / (i + 1);
       }
+      messageBlock.setCreateTimestamp(createTime);
 
       // close dataOutputStream;
       dataOutputStream.close();
@@ -63,7 +72,6 @@ public class Compression {
       LOG.info("compress MessageList failed", e);
       throw e;
     }
-
 
     return messageBlock;
   }
@@ -95,6 +103,9 @@ public class Compression {
         MessageAndOffset messageAndOffset = new MessageAndOffset();
         messageAndOffset.setMessageOffset(messageBlock.getStartMessageOffset() + i);
         Message message = MessageSerialization.deserializeMessage(dataInputStream);
+        if (messageBlock.isSetAppendTimestamp()) {
+          message.setAppendTimestamp(messageBlock.getAppendTimestamp());
+        }
         messageAndOffset.setMessage(message);
         messageAndOffset.setUnHandledMessageNumber(unHandledNumber + messageNumber - 1 - i);
 
