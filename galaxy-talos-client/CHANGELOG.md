@@ -1,6 +1,9 @@
 
 ## 2.1-SNAPSHOT
 
+## 2.0.2
+  * D44022: sdk add msg createTime for block & consumer add msg land time
+
 ## 2.0.1
   * D43656: add timestamp for Message when Message not set timestamp
   * D43579: add data migrate demo
