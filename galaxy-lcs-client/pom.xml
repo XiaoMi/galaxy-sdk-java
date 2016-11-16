@@ -39,8 +39,8 @@
     -->
 
     <modules>
+        <module>galaxy-lcs-thrift</module>
         <module>galaxy-lcs-log</module>
-        <module>galaxy-lcs-agent</module>
     </modules>
 
     <properties>
