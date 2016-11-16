@@ -6,7 +6,7 @@
 
     <groupId>com.xiaomi.infra.galaxy</groupId>
     <artifactId>galaxy-lcs-client</artifactId>
-    <version>1.0.0</version>
+    <version>1.1-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <!--When publishing to maven central repository, using this parent.-->
