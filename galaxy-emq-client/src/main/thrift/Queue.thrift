@@ -516,6 +516,7 @@ struct QueryMetricRequest {
   **/
   9: optional string downsampleTimeUnit;
   10: optional bool calRate;
+  11: optional string tagName;
 
 }
 
