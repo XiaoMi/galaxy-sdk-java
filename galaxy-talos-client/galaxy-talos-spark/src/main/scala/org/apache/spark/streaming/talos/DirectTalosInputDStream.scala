@@ -118,6 +118,8 @@ class DirectTalosInputDStream[R: ClassTag](
 
   override def compute(validTime: Time): Option[RDD[R]] = {
     val untilOffsets = clamp(latestOffsets(maxRetries))
+      // untilOffset must not be smaller than fromOffset.
+      .map { case (tp, uo) => tp -> Math.max(currentOffsets(tp), uo) }
     val rdd = TalosRDD[R](context.sparkContext, talosParams, credential,
       currentOffsets, untilOffsets, messageHandler)
 
