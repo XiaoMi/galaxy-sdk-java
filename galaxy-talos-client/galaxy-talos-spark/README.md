@@ -106,8 +106,8 @@ val messageHandler = (mo: MessageAndOffset) => (mo.message.partitionKey, mo.mess
 config | default | meaning 
 ----|------|---- 
 spark.streaming.talos.maxRatePerPartition | 0 | 每个partition消费数据的速率限制，message/seconds；如果每个batch数据量太大，导致spark job delay严重时，可以考虑限制每个batch的数据量。
-spark.streaming.talos.maxRetries | 1 |  获取topic offset信息时，失败重试次数；网络不好时，可尝试配置多一些重试次数。
-spark.streaming.talos.backoff.ms | 200 | 获取topic offset信息时，失败重试次数之间的时间间隔。
+spark.streaming.talos.maxRetries | -1 |  与Talos交互时，失败重试次数；网络不好时，可尝试配置多一些重试次数。默认-1为无限重试。
+spark.streaming.talos.backoff.ms | 200 | 与Talos交互时，失败重试次数之间的时间间隔。
 spark.streaming.talos.checkpointing.enable | true | 是否自动开启checkpointing,并设置目录为AppName;默认为true,会自动执行streamingContext.checkpoint(AppName);
 
 # 反馈

@@ -1,15 +1,14 @@
 package org.apache.spark.streaming.talos
 
 import com.xiaomi.infra.galaxy.rpc.thrift.Credential
-import com.xiaomi.infra.galaxy.talos.thrift.{MessageAndOffset}
-import org.apache.spark.{SparkException, Logging}
+import com.xiaomi.infra.galaxy.talos.thrift.{ErrorCode, GalaxyTalosException, MessageAndOffset}
+import org.apache.spark.{Logging, SparkException}
 import org.apache.spark.rdd.RDD
-import org.apache.spark.streaming.scheduler.{StreamInputInfo, RateController}
+import org.apache.spark.streaming.scheduler.{RateController, StreamInputInfo}
 import org.apache.spark.streaming.scheduler.rate.RateEstimator
-import org.apache.spark.streaming.{Time, StreamingContext}
+import org.apache.spark.streaming.{StreamingContext, Time}
 import org.apache.spark.streaming.dstream.{DStreamCheckpointData, InputDStream}
 
-import scala.annotation.tailrec
 import scala.reflect.ClassTag
 
 /**
@@ -24,9 +23,9 @@ class DirectTalosInputDStream[R: ClassTag](
   messageHandler: MessageAndOffset => R
 ) extends InputDStream[R](ssc_) with Logging {
 
-  val maxRetries = context.sparkContext.getConf.getInt(
-    "spark.streaming.talos.maxRetries", 1)
-  val backoffMs = context.sparkContext.getConf.getInt(
+  private val maxRetries = context.sparkContext.getConf.getInt(
+    "spark.streaming.talos.maxRetries", -1) // infinite retry
+  private val backoffMs = context.sparkContext.getConf.getInt(
     "spark.streaming.talos.backoff.ms", 200)
 
   // Keep this consistent with how other streams are named (e.g. "Flume polling stream [2]")
@@ -78,25 +77,32 @@ class DirectTalosInputDStream[R: ClassTag](
   private val maxRateLimitPerPartition: Int = context.sparkContext.getConf.getInt(
     "spark.streaming.talos.maxRatePerPartition", 0)
 
+  private val fatalTalosErr = Set(ErrorCode.TOPIC_NOT_EXIST, ErrorCode.PARTITION_NOT_EXIST,
+    ErrorCode.INVALID_AUTH_INFO, ErrorCode.PERMISSION_DENIED_ERROR)
 
-  @tailrec
   protected final def latestOffsets(retries: Int): Map[TopicPartition, Long] = {
-    val o = tc.getLatestOffsets(currentOffsets.keySet.map(_.topic))
-    // Either.fold would confuse @tailrec, do it manually
-    if (o.isLeft) {
-      val err = o.left.get.toString
-      if (retries <= 0) {
-        throw new SparkException(err)
-      } else {
-        log.error(err)
-        Thread.sleep(backoffMs)
-        latestOffsets(retries - 1)
+    var i = retries
+    var o = tc.getLatestOffsets(currentOffsets.keySet.map(_.topic))
+    while (o.isLeft && (i == -1 || i > 0)) {
+      val errs = o.left.get
+      if (errs.exists(t => t.isInstanceOf[GalaxyTalosException] &&
+        fatalTalosErr.contains(t.asInstanceOf[GalaxyTalosException].errorCode))) {
+        throw new SparkException(errs.mkString(","))
       }
-    } else {
-      assert(o.right.get.size == currentOffsets.size,
-        s"Partition number of ${currentOffsets.keySet.head.topic} changed! " +
-          s"Previous: ${currentOffsets.size}; Current: ${o.right.get.size}")
-      o.right.get
+      logWarning(s"Fetch offsets failed, will retry again after $backoffMs ms.\n$errs")
+      Thread.sleep(backoffMs)
+      o = tc.getLatestOffsets(currentOffsets.keySet.map(_.topic))
+      if (i > 0) {
+        i -= 1
+      }
+    }
+    o match {
+      case Left(err) => throw new SparkException(err.toString)
+      case Right(latestOffsets) =>
+        assert(latestOffsets.size == currentOffsets.size,
+          s"Partition number of ${currentOffsets.keySet.head.topic} changed! " +
+            s"Previous: ${currentOffsets.size}; Current: ${o.right.get.size}")
+        latestOffsets
     }
   }
 
