@@ -16,7 +16,7 @@
     <properties>
         <scala.version>2.10.4</scala.version>
         <scala.binary.version>2.10</scala.binary.version>
-        <spark.version>1.5.2</spark.version>
+        <spark.version>1.6.1</spark.version>
         <java.version>1.6</java.version>
         <PermGen>512m</PermGen>
         <MaxPermGen>1024m</MaxPermGen>
@@ -60,6 +60,11 @@
             <artifactId>junit</artifactId>
             <version>4.10</version>
             <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.json4s</groupId>
+            <artifactId>json4s-jackson_2.10</artifactId>
+            <version>3.2.10</version>
         </dependency>
     </dependencies>
     <build>
