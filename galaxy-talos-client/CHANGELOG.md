@@ -1,6 +1,12 @@
 
 ## 2.1-SNAPSHOT
 
+## 2.0.3
+  * D46376: Add ConsumerOffsetLag reporter
+  * D46327: update thrift generated files
+  * D45248: Catch exception when fetching messages/offsets from talos and retry
+  * D45241: UntilOffset must not be smaller than FromOffset 
+
 ## 2.0.2
   * D44022: sdk add msg createTime for block & consumer add msg land time
 
