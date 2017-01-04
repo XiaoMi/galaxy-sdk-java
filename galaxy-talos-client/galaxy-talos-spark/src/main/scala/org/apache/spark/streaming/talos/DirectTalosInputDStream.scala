@@ -211,10 +211,12 @@ class DirectTalosInputDStream[R: ClassTag](
       } else {
         val minTime = generatedRDDs.keySet.min
         val offsetRange = generatedRDDs(minTime).asInstanceOf[TalosRDD[R]].offsetRanges
+        val consumeOffsets = offsetRange.map(or =>
+          (new TopicPartition(or.topic, or.partition), or.fromOffset)).toMap
         Try(latestOffsets(0)) match {
           case Success(offsets) =>
             Some(offsets.map {
-              case (tp, lo) => (tp, lo - offsetRange(tp.partition).fromOffset)
+              case (tp, lo) => (tp, lo - consumeOffsets(tp))
             })
           case Failure(e) =>
             logWarning("Get ConsumerOffsetLag info failed.", e)
