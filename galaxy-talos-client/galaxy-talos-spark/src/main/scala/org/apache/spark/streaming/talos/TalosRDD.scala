@@ -1,5 +1,7 @@
 package org.apache.spark.streaming.talos
 
+import java.util
+
 import com.xiaomi.infra.galaxy.rpc.thrift.Credential
 import com.xiaomi.infra.galaxy.talos.client.TalosClientConfigKeys
 import com.xiaomi.infra.galaxy.talos.consumer.SimpleConsumer
@@ -159,7 +161,7 @@ R: ClassTag](
             "Invalid MESSAGE_OFFSET_OUT_OF_RANGE: requested offset is larger than earliest offset.")
           logWarning(s"Reset request offset from $requestOffset to $earliestOffset, " +
             s"lost ${earliestOffset - requestOffset} messages.")
-          requestOffset = earliestOffset
+          requestOffset = math.min(earliestOffset, part.offsetRange.untilOffset)
       }
     }
 
@@ -167,48 +169,48 @@ R: ClassTag](
       ErrorCode.INVALID_AUTH_INFO, ErrorCode.PERMISSION_DENIED_ERROR)
 
     private def fetchBatch(retries: Int): Iterator[MessageAndOffset] = {
-      val maxFetch = math.min(fetchNumber,
-        TalosClientConfigKeys.GALAXY_TALOS_CONSUMER_MAX_FETCH_RECORDS_MAXIMUM)
+      def fetchMessage = {
+        val maxFetch = math.min(fetchNumber,
+          TalosClientConfigKeys.GALAXY_TALOS_CONSUMER_MAX_FETCH_RECORDS_MAXIMUM)
 
-      if (maxFetch <= 0) {
-        Iterator.empty
-      } else {
-        def fetchMessage = {
+        if(maxFetch <=0 ){
+          new util.ArrayList[MessageAndOffset]()
+        } else {
           val consumer: SimpleConsumer = tc.simpleConsumer(part.offsetRange.topic,
             part.offsetRange.partition)
           consumer.fetchMessage(requestOffset, maxFetch.toInt)
         }
+      }
 
-        var i = retries
-        var resp = Try(fetchMessage)
+      var i = retries
+      var resp = Try(fetchMessage)
 
-        while (resp.isFailure && (i == -1 || i > 0)) {
-          val e = resp.failed.get
-          e match {
-            case gte: GalaxyTalosException =>
-              if (fatalTalosErr.contains(gte.errorCode)) {
-                throw gte
-              } else if (gte.errorCode.equals(ErrorCode.MESSAGE_OFFSET_OUT_OF_RANGE)) {
-                logWarning(s"Fetch messages failed, try to reset fetch offset.", e)
-                resetRequestOffset(maxRetries)
-              }
-            case _: Exception =>
-              logWarning(s"Fetch messages failed, will retry again after $backoffMs ms.", e)
-              Thread.sleep(backoffMs)
-          }
-          resp = Try(fetchMessage)
-          if (i > 0) {
-            i -= 1
-          }
+      while (resp.isFailure && (i == -1 || i > 0)) {
+        val e = resp.failed.get
+        e match {
+          case gte: GalaxyTalosException =>
+            if (fatalTalosErr.contains(gte.errorCode)) {
+              throw gte
+            } else if (gte.errorCode.equals(ErrorCode.MESSAGE_OFFSET_OUT_OF_RANGE)) {
+              logWarning(s"Fetch messages failed, try to reset fetch offset.", e)
+              resetRequestOffset(maxRetries)
+            }
+          case _: Exception =>
+            logWarning(s"Fetch messages failed, will retry again after $backoffMs ms.", e)
+            Thread.sleep(backoffMs)
         }
-
-        resp match {
-          case Success(messageAndOffsets) =>
-            import scala.collection.JavaConverters._
-            messageAndOffsets.iterator().asScala.dropWhile(_.messageOffset < requestOffset)
-          case Failure(e) =>
-            throw e
+        resp = Try(fetchMessage)
+        if (i > 0) {
+          i -= 1
         }
+      }
+
+      resp match {
+        case Success(messageAndOffsets) =>
+          import scala.collection.JavaConverters._
+          messageAndOffsets.iterator().asScala.dropWhile(_.messageOffset < requestOffset)
+        case Failure(e) =>
+          throw e
       }
     }
 
