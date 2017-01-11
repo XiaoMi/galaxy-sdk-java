@@ -3,6 +3,10 @@ package com.xiaomi.infra.galaxy.sds.examples;
 import com.xiaomi.infra.galaxy.sds.client.ClientFactory;
 import com.xiaomi.infra.galaxy.sds.client.TableScanner;
 import com.xiaomi.infra.galaxy.sds.thrift.AdminService;
+import com.xiaomi.infra.galaxy.sds.thrift.BatchOp;
+import com.xiaomi.infra.galaxy.sds.thrift.BatchRequest;
+import com.xiaomi.infra.galaxy.sds.thrift.BatchRequestItem;
+import com.xiaomi.infra.galaxy.sds.thrift.BatchResult;
 import com.xiaomi.infra.galaxy.sds.thrift.CannedAcl;
 import com.xiaomi.infra.galaxy.sds.thrift.CommonConstants;
 import com.xiaomi.infra.galaxy.sds.thrift.Credential;
@@ -14,6 +18,7 @@ import com.xiaomi.infra.galaxy.sds.thrift.GetResult;
 import com.xiaomi.infra.galaxy.sds.thrift.KeySpec;
 import com.xiaomi.infra.galaxy.sds.thrift.ProvisionThroughput;
 import com.xiaomi.infra.galaxy.sds.thrift.PutRequest;
+import com.xiaomi.infra.galaxy.sds.thrift.Request;
 import com.xiaomi.infra.galaxy.sds.thrift.ScanRequest;
 import com.xiaomi.infra.galaxy.sds.thrift.ScanResult;
 import com.xiaomi.infra.galaxy.sds.thrift.TableMetadata;
@@ -23,6 +28,7 @@ import com.xiaomi.infra.galaxy.sds.thrift.TableService;
 import com.xiaomi.infra.galaxy.sds.thrift.TableSpec;
 import com.xiaomi.infra.galaxy.sds.thrift.UserType;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
@@ -34,9 +40,6 @@ import java.util.Random;
 public class Basic {
   private static AdminService.Iface adminClient;
   private static TableService.Iface tableClient;
-  private static String appId = ""; // Your AppId
-  private static String appKey = ""; // Your AppKey
-  private static String appSecret = ""; // Your AppSecret
   private static String accountKey = ""; // Your AccountKey
   private static String accountSecret = ""; // Your AccountSecret
   private static String endpoint = "http://cnbj-s0.sds.api.xiaomi.com";
@@ -60,7 +63,7 @@ public class Basic {
   }
 
   public static TableService.Iface createTableClient(String host) {
-    Credential credential = getCredential(appKey, appSecret, UserType.APP_SECRET);
+    Credential credential = getCredential(accountKey, accountSecret, UserType.APP_SECRET);
     // based on JSON transport protocol
     // clientFactory = new ClientFactory().setCredential(credential).setProtocol(ThriftProtocol.TJSON);
 
@@ -102,7 +105,6 @@ public class Basic {
     TableMetadata tableMetadata = new TableMetadata();
     tableMetadata
         .setQuota(new TableQuota().setSize(100 * 1024 * 1024))
-        .setAppAcl(cannedAclGrant(appId, CannedAcl.APP_SECRET_READ, CannedAcl.APP_SECRET_WRITE))
         .setThroughput(new ProvisionThroughput().setReadCapacity(20).setWriteCapacity(20));
 
     return new TableSpec().setSchema(tableSchema)
@@ -139,6 +141,35 @@ public class Basic {
         putRequest.putToRecord("pm25", DatumUtil.toDatum((long) (new Random().nextInt(500))));
         tableClient.put(putRequest);
         System.out.println("put record #" + i);
+      }
+
+      // batch put by partialAllowedBatch
+      List<BatchRequestItem> batch = new ArrayList<BatchRequestItem>();
+      for (int i = 11; i < 20; i++) {
+        BatchRequestItem item = new BatchRequestItem().setAction(BatchOp.PUT);
+        Map<String, Datum> record = new HashMap<String, Datum>();
+        record.put("cityId", DatumUtil.toDatum(cities[i]));
+        putRequest.putToRecord("timestamp", DatumUtil.toDatum(now.getTime()));
+        putRequest.putToRecord("score", DatumUtil.toDatum((double) new Random().nextInt(100)));
+        putRequest.putToRecord("pm25", DatumUtil.toDatum((long) (new Random().nextInt(500))));
+        item.setRequest(Request.putRequest(new PutRequest().setTableName(tableName).setRecord(record)));
+        batch.add(item);
+      }
+
+      while (true) {
+        BatchResult br = tableClient.partialAllowedBatch(new BatchRequest().setItems(batch));
+        List<BatchRequestItem> request = new ArrayList<BatchRequestItem>();
+        for (int i = 0; i < br.getItems().size(); i++) {
+          //At current only quota exceeded will get  isSuccess() == false
+          if (!br.getItems().get(i).isSuccess()) {
+            request.add(batch.get(i));
+          }
+        }
+        if (request.isEmpty()) {
+          break;
+        }
+        Thread.sleep(100); // wait a while to retry.
+        batch = request;
       }
 
       // get data
