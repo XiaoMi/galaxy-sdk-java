@@ -6,11 +6,17 @@
 
 package com.xiaomi.infra.galaxy.talos.client;
 
+import java.io.IOException;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.regex.Pattern;
 
 import com.google.common.base.Preconditions;
+import libthrift091.TBase;
+import libthrift091.TDeserializer;
+import libthrift091.TException;
+import libthrift091.TSerializer;
+import libthrift091.protocol.TCompactProtocol;
 
 import com.xiaomi.infra.galaxy.rpc.thrift.Credential;
 import com.xiaomi.infra.galaxy.talos.thrift.AddSubResourceNameRequest;
@@ -204,6 +210,27 @@ public class Utils {
     // check teamId
     if (!request.getAdminTeamId().startsWith(TALOS_CLOUD_TEAM_PREFIX)) {
       throw new IllegalArgumentException("The teamId must starts with 'CI'");
+    }
+  }
+
+  public static <T extends TBase> byte[] serialize(T t) throws IOException {
+    try {
+      TSerializer serializer = new TSerializer(new TCompactProtocol.Factory());
+      return serializer.serialize(t);
+    } catch (Exception te) {
+      throw new IOException("Failed to serialize thrift object: " + t, te);
+    }
+  }
+
+  public static <T extends TBase> T deserialize(byte[] bytes, Class<T> clazz)
+    throws IOException {
+    try {
+      TDeserializer deserializer = new TDeserializer(new TCompactProtocol.Factory());
+      T instance = clazz.newInstance();
+      deserializer.deserialize(instance, bytes);
+      return instance;
+    } catch (Exception te) {
+      throw new IOException("Failed to deserialize thrift object", te);
     }
   }
 }

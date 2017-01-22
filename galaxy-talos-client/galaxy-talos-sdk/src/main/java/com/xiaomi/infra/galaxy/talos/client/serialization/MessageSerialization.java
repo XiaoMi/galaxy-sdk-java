@@ -18,6 +18,11 @@ import com.xiaomi.infra.galaxy.talos.thrift.Message;
 
 public class MessageSerialization  {
   public static void serializeMessage(Message message,
+      DataOutputStream dataOutputStream) throws IOException {
+    serializeMessage(message, dataOutputStream, MessageSerializationFactory.getDefaultMessageVersion());
+  }
+
+  public static void serializeMessage(Message message,
       DataOutputStream dataOutputStream,
       MessageVersion messageVersion) throws IOException {
     MessageSerializationFactory.getMessageSerializer(messageVersion).serialize(message, dataOutputStream);

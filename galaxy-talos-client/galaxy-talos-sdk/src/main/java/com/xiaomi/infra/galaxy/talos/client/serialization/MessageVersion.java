@@ -8,7 +8,8 @@ package com.xiaomi.infra.galaxy.talos.client.serialization;
 
 public enum  MessageVersion {
   V1(1),
-  V2(2);
+  V2(2),
+  V3(3);
 
   private int version;
 

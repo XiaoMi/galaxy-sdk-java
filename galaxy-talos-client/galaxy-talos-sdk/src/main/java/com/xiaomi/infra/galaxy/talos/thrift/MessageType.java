@@ -12,7 +12,33 @@ import java.util.HashMap;
 import libthrift091.TEnum;
 
 public enum MessageType implements libthrift091.TEnum {
-  BINARY(1);
+  /**
+   * The message is sequence of 8-bit unsigned bytes, and we don't know how to
+   * decode it;
+   * 
+   */
+  BINARY(1),
+  /**
+   * The message is a binary data that encoded from string by UTF-8, you should
+   * use UTF-8 to decode this binary data;
+   * 
+   */
+  UTF8(2),
+  /**
+   * The message is a binary data that serialized by thrift struct;
+   * 
+   */
+  THRIFT(3),
+  /**
+   * The message is a binary data that serialized by avro record;
+   * 
+   */
+  AVRO(4),
+  /**
+   * The message is a binary data that serialized by protobuf message;
+   * 
+   */
+  PROTOBUF(5);
 
   private final int value;
 
@@ -35,6 +61,14 @@ public enum MessageType implements libthrift091.TEnum {
     switch (value) {
       case 1:
         return BINARY;
+      case 2:
+        return UTF8;
+      case 3:
+        return THRIFT;
+      case 4:
+        return AVRO;
+      case 5:
+        return PROTOBUF;
       default:
         return null;
     }

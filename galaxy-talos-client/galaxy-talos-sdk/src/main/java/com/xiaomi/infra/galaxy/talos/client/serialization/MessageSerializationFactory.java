@@ -13,12 +13,14 @@ public class MessageSerializationFactory {
         return MessageSerializerV1.get();
       case V2:
         return MessageSerializerV2.get();
+      case V3:
+        return MessageSerializerV3.get();
       default:
         throw new RuntimeException("Unsupported message version: " + version);
     }
   }
 
   public static MessageVersion getDefaultMessageVersion() {
-    return MessageVersion.V2;
+    return MessageVersion.V3;
   }
 }

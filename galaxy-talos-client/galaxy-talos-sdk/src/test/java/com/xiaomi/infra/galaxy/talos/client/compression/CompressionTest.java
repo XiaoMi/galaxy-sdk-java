@@ -70,17 +70,27 @@ public class CompressionTest {
     MessageBlock messageBlock = Compression.compress(messageList, MessageCompressionType.NONE);
     assertEquals(MessageCompressionType.NONE, messageBlock.getCompressionType());
     assertEquals(messageList.size(), messageBlock.getMessageNumber());
+    assertEquals(messageList.size(), messageBlock.getCreateTimestampListSize());
+    // verify message createTimestamp;
+    for (int index = 0; index < messageList.size(); ++index) {
+      assertEquals((Long)messageList.get(index).getCreateTimestamp(), messageBlock.getCreateTimestampList().get(index));
+    }
+
     long startOffset = 1234;
+    long appendTimestamp = 1110000;
     messageBlock.setStartMessageOffset(startOffset);
+    messageBlock.setAppendTimestamp(appendTimestamp);
     LOG.info("CompressionType: None, message BlockSize: " + messageBlock.getMessageBlock().length);
 
+    // verify message;
     List<MessageAndOffset> verifyMessageList = Compression.decompress(messageBlock, unHandledMessageNumber);
     assertEquals(messageList.size(), verifyMessageList.size());
     for (int index = 0; index < messageList.size(); ++index) {
       Message message = messageList.get(index);
       Message verifyMessage = verifyMessageList.get(index).getMessage();
-      assertFalse(verifyMessage.isSetPartitionKey());
+      assertEquals(message.getPartitionKey(), verifyMessage.getPartitionKey());
       assertEquals(message.getCreateTimestamp(), verifyMessage.getCreateTimestamp());
+      assertEquals(appendTimestamp, verifyMessage.getAppendTimestamp());
       assertEquals(message.getSequenceNumber(), verifyMessage.getSequenceNumber());
       assertArrayEquals(message.getMessage(), verifyMessage.getMessage());
       assertEquals(startOffset + index, verifyMessageList.get(index).getMessageOffset());
@@ -94,9 +104,17 @@ public class CompressionTest {
     MessageBlock messageBlock = Compression.compress(messageList, MessageCompressionType.SNAPPY);
     assertEquals(MessageCompressionType.SNAPPY, messageBlock.getCompressionType());
     assertEquals(messageList.size(), messageBlock.getMessageNumber());
+    assertEquals(messageList.size(), messageBlock.getCreateTimestampListSize());
+    // verify message createTimestamp;
+    for (int index = 0; index < messageList.size(); ++index) {
+      assertEquals((Long)messageList.get(index).getCreateTimestamp(), messageBlock.getCreateTimestampList().get(index));
+    }
+
     long startOffset = 1234;
+    long appendTimestamp = 1110000;
     long unHandledMessageNumber = 117;
     messageBlock.setStartMessageOffset(startOffset);
+    messageBlock.setAppendTimestamp(appendTimestamp);
     LOG.info("CompressionType: Snappy, message BlockSize: " + messageBlock.getMessageBlock().length);
 
     List<MessageAndOffset> verifyMessageList = Compression.decompress(messageBlock, unHandledMessageNumber);
@@ -104,8 +122,9 @@ public class CompressionTest {
     for (int index = 0; index < messageList.size(); ++index) {
       Message message = messageList.get(index);
       Message verifyMessage = verifyMessageList.get(index).getMessage();
-      assertFalse(verifyMessage.isSetPartitionKey());
+      assertEquals(message.getPartitionKey(), verifyMessage.getPartitionKey());
       assertEquals(message.getCreateTimestamp(), verifyMessage.getCreateTimestamp());
+      assertEquals(appendTimestamp, verifyMessage.getAppendTimestamp());
       assertEquals(message.getSequenceNumber(), verifyMessage.getSequenceNumber());
       assertArrayEquals(message.getMessage(), verifyMessage.getMessage());
       assertEquals(startOffset + index, verifyMessageList.get(index).getMessageOffset());
@@ -119,9 +138,17 @@ public class CompressionTest {
     MessageBlock messageBlock = Compression.compress(messageList, MessageCompressionType.GZIP);
     assertEquals(MessageCompressionType.GZIP, messageBlock.getCompressionType());
     assertEquals(messageList.size(), messageBlock.getMessageNumber());
+    assertEquals(messageList.size(), messageBlock.getCreateTimestampListSize());
+    // verify message createTimestamp;
+    for (int index = 0; index < messageList.size(); ++index) {
+      assertEquals((Long)messageList.get(index).getCreateTimestamp(), messageBlock.getCreateTimestampList().get(index));
+    }
+
     long startOffset = 1234;
+    long appendTimestamp = 1110000;
     long unHandledMessageNumber = 117;
     messageBlock.setStartMessageOffset(startOffset);
+    messageBlock.setAppendTimestamp(appendTimestamp);
     LOG.info("CompressionType: Gzip, message BlockSize: " + messageBlock.getMessageBlock().length);
 
     List<MessageAndOffset> verifyMessageList = Compression.decompress(messageBlock, unHandledMessageNumber);
@@ -129,8 +156,9 @@ public class CompressionTest {
     for (int index = 0; index < messageList.size(); ++index) {
       Message message = messageList.get(index);
       Message verifyMessage = verifyMessageList.get(index).getMessage();
-      assertFalse(verifyMessage.isSetPartitionKey());
+      assertEquals(message.getPartitionKey(), verifyMessage.getPartitionKey());
       assertEquals(message.getCreateTimestamp(), verifyMessage.getCreateTimestamp());
+      assertEquals(appendTimestamp, verifyMessage.getAppendTimestamp());
       assertEquals(message.getSequenceNumber(), verifyMessage.getSequenceNumber());
       assertArrayEquals(message.getMessage(), verifyMessage.getMessage());
       assertEquals(startOffset + index, verifyMessageList.get(index).getMessageOffset());
@@ -145,9 +173,13 @@ public class CompressionTest {
     MessageBlock messageBlock2 = Compression.compress(messageList, MessageCompressionType.SNAPPY);
     MessageBlock messageBlock3 = Compression.compress(messageList, MessageCompressionType.GZIP);
     long startOffset = 1234;
+    long appendTimestamp = 1110000;
     messageBlock1.setStartMessageOffset(startOffset);
+    messageBlock1.setAppendTimestamp(appendTimestamp);
     messageBlock2.setStartMessageOffset(messageBlock1.getStartMessageOffset() + messageBlock1.getMessageNumber());
+    messageBlock2.setAppendTimestamp(appendTimestamp);
     messageBlock3.setStartMessageOffset(messageBlock2.getStartMessageOffset() + messageBlock2.getMessageNumber() );
+    messageBlock3.setAppendTimestamp(appendTimestamp);
 
     List<MessageBlock> messageBlockList = new ArrayList<MessageBlock>(3);
     messageBlockList.add(messageBlock1);
@@ -160,8 +192,9 @@ public class CompressionTest {
     for (int index = 0; index < messageAndOffsetList.size(); ++index) {
       Message message = messageList.get(index % messageList.size());
       Message verifyMessage = messageAndOffsetList.get(index).getMessage();
-      assertFalse(verifyMessage.isSetPartitionKey());
+      assertEquals(message.getPartitionKey(), verifyMessage.getPartitionKey());
       assertEquals(message.getCreateTimestamp(), verifyMessage.getCreateTimestamp());
+      assertEquals(appendTimestamp, verifyMessage.getAppendTimestamp());
       assertEquals(message.getSequenceNumber(), verifyMessage.getSequenceNumber());
       assertArrayEquals(message.getMessage(), verifyMessage.getMessage());
       assertEquals(startOffset + index, messageAndOffsetList.get(index).getMessageOffset());
