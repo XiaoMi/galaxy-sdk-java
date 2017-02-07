@@ -5,23 +5,22 @@ import com.xiaomi.infra.galaxy.talos.admin.TalosAdmin
 import com.xiaomi.infra.galaxy.talos.client.TalosClientConfig
 import com.xiaomi.infra.galaxy.talos.consumer.{SimpleConsumer, TalosConsumerConfig}
 import com.xiaomi.infra.galaxy.talos.thrift.{DescribeTopicRequest, GetTopicOffsetRequest, TopicAndPartition, TopicTalosResourceName}
-import org.apache.spark.SparkException
+import org.apache.spark.{Logging, SparkException}
 import org.apache.spark.streaming.talos.TalosCluster.Offset.Offset
 import org.apache.spark.streaming.talos.TalosCluster.{Err, Offset}
 
 import scala.collection.mutable.ArrayBuffer
 import scala.collection.mutable
-
-import java.util.Properties;
+import java.util.Properties
 
 /**
-  * Created by jiasheng on 16-3-15.
-  */
+ * Created by jiasheng on 16-3-15.
+ */
 private[spark]
 class TalosCluster(
   val talosParams: Map[String, String],
   val credential: Credential
-) extends Serializable {
+) extends Serializable with Logging {
   @transient
   private var _config: Properties = null
   @transient
@@ -87,7 +86,9 @@ class TalosCluster(
           new GetTopicOffsetRequest(topicResourceName(topic)))
 
         import scala.collection.JavaConverters._
-        partitionOffsets.asScala.map(po =>
+        partitionOffsets.asScala.map(po => {
+          logInfo(s"(${topic}, ${po.partitionId}) OffsetRange: " +
+            s"${po.startOffset} -> ${po.endOffset}")
           new TopicPartition((topic, po.partitionId)) ->
             (offset match {
               case Offset.Earliest => po.startOffset
@@ -95,6 +96,7 @@ class TalosCluster(
               // The offset of the next message that WILL be appended to the log
               case Offset.Latest => po.endOffset + 1
             })
+        }
         ).toMap
       }).fold(Map[TopicPartition, Long]())((l, r) => l ++ r)
 
