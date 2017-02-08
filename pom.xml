@@ -168,5 +168,6 @@
     <module>galaxy-emq-client</module>
     <module>galaxy-storm-emq</module>
     <module>galaxy-emr-client</module>
+    <module>galaxy-metrics-client</module>
   </modules>
 </project>
