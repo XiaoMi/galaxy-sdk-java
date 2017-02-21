@@ -15,15 +15,9 @@ import com.xiaomi.infra.galaxy.talos.thrift.Message;
 import com.xiaomi.infra.galaxy.talos.thrift.MessageType;
 
 public class MessageSerializerV3 extends MessageSerializer {
-  private static final int CREATE_TIMESTAMP_BYTES = 8;
-  private static final int MESSAGE_TYPE_BYTES = 2;
-  private static final int SEQUENCE_NUMBER_LENGTH_BYTES = 2;
-  private static final int SCHEMA_FINGERPRINTS_LENGTH_BYTES = 2;
   private static final int MESSAGE_DATA_LENGTH_BYTES = 4;
 
   public static final int MESSAGE_HEADER_BYTES = VERSION_NUMBER_LENGTH +
-      MESSAGE_TYPE_BYTES + CREATE_TIMESTAMP_BYTES +
-      SEQUENCE_NUMBER_LENGTH_BYTES + SCHEMA_FINGERPRINTS_LENGTH_BYTES +
       MESSAGE_DATA_LENGTH_BYTES;
 
   private static final MessageSerializerV3 INSTANCE = new MessageSerializerV3();
@@ -57,6 +51,10 @@ public class MessageSerializerV3 extends MessageSerializer {
 
   @Override
   public int getMessageSize(Message message) {
-    return 0;
+    try {
+      return MESSAGE_HEADER_BYTES + Utils.serialize(message).length;
+    } catch (Exception e) {
+      return 0;
+    }
   }
 }
