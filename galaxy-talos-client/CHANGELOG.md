@@ -1,6 +1,12 @@
 
 ## 2.1-SNAPSHOT
 
+## 2.1.0
+  * D50402: fix getMessageSize for MessageSerializerV3
+  * D49238: add createTimestampList for MessageBlock && use thrift serialize for Message
+  * D48163: fromOffset must not be larger than untilOffset
+  * D47983: Fix partition offset lag
+
 ## 2.0.3
   * D46376: Add ConsumerOffsetLag reporter
   * D46327: update thrift generated files
