@@ -62,6 +62,11 @@ public class CommonConstants {
   public static final String JUDGE_SERVICE_PATH = "/v1/api/judge";
 
   /**
+   * Dashboard读写RPC路径
+   */
+  public static final String DASHBOARD_SERVICE_PATH = "/v1/api/dashboard";
+
+  /**
    * 兼容其它SDK，等同于application/x-thrift-json
    */
   public static final String DEFAULT_THRIFT_HEADER = "application/x-thrift";

@@ -65,7 +65,7 @@ public class MetricsDemo {
 
     DownSample sample = new DownSample()
         .setInternal(1)
-        .setTimeUnit(TimeUnit.MINUTE)
+        .setTimeUnit(TimeUnit.MINUTES)
         .setAggregator(Aggregator.AVG);
 
     MetricKey metricKey = new MetricKey()

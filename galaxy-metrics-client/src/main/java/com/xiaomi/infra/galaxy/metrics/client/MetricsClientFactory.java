@@ -2,6 +2,7 @@ package com.xiaomi.infra.galaxy.metrics.client;
 
 import com.xiaomi.infra.galaxy.metrics.thrift.CommonConstants;
 import com.xiaomi.infra.galaxy.metrics.thrift.Credential;
+import com.xiaomi.infra.galaxy.metrics.thrift.DashboardService;
 import com.xiaomi.infra.galaxy.metrics.thrift.ErrorsConstants;
 import com.xiaomi.infra.galaxy.metrics.thrift.JudgeService;
 import com.xiaomi.infra.galaxy.metrics.thrift.MetricsService;
@@ -137,6 +138,22 @@ public class MetricsClientFactory {
 
   public MetricsService.Iface newMetricsClient(String url, int socketTimeout, int connTimeout) {
     return newMetricsClient(url, socketTimeout, connTimeout, true, ErrorsConstants.MAX_RETRY);
+  }
+
+
+  public DashboardService.Iface newDashboardClient(String url, int socketTimeout, int connTimeout,
+      boolean isRetry, int retryTime) {
+    return createClient(DashboardService.Iface.class, DashboardService.Client.class,
+        url, socketTimeout, connTimeout, isRetry, retryTime);
+  }
+
+  public DashboardService.Iface newDashboardClient(String url) {
+    return newDashboardClient(url, (int) CommonConstants.DEFAULT_CLIENT_TIMEOUT,
+        (int) CommonConstants.DEFAULT_CLIENT_CONN_TIMEOUT, true, ErrorsConstants.MAX_RETRY);
+  }
+
+  public DashboardService.Iface newDashboardClient(String url, int socketTimeout, int connTimeout) {
+    return newDashboardClient(url, socketTimeout, connTimeout, true, ErrorsConstants.MAX_RETRY);
   }
 
 

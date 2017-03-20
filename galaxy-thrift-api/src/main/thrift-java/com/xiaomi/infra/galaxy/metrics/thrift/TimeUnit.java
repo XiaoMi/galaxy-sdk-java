@@ -12,8 +12,10 @@ import java.util.HashMap;
 import libthrift091.TEnum;
 
 public enum TimeUnit implements libthrift091.TEnum {
-  MINUTE(1),
-  HOURS(2);
+  MINUTES(1),
+  HOURS(2),
+  DAYS(3),
+  WEEKS(4);
 
   private final int value;
 
@@ -35,9 +37,13 @@ public enum TimeUnit implements libthrift091.TEnum {
   public static TimeUnit findByValue(int value) { 
     switch (value) {
       case 1:
-        return MINUTE;
+        return MINUTES;
       case 2:
         return HOURS;
+      case 3:
+        return DAYS;
+      case 4:
+        return WEEKS;
       default:
         return null;
     }
