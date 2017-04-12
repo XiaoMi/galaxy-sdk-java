@@ -42,6 +42,8 @@
     <slf4j.version>1.6.1</slf4j.version>
     <snappy.version>1.1.1.6</snappy.version>
     <guava.version>11.0.2</guava.version>
+    <gson.version>2.3.1</gson.version>
+    <httpcomponents.version>4.3.3</httpcomponents.version>
   </properties>
 
   <developers>
@@ -169,5 +171,7 @@
     <module>galaxy-storm-emq</module>
     <module>galaxy-emr-client</module>
     <module>galaxy-metrics-client</module>
+    <module>galaxy-ai-client-common</module>
+    <module>galaxy-vision-sdk-java</module>
   </modules>
 </project>
