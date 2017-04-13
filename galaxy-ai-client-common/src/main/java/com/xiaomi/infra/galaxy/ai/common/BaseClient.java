@@ -54,6 +54,10 @@ import com.xiaomi.infra.galaxy.client.authentication.signature.SignAlgorithm;
 import com.xiaomi.infra.galaxy.client.authentication.signature.Signer;
 import com.xiaomi.infra.galaxy.client.authentication.signature.SubResource;
 
+/**
+ * Copyright 2017, Xiaomi.
+ * All rights reserved.
+ */
 public class BaseClient {
   private static final Log LOG = LogFactory.getLog(BaseClient.class);
   private static final SignAlgorithm SIGN_ALGO = SignAlgorithm.HmacSHA1;

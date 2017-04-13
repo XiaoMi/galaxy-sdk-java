@@ -172,6 +172,6 @@
     <module>galaxy-emr-client</module>
     <module>galaxy-metrics-client</module>
     <module>galaxy-ai-client-common</module>
-    <module>galaxy-vision-sdk-java</module>
+    <module>galaxy-vision-client</module>
   </modules>
 </project>

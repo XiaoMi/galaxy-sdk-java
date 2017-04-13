@@ -1,5 +1,9 @@
 package com.xiaomi.infra.galaxy.ai.common;
 
+/**
+ * Copyright 2017, Xiaomi.
+ * All rights reserved.
+ */
 public class Credential {
   private String accessKey;
   private String accessSecret;

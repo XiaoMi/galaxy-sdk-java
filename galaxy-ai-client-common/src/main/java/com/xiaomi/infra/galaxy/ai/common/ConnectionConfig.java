@@ -1,5 +1,9 @@
 package com.xiaomi.infra.galaxy.ai.common;
 
+/**
+ * Copyright 2017, Xiaomi.
+ * All rights reserved.
+ */
 public class ConnectionConfig {
   private static final String URI_HTTP_PREFIX = "http://";
   private static final String URI_HTTPS_PREFIX = "https://";

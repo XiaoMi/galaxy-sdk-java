@@ -8,6 +8,7 @@
   <artifactId>galaxy-ai-client-common</artifactId>
   <packaging>jar</packaging>
   <name>Galaxy AI Client Common Module</name>
+  <version>0.1-SNAPSHOT</version>
   <description>Xiaomi Galaxy AI Client Common Module</description>
 
   <parent>
