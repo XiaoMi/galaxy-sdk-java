@@ -2,14 +2,13 @@ package org.apache.spark.streaming.talos
 
 import com.xiaomi.infra.galaxy.rpc.thrift.Credential
 import com.xiaomi.infra.galaxy.talos.thrift.{ErrorCode, GalaxyTalosException, MessageAndOffset}
-import org.apache.hadoop.security.UserGroupInformation
 import org.apache.spark.rdd.RDD
 import org.apache.spark.streaming.dstream.{DStreamCheckpointData, InputDStream}
 import org.apache.spark.streaming.scheduler.rate.RateEstimator
 import org.apache.spark.streaming.scheduler.{RateController, StreamInputInfo}
-import org.apache.spark.streaming.talos.perfcounter.{CounterType, PerfBean, PerfListener, PerfReporter}
+import org.apache.spark.streaming.talos.perfcounter._
 import org.apache.spark.streaming.{StreamingContext, Time}
-import org.apache.spark.{Logging, SparkException}
+import org.apache.spark.{Logging, SparkConf, SparkException}
 
 import scala.collection.mutable
 import scala.reflect.ClassTag
@@ -121,8 +120,7 @@ class DirectTalosInputDStream[R: ClassTag](
   }
 
   override def start(): Unit = {
-    PerfReporter.register(new LagPerfListener())
-    PerfReporter.startIfEnabled(context.conf)
+    startPerfReporter()
   }
 
   override def stop(): Unit = {
@@ -186,8 +184,7 @@ class DirectTalosInputDStream[R: ClassTag](
           context.sparkContext, talosParams, b.map(OffsetRange(_)), credential, messageHandler)
       }
       // restore lag reporter
-      PerfReporter.register(new LagPerfListener())
-      PerfReporter.startIfEnabled(context.conf)
+      startPerfReporter()
     }
   }
 
@@ -197,13 +194,15 @@ class DirectTalosInputDStream[R: ClassTag](
     override protected def publish(rate: Long): Unit = ()
   }
 
+  private def startPerfReporter() = {
+    val topics = fromOffsets.map(_._1.topic).toSeq
+    PerfReporter.register(new LagPerfListener(context.sparkContext.conf))
+    PerfReporter.register(new ActiveRDDsPerfListener(this, topics))
+    PerfReporter.startIfEnabled(context.conf)
+  }
+
   private[streaming]
-  class LagPerfListener extends PerfListener {
-    private val conf = context.sparkContext.conf
-    private val appName = context.sparkContext.appName
-    private val user = UserGroupInformation.getCurrentUser.getShortUserName
-    private val stepInSeconds = conf.getInt("spark.metrics.push.interval.secs", 60)
-    private val clusterName = conf.get("spark.metrics.cluster.name", "unknown")
+  class LagPerfListener(sparkConf: SparkConf) extends PerfListener(sparkConf) {
 
     private def calcOffsetLag() = {
       if (generatedRDDs.isEmpty) {
@@ -231,8 +230,8 @@ class DirectTalosInputDStream[R: ClassTag](
       timeStamp: Long,
       lag: Long) = {
       PerfBean(
-        "streaming.monitor",
-        "ConsumerOffsetLag",
+        endpoint,
+        "TalosOffsetLag",
         timeStamp,
         stepInSeconds,
         lag,

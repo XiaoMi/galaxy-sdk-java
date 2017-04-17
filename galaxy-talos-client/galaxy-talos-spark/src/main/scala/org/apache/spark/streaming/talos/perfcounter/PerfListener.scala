@@ -2,10 +2,20 @@ package org.apache.spark.streaming.talos.perfcounter
 
 import java.util.concurrent.CopyOnWriteArrayList
 
+import org.apache.hadoop.security.UserGroupInformation
+import org.apache.spark.SparkConf
+
 /**
-  * Created by jiasheng on 15/12/2016.
-  */
-trait PerfListener {
+ * Created by jiasheng on 15/12/2016.
+ */
+private[talos] abstract class PerfListener(
+  sparkConf: SparkConf
+) {
+  protected val endpoint: String = "streaming.monitor"
+  protected val appName = sparkConf.get("spark.app.name")
+  protected val user = UserGroupInformation.getCurrentUser.getShortUserName
+  protected val stepInSeconds = sparkConf.getInt("spark.metrics.push.interval.secs", 60)
+  protected val clusterName = sparkConf.get("spark.metrics.cluster.name", "unknown")
 
   def onGeneratePerf(): Seq[PerfBean]
 
