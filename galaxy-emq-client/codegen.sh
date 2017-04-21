@@ -4,8 +4,9 @@ THRIFT_JAVA_PATH=./src/main/java
 THRIFT_PYTHON_PATH=../../galaxy-sdk-python
 THRIFT_PHP_PATH=../../galaxy-sdk-php
 THRIFT_JS_PATH=../../galaxy-sdk-javascript
+THRIFT_NODE_PATH=../../galaxy-sdk-nodejs
 
-THRIFT_FILES=(Common.thrift Range.thrift Queue.thrift Message.thrift Statistics.thrift)
+THRIFT_FILES=(Common.thrift Range.thrift Constants.thrift Queue.thrift Message.thrift Statistics.thrift)
 
 if [ $# -ne 1 ]
 then echo "Please input sdk language!";
@@ -64,3 +65,15 @@ then
         thrift -out ${THRIFT_JS_PATH}/src/emq -gen js:jquery $f
     done
 fi
+
+if [ "$1" = "nodejs" ] || [ "$1" = "all" ]
+then
+    for f in ${THRIFT_FILES[@]}
+    do
+        f=${THRIFT_ROOT_PATH}/${f}
+        echo "Compiling $f to JavaScript"
+        thrift -out ${THRIFT_NODE_PATH}/lib/emq -gen js:node $f
+    done
+    find ${THRIFT_NODE_PATH}/lib/emq -name "*.js" -type f | xargs sed -i "s/require('thrift')/require('..\/thrift')/g"
+fi
+
