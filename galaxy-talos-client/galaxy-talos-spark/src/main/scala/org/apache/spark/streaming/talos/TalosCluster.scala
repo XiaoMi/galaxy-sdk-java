@@ -16,6 +16,7 @@ import java.util.Properties
 /**
  * Created by jiasheng on 16-3-15.
  */
+@SerialVersionUID(-995673360675374997L)
 private[spark]
 class TalosCluster(
   val talosParams: Map[String, String],

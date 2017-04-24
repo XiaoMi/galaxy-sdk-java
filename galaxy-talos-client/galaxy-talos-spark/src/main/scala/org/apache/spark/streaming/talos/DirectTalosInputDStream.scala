@@ -17,6 +17,7 @@ import scala.util.{Failure, Success, Try}
 /**
   * Created by jiasheng on 16-3-15.
   */
+@SerialVersionUID(-3744996582858876937L)
 private[streaming]
 class DirectTalosInputDStream[R: ClassTag](
   @transient ssc_ : StreamingContext,
@@ -195,7 +196,7 @@ class DirectTalosInputDStream[R: ClassTag](
   }
 
   private def startPerfReporter() = {
-    val topics = fromOffsets.map(_._1.topic).toSeq
+    val topics = fromOffsets.map(_._1.topic).toSet
     PerfReporter.register(new LagPerfListener(context.sparkContext.conf))
     PerfReporter.register(new ActiveRDDsPerfListener(this, topics))
     PerfReporter.startIfEnabled(context.conf)

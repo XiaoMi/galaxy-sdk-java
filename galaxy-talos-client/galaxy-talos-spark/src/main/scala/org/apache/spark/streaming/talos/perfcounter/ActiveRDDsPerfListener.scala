@@ -6,7 +6,7 @@ import scala.collection.mutable
 
 private[talos] class ActiveRDDsPerfListener(
   dstream: DStream[_],
-  topics: Seq[String]
+  topics: Set[String]
 ) extends PerfListener(dstream.context.sparkContext.conf) {
 
   override def onGeneratePerf(): Seq[PerfBean] = {
@@ -21,7 +21,7 @@ private[talos] class ActiveRDDsPerfListener(
         "appName" -> appName,
         "user" -> user,
         "cluster" -> clusterName,
-        "topics" -> topics.mkString(",")
+        "topics" -> topics.mkString("&")
       )
     ))
   }
