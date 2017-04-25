@@ -1,17 +1,18 @@
 package org.apache.spark.streaming.talos
 
+import java.util.Properties
+
 import com.xiaomi.infra.galaxy.rpc.thrift.Credential
 import com.xiaomi.infra.galaxy.talos.admin.TalosAdmin
 import com.xiaomi.infra.galaxy.talos.client.TalosClientConfig
 import com.xiaomi.infra.galaxy.talos.consumer.{SimpleConsumer, TalosConsumerConfig}
-import com.xiaomi.infra.galaxy.talos.thrift.{DescribeTopicRequest, GetTopicOffsetRequest, TopicAndPartition, TopicTalosResourceName}
-import org.apache.spark.{Logging, SparkException}
+import com.xiaomi.infra.galaxy.talos.thrift._
 import org.apache.spark.streaming.talos.TalosCluster.Offset.Offset
 import org.apache.spark.streaming.talos.TalosCluster.{Err, Offset}
+import org.apache.spark.{Logging, SparkException}
 
-import scala.collection.mutable.ArrayBuffer
 import scala.collection.mutable
-import java.util.Properties
+import scala.collection.mutable.ArrayBuffer
 
 /**
  * Created by jiasheng on 16-3-15.
@@ -88,6 +89,12 @@ class TalosCluster(
 
         import scala.collection.JavaConverters._
         partitionOffsets.asScala.map(po => {
+          if (po.errorCode != null) {
+            val exception = new GalaxyTalosException()
+            exception.setErrorCode(po.errorCode)
+            exception.setErrMsg(po.errorMsg)
+            throw exception
+          }
           logInfo(s"(${topic}, ${po.partitionId}) OffsetRange: " +
             s"${po.startOffset} -> ${po.endOffset}")
           new TopicPartition((topic, po.partitionId)) ->
