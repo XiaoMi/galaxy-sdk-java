@@ -50,7 +50,7 @@ public enum ErrorCode implements libthrift091.TEnum {
   /**
    * Invalid receipt handle.
    */
-  INVALID_RECEIPT_HANDLE(9),
+  INVALID_INDEX_ID(9),
   /**
    * Message body is missing.
    */
@@ -58,7 +58,7 @@ public enum ErrorCode implements libthrift091.TEnum {
   /**
    * Receipt handle not exit.
    */
-  RECEIPT_HANDLE_NOT_EXIST(11),
+  INVALID_RECEIPT_HANDLE(11),
   /**
    * Index not unique.
    */
@@ -68,9 +68,13 @@ public enum ErrorCode implements libthrift091.TEnum {
    */
   PERMISSION_DENIED(13),
   /**
+   * Permission denied.
+   */
+  REQUEST_LENGTH_EXCEEDED(34),
+  /**
    * Bad request.
    */
-  BAD_REQUEST(34),
+  BAD_REQUEST(35),
   /**
    * System internal error.
    */
@@ -148,16 +152,18 @@ public enum ErrorCode implements libthrift091.TEnum {
       case 8:
         return QUEUE_URI_CONFLICT;
       case 9:
-        return INVALID_RECEIPT_HANDLE;
+        return INVALID_INDEX_ID;
       case 10:
         return MESSAGE_BODY_MISSING;
       case 11:
-        return RECEIPT_HANDLE_NOT_EXIST;
+        return INVALID_RECEIPT_HANDLE;
       case 12:
         return INDEX_NOT_UNIQUE;
       case 13:
         return PERMISSION_DENIED;
       case 34:
+        return REQUEST_LENGTH_EXCEEDED;
+      case 35:
         return BAD_REQUEST;
       case 14:
         return INTERNAL_ERROR;

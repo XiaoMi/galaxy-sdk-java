@@ -17,6 +17,8 @@ exception GalaxyEmqServiceException {
   3: optional string details;
 
   4: optional string requestId;
+
+  5: optional string queueName;
 }
 
 /**
@@ -61,7 +63,7 @@ enum ErrorCode {
   /**
    * Invalid receipt handle.
    */
-  INVALID_RECEIPT_HANDLE = 9,
+  INVALID_INDEX_ID = 9,
   /**
    * Message body is missing.
    */
@@ -69,7 +71,7 @@ enum ErrorCode {
   /**
    * Receipt handle not exit.
    */
-  RECEIPT_HANDLE_NOT_EXIST = 11,
+  INVALID_RECEIPT_HANDLE = 11,
   /**
    * Index not unique.
    */
@@ -78,11 +80,15 @@ enum ErrorCode {
    * Permission denied.
    */
   PERMISSION_DENIED = 13,
+  /**
+    * Permission denied.
+    */
+  REQUEST_LENGTH_EXCEEDED = 34,
 
   /**
    * Bad request.
    */
-  BAD_REQUEST = 34,
+  BAD_REQUEST = 35,
 
   /************************
    * System errors.
