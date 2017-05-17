@@ -1,6 +1,12 @@
 
 ## 2.1-SNAPSHOT
 
+## 2.1.1
+  * D54643: Push number of active rdds to perfcounter
+  * D55173: Add offset range debug info
+  * D55360: Add SerialVersionUID
+  * D55372: Check error code of offset info
+
 ## 2.1.0
   * D50402: fix getMessageSize for MessageSerializerV3
   * D49238: add createTimestampList for MessageBlock && use thrift serialize for Message
