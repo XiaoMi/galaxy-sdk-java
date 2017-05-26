@@ -10,15 +10,16 @@ import org.apache.spark.api.java.function.{Function => JFunction}
 import org.apache.spark.streaming.api.java.{JavaInputDStream, JavaPairInputDStream, JavaStreamingContext}
 import org.apache.spark.streaming.dstream.InputDStream
 import org.apache.spark.streaming.talos.TalosCluster.Err
+import org.apache.spark.streaming.talos.offset.HDFSOffsetDAO
 import org.apache.spark.streaming.{Duration, StreamingContext}
-import org.apache.spark.{Logging, SparkConf}
+import org.apache.spark.{Logging, SparkConf, SparkException}
 
 import scala.collection.JavaConversions._
 import scala.reflect.ClassTag
 
 /**
-  * Created by jiasheng on 16-3-15.
-  */
+ * Created by jiasheng on 16-3-15.
+ */
 object TalosUtils extends Logging {
 
   def createDirectStream(
@@ -42,12 +43,26 @@ object TalosUtils extends Logging {
 
     val tc = new TalosCluster(talosParams, credential)
     val reset = talosParams.get("auto.offset.reset").map(_.toLowerCase).getOrElse("largest")
-    val fromOffsets = reset match {
-      case "smallest" => tc.getEarliestOffsets(topics)
-      case "largest" => tc.getLatestOffsets(topics)
-      case r => Left(new Err += new IllegalArgumentException(
-        s"Invalid config for 'auto.offset.reset': $r"
-      ))
+    val offsetDirOpt = talosParams.get("offset.checkpoint.dir")
+
+    val restoredOffsetsOpt = try {
+      offsetDirOpt.map(offsetDir =>
+        new HDFSOffsetDAO(offsetDir, ssc.sparkContext.hadoopConfiguration)
+      ).flatMap(dao => dao.restore())
+    } catch {
+      case t: Throwable => {
+        throw new SparkException(s"Restore offsets from ${offsetDirOpt.get} failed.", t)
+      }
+    }
+
+    val fromOffsets = restoredOffsetsOpt.map(Right(_)).getOrElse {
+      reset match {
+        case "smallest" => tc.getEarliestOffsets(topics)
+        case "largest" => tc.getLatestOffsets(topics)
+        case r => Left(new Err += new IllegalArgumentException(
+          s"Invalid config for 'auto.offset.reset': $r"
+        ))
+      }
     }
 
     val result = fromOffsets.right.map(fo =>
@@ -90,21 +105,21 @@ object TalosUtils extends Logging {
   }
 
   /**
-    * Create StreamingContext with checkpointing dir auto setting to app name.
-    * Disable auto checkpointing by setting 'spark.streaming.talos.checkpointing.enable'
-    * to false in SparkConf.
-    *
-    * @param conf          SparkConf
-    * @param batchDuration batch duration
-    * @param talosParams   parameters for talos client
-    * @param credential    credential
-    * @param topics        talos topics
-    * @param dStreamFunc   function to construct DStream. Refer to
-    *                      http://docs.scala-lang.org/style/declarations.html
-    *                      #multiple-parameter-lists for more info about
-    *                      multiple parameter lists.
-    * @return StreamingContext created or restored.
-    */
+   * Create StreamingContext with checkpointing dir auto setting to app name.
+   * Disable auto checkpointing by setting 'spark.streaming.talos.checkpointing.enable'
+   * to false in SparkConf.
+   *
+   * @param conf          SparkConf
+   * @param batchDuration batch duration
+   * @param talosParams   parameters for talos client
+   * @param credential    credential
+   * @param topics        talos topics
+   * @param dStreamFunc   function to construct DStream. Refer to
+   *                      http://docs.scala-lang.org/style/declarations.html
+   *                      #multiple-parameter-lists for more info about
+   *                      multiple parameter lists.
+   * @return StreamingContext created or restored.
+   */
   def createStreamingContext(
     conf: SparkConf,
     batchDuration: Duration,
@@ -122,22 +137,22 @@ object TalosUtils extends Logging {
   }
 
   /**
-    * Create StreamingContext with checkpointing dir auto setting to app name.
-    * Disable auto checkpointing by setting 'spark.streaming.talos.checkpointing.enable'
-    * to false in SparkConf.
-    *
-    * @param conf           SparkConf
-    * @param batchDuration  batch duration
-    * @param talosParams    parameters for talos client
-    * @param credential     credential
-    * @param topics         talos topics
-    * @param messageHandler custom message handler. Demo:
-    *                       [[com.xiaomi.infra.galaxy.talos.spark.example.CustomMessageHandlerDemo]]
-    * @param dStreamFunc    function to construct DStream. Refer to
-    *                       http://docs.scala-lang.org/style/declarations.html
-    *                       #multiple-parameter-lists for more info about multiple parameter lists.
-    * @return StreamingContext created or restored.
-    */
+   * Create StreamingContext with checkpointing dir auto setting to app name.
+   * Disable auto checkpointing by setting 'spark.streaming.talos.checkpointing.enable'
+   * to false in SparkConf.
+   *
+   * @param conf           SparkConf
+   * @param batchDuration  batch duration
+   * @param talosParams    parameters for talos client
+   * @param credential     credential
+   * @param topics         talos topics
+   * @param messageHandler custom message handler. Demo:
+   *                       [[com.xiaomi.infra.galaxy.talos.spark.example.CustomMessageHandlerDemo]]
+   * @param dStreamFunc    function to construct DStream. Refer to
+   *                       http://docs.scala-lang.org/style/declarations.html
+   *                       #multiple-parameter-lists for more info about multiple parameter lists.
+   * @return StreamingContext created or restored.
+   */
   def createStreamingContext[T: ClassTag](
     conf: SparkConf,
     batchDuration: Duration,

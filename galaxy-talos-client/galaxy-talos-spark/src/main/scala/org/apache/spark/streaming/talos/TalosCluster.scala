@@ -95,8 +95,7 @@ class TalosCluster(
             exception.setErrMsg(po.errorMsg)
             throw exception
           }
-          logInfo(s"(${topic}, ${po.partitionId}) OffsetRange: " +
-            s"${po.startOffset} -> ${po.endOffset}")
+
           new TopicPartition((topic, po.partitionId)) ->
             (offset match {
               case Offset.Earliest => po.startOffset
@@ -107,7 +106,8 @@ class TalosCluster(
         }
         ).toMap
       }).fold(Map[TopicPartition, Long]())((l, r) => l ++ r)
-
+      logInfo(s"${offset.toString} offset info:\n" +
+        s"${result.toSeq.sortBy(_._1.toString).mkString(",")}")
       Right(result)
     } catch {
       case e: Exception =>

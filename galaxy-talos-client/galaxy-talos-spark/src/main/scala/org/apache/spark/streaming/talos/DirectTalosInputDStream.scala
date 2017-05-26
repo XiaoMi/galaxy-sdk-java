@@ -6,6 +6,7 @@ import org.apache.spark.rdd.RDD
 import org.apache.spark.streaming.dstream.{DStreamCheckpointData, InputDStream}
 import org.apache.spark.streaming.scheduler.rate.RateEstimator
 import org.apache.spark.streaming.scheduler.{RateController, StreamInputInfo}
+import org.apache.spark.streaming.talos.offset.HDFSOffsetDAO
 import org.apache.spark.streaming.talos.perfcounter._
 import org.apache.spark.streaming.{StreamingContext, Time}
 import org.apache.spark.{Logging, SparkConf, SparkException}
@@ -31,6 +32,24 @@ class DirectTalosInputDStream[R: ClassTag](
     "spark.streaming.talos.maxRetries", -1) // infinite retry
   private val backoffMs = context.sparkContext.getConf.getInt(
     "spark.streaming.talos.backoff.ms", 200)
+
+  private def offsetDirOpt = talosParams.get("offset.checkpoint.dir") match {
+    case Some(dir) => Some(dir)
+    // for transiting from checkpoint app.
+    case None => Option(System.getProperty("spark.streaming.talos.offset.checkpoint.dir", null))
+  }
+  @transient private var _offsetDao: Option[HDFSOffsetDAO] = null
+
+  private def offsetDao: Option[HDFSOffsetDAO] = {
+    if (_offsetDao == null) {
+      _offsetDao = offsetDirOpt.map(offsetDir =>
+        new HDFSOffsetDAO(
+          offsetDir,
+          ssc.sparkContext.hadoopConfiguration))
+    }
+    _offsetDao
+  }
+  private var committedTime = Option.empty[Time]
 
   // Keep this consistent with how other streams are named (e.g. "Flume polling stream [2]")
   private[streaming] override def name: String = s"Talos direct stream [$id]"
@@ -128,6 +147,7 @@ class DirectTalosInputDStream[R: ClassTag](
     if (PerfReporter.isRunning) {
       PerfReporter.stop()
     }
+    offsetDao.map(_.stop())
   }
 
   override def compute(validTime: Time): Option[RDD[R]] = {
@@ -158,6 +178,27 @@ class DirectTalosInputDStream[R: ClassTag](
 
     currentOffsets = untilOffsets.map(kv => kv._1 -> kv._2)
     Some(rdd)
+  }
+
+  override private[streaming] def clearMetadata(time: Time): Unit = {
+    // clearMetadata is called when a batch is completed.
+    tryCommitOffset(time, generatedRDDs.get(time).map(_.asInstanceOf[TalosRDD[_]]))
+    super.clearMetadata(time)
+  }
+
+  private def tryCommitOffset(time: Time, rdd: Option[TalosRDD[_]]): Unit = {
+    if (offsetDao.isEmpty || rdd.isEmpty) {
+      return
+    }
+    try {
+      val currentOffsets = rdd.get.offsetRanges.map { or =>
+        TopicPartition(or.topic, or.partition) -> or.untilOffset
+      }.toMap
+      offsetDao.get.save(time, currentOffsets)
+      committedTime = Option(time)
+    } catch {
+      case t: Throwable => logWarning("Commit offset failed.", t)
+    }
   }
 
 
