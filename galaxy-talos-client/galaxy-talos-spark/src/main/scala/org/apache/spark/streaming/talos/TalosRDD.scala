@@ -9,9 +9,8 @@ import com.xiaomi.infra.galaxy.talos.thrift.{ErrorCode, GalaxyTalosException, Me
 import org.apache.spark.annotation.{DeveloperApi, Experimental}
 import org.apache.spark.partial.{BoundedDouble, PartialResult}
 import org.apache.spark.rdd.RDD
-import org.apache.spark.SparkException
 import org.apache.spark.util.NextIterator
-import org.apache.spark.{Logging, Partition, SparkContext, TaskContext}
+import org.apache.spark.{Logging, Partition, SparkContext, SparkException, TaskContext}
 
 import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag
@@ -176,8 +175,10 @@ R: ClassTag](
         if(maxFetch <=0 ){
           new util.ArrayList[MessageAndOffset]()
         } else {
-          val consumer: SimpleConsumer = tc.simpleConsumer(part.offsetRange.topic,
-            part.offsetRange.partition)
+          val consumer: SimpleConsumer = tc.simpleConsumer(
+            part.offsetRange.topic,
+            part.offsetRange.partition,
+            Some(s"${sc.applicationId}-${part.offsetRange.topic}-${part.offsetRange.partition}"))
           consumer.fetchMessage(requestOffset, maxFetch.toInt)
         }
       }

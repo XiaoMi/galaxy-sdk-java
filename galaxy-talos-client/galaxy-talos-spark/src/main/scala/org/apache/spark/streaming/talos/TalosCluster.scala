@@ -58,15 +58,24 @@ class TalosCluster(
   }
 
   def simpleConsumer(topic: String, partition: Int): SimpleConsumer = this.synchronized {
+    this.simpleConsumer(topic, partition, Option.empty[String])
+  }
+
+  def simpleConsumer(
+    topic: String,
+    partition: Int,
+    simpleConsumerIdOpt: Option[String]
+  ): SimpleConsumer = this.synchronized {
     if (_cacheSimpleConsumer == null) {
       _cacheSimpleConsumer = mutable.Map.empty[TopicPartition, SimpleConsumer]
     }
     val topicPartition = new TopicPartition((topic, partition))
-    _cacheSimpleConsumer.getOrElseUpdate(topicPartition, new SimpleConsumer(
+    val consumer = new SimpleConsumer(
       new TalosConsumerConfig(config),
       new TopicAndPartition(topic, topicResourceName(topic), partition),
       credential)
-    )
+    simpleConsumerIdOpt.foreach(consumer.setSimpleConsumerId)
+    _cacheSimpleConsumer.getOrElseUpdate(topicPartition, consumer)
   }
 
   def getLatestOffsets(topics: Set[String]): Either[Err, Map[TopicPartition, Long]] = {
