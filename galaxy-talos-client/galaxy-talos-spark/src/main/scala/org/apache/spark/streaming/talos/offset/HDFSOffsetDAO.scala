@@ -57,7 +57,8 @@ private[talos] class HDFSOffsetDAO(
         }
         val fos = fs.create(tempFile)
         Utils.tryWithSafeFinally {
-          fos.write(HDFSOffsetDAO.serialize(offsets))
+          val toSave = offsets.map { case (tp, offset) => (tp.asTuple, offset) }
+          fos.write(HDFSOffsetDAO.serialize(toSave))
         } {
           fos.close()
         }
@@ -122,10 +123,13 @@ private[talos] class HDFSOffsetDAO(
       try {
         val fis = fs.open(file)
         val bytes = IOUtils.toByteArray(fis)
-        val offsetMap = HDFSOffsetDAO.deserialize[Map[TopicPartition, Long]](bytes)
+        val offsetMap = HDFSOffsetDAO.deserialize[Map[(String, Int), Long]](bytes)
         logInfo(s"Restored offsets successfully from file ${file}:\n" +
           s"${offsetMap.toSeq.sortBy(_._1.toString).mkString(",")}")
-        return Some(offsetMap)
+        val result = offsetMap.map { case ((topic, partition), offset) =>
+          (TopicPartition(topic, partition), offset)
+        }
+        return Some(result)
       } catch {
         case e: Exception =>
           readError = e
