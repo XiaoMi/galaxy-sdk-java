@@ -59,6 +59,14 @@ public class SimpleConsumer {
     return topicAndPartition.getTopicTalosResourceName();
   }
 
+  public void setSimpleConsumerId(String simpleConsumerId) {
+    this.simpleConsumerId = simpleConsumerId;
+  }
+
+  public String getSimpleConsumerId() {
+    return simpleConsumerId;
+  }
+
   public int getPartitionId() {
     return topicAndPartition.getPartitionId();
   }
