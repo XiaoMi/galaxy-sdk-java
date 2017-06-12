@@ -6,6 +6,7 @@ import com.google.common.collect.Maps;
 import com.xiaomi.infra.galaxy.rpc.thrift.GrantType;
 import com.xiaomi.infra.galaxy.rpc.thrift.Grantee;
 import com.xiaomi.infra.galaxy.sds.client.ClientFactory;
+import com.xiaomi.infra.galaxy.sds.client.TableScanner;
 import com.xiaomi.infra.galaxy.sds.thrift.AdminService;
 import com.xiaomi.infra.galaxy.sds.thrift.CommonConstants;
 import com.xiaomi.infra.galaxy.sds.thrift.Credential;
@@ -17,6 +18,7 @@ import com.xiaomi.infra.galaxy.sds.thrift.PutRequest;
 import com.xiaomi.infra.galaxy.sds.thrift.PutResult;
 import com.xiaomi.infra.galaxy.sds.thrift.RemoveRequest;
 import com.xiaomi.infra.galaxy.sds.thrift.RemoveResult;
+import com.xiaomi.infra.galaxy.sds.thrift.ScanRequest;
 import com.xiaomi.infra.galaxy.sds.thrift.StreamSpec;
 import com.xiaomi.infra.galaxy.sds.thrift.StreamViewType;
 import com.xiaomi.infra.galaxy.sds.thrift.TableInfo;
@@ -45,6 +47,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -105,7 +108,7 @@ public class StreamDemo {
     pro.setProperty(TalosClientConfigKeys.GALAXY_TALOS_SERVICE_ENDPOINT, talosServiceEndpoint);
     TalosClientConfig talosClientConfig = new TalosClientConfig(pro);
     com.xiaomi.infra.galaxy.rpc.thrift.Credential credential = createTalosCredential(
-        accountKey, accountSecret, com.xiaomi.infra.galaxy.rpc.thrift.UserType.DEV_XIAOMI);
+        accountKey, accountSecret, com.xiaomi.infra.galaxy.rpc.thrift.UserType.APP_SECRET);
     talosAdmin = new TalosAdmin(talosClientConfig, credential);
   }
 
@@ -119,21 +122,21 @@ public class StreamDemo {
         .setRecord(record);
   }
 
-  private IncrementRequest getReplayIncrementRequest(String tableName, Map<String, Datum> record) {
-    Map<String, Datum> keys = new HashMap<String, Datum>();
-    Map<String, Datum> amounts = new HashMap<String, Datum>();
-    for (Map.Entry<String, Datum> entry : record.entrySet()) {
-      if (DataProvider.rowKeyDef(enableEntityGroup).keySet()
-            .contains(entry.getKey())) {
-        keys.put(entry.getKey(), entry.getValue());
-      } else {
-        amounts.put(entry.getKey(), entry.getValue());
-      }
-    }
-    return new IncrementRequest().setTableName(tableName)
-        .setKeys(keys)
-        .setAmounts(amounts);
-  }
+//  private IncrementRequest getReplayIncrementRequest(String tableName, Map<String, Datum> record) {
+//    Map<String, Datum> keys = new HashMap<String, Datum>();
+//    Map<String, Datum> amounts = new HashMap<String, Datum>();
+//    for (Map.Entry<String, Datum> entry : record.entrySet()) {
+//      if (DataProvider.rowKeyDef(enableEntityGroup).keySet()
+//            .contains(entry.getKey())) {
+//        keys.put(entry.getKey(), entry.getValue());
+//      } else {
+//        amounts.put(entry.getKey(), entry.getValue());
+//      }
+//    }
+//    return new IncrementRequest().setTableName(tableName)
+//        .setKeys(keys)
+//        .setAmounts(amounts);
+//  }
 
   private RemoveRequest getReplayRemoveRequest(String tableName, Map<String, Datum> record,
       boolean rowDeleted) {
@@ -171,8 +174,10 @@ public class StreamDemo {
         LOG.info("record " + entry.getRecord() + " is put to " + destTableName);
         break;
       case INCREMENT:
-        IncrementRequest increment = getReplayIncrementRequest(destTableName, entry.getRecord());
-        tableClient.increment(increment);
+        // because the same message may be received more than once, so we should use put
+        // instead of increment for idempotency
+        put = getReplayPutRequest(destTableName, entry.getRecord());
+        tableClient.put(put);
         LOG.info("record " + entry.getRecord() + " is increment to " + destTableName);
         break;
       case DELETE:
