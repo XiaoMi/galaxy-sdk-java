@@ -22,13 +22,14 @@ import scala.util.{Failure, Success, Try}
 private[talos]
 class TalosRDD[
 R: ClassTag](
-  sc: SparkContext,
+  @transient sc: SparkContext,
   talosParams: Map[String, String],
   val offsetRanges: Array[OffsetRange],
   credential: Credential,
   messageHandler: MessageAndOffset => R
 ) extends RDD[R](sc, Nil) with Logging with HasOffsetRanges {
 
+  private val applicationId = sc.applicationId
   private val maxRetries = sparkContext.getConf.getInt(
     "spark.streaming.talos.maxRetries", -1) // infinite retry
   private val backoffMs = sparkContext.getConf.getInt(
@@ -178,7 +179,7 @@ R: ClassTag](
           val consumer: SimpleConsumer = tc.simpleConsumer(
             part.offsetRange.topic,
             part.offsetRange.partition,
-            Some(s"${sc.applicationId}-${part.offsetRange.topic}-${part.offsetRange.partition}"))
+            Some(s"${applicationId}-${part.offsetRange.topic}-${part.offsetRange.partition}"))
           consumer.fetchMessage(requestOffset, maxFetch.toInt)
         }
       }
