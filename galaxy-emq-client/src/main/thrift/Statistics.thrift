@@ -167,6 +167,24 @@ struct AddQueueAlertPolicyRequest{
 
 }
 
+struct AddTagAlertPolicyRequest{
+ /**
+  *Queue name;
+  **/
+  1: required string queueName;
+
+  /**
+    *Tag name;
+    **/
+  2: optional string tagName;
+
+  /**
+  *The alert policy;
+  **/
+  3: required AlertPolicy alertPolicy;
+
+}
+
 struct DeleteQueueAlertPolicyRequest{
  /**
   *Queue name;
@@ -261,6 +279,12 @@ service StatisticsService extends Common.EMQBaseService {
   * Add an alert policy for queue;
   **/
   void addQueueAlertPolicy(1: AddQueueAlertPolicyRequest request) throws (1: Common.GalaxyEmqServiceException e);
+
+  /**
+    * Add an alert policy for tag;
+    **/
+  void addTagAlertPolicy(1: AddTagAlertPolicyRequest request) throws (1: Common.GalaxyEmqServiceException e);
+
 
   /**
   * Delete an alert policy for queue;
