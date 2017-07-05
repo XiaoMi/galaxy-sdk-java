@@ -87,6 +87,11 @@ public class CommonConstants {
   public static final String TABLE_SERVICE_PATH = "/v1/api/table";
 
   /**
+   * Restful访问RPC路径
+   */
+  public static final String RESTFUL_SERVICE_PATH = "/v1/api/restful";
+
+  /**
    * 开启ScanAction时， 获取操作数据的数目的key值
    */
   public static final String SCAN_COUNT = "count";

@@ -93,6 +93,31 @@ public class DatumUtil {
     return toDatum(value, null);
   }
 
+  public static Datum toDatum(DataType dataType, String value) {
+    switch (dataType) {
+      case BOOL:
+        return toDatum(Boolean.parseBoolean(value));
+      case INT8:
+        return toDatum(Byte.parseByte(value));
+      case INT16:
+        return toDatum(Short.parseShort(value));
+      case INT32:
+        return toDatum(Integer.parseInt(value));
+      case INT64:
+        return toDatum(Long.parseLong(value));
+      case FLOAT:
+        return toDatum(Float.parseFloat(value));
+      case DOUBLE:
+        return toDatum(Double.parseDouble(value));
+      case STRING:
+        return toDatum(value);
+      case BINARY:
+        return toDatum(value.getBytes());
+      default:
+        throw new RuntimeException("Unsupported repeated type " + dataType);
+    }
+  }
+
   public static Datum toDatum(Object value, DataType repeatedType) {
     if (value == null) {
       throw new IllegalArgumentException("Datum must not be null");
@@ -234,6 +259,7 @@ public class DatumUtil {
     }
     return null;
   }
+
 
   public static Object fromDatum(Datum datum) {
     if (datum == null) {
