@@ -8,55 +8,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import com.xiaomi.infra.galaxy.emq.thrift.AddQueueAlertPolicyRequest;
-import com.xiaomi.infra.galaxy.emq.thrift.ChangeMessageVisibilityBatchRequest;
-import com.xiaomi.infra.galaxy.emq.thrift.ChangeMessageVisibilityBatchRequestEntry;
-import com.xiaomi.infra.galaxy.emq.thrift.ChangeMessageVisibilityRequest;
-import com.xiaomi.infra.galaxy.emq.thrift.CopyQueueRequest;
-import com.xiaomi.infra.galaxy.emq.thrift.CreateQueueRequest;
-import com.xiaomi.infra.galaxy.emq.thrift.CreateTagRequest;
-import com.xiaomi.infra.galaxy.emq.thrift.DeadMessageBatchRequest;
-import com.xiaomi.infra.galaxy.emq.thrift.DeadMessageBatchRequestEntry;
-import com.xiaomi.infra.galaxy.emq.thrift.DeadMessageRequest;
-import com.xiaomi.infra.galaxy.emq.thrift.DeleteMessageBatchRequest;
-import com.xiaomi.infra.galaxy.emq.thrift.DeleteMessageBatchRequestEntry;
-import com.xiaomi.infra.galaxy.emq.thrift.DeleteMessageRequest;
-import com.xiaomi.infra.galaxy.emq.thrift.DeleteQueueAlertPolicyRequest;
-import com.xiaomi.infra.galaxy.emq.thrift.DeleteQueueRequest;
-import com.xiaomi.infra.galaxy.emq.thrift.DeleteTagRequest;
-import com.xiaomi.infra.galaxy.emq.thrift.GalaxyEmqServiceException;
-import com.xiaomi.infra.galaxy.emq.thrift.GetQueueDailyStatisticsStateRequest;
-import com.xiaomi.infra.galaxy.emq.thrift.GetQueueInfoRequest;
-import com.xiaomi.infra.galaxy.emq.thrift.GetTagInfoRequest;
-import com.xiaomi.infra.galaxy.emq.thrift.GetUserInfoRequest;
-import com.xiaomi.infra.galaxy.emq.thrift.GetUserQuotaRequest;
-import com.xiaomi.infra.galaxy.emq.thrift.GetUserUsedQuotaRequest;
-import com.xiaomi.infra.galaxy.emq.thrift.ListDeadLetterSourceQueuesRequest;
-import com.xiaomi.infra.galaxy.emq.thrift.ListPermissionsRequest;
-import com.xiaomi.infra.galaxy.emq.thrift.ListQueueAlertPoliciesRequest;
-import com.xiaomi.infra.galaxy.emq.thrift.ListQueueRequest;
-import com.xiaomi.infra.galaxy.emq.thrift.ListTagRequest;
-import com.xiaomi.infra.galaxy.emq.thrift.MessageAttribute;
-import com.xiaomi.infra.galaxy.emq.thrift.PurgeQueueRequest;
-import com.xiaomi.infra.galaxy.emq.thrift.QueryPermissionForIdRequest;
-import com.xiaomi.infra.galaxy.emq.thrift.QueryPermissionRequest;
-import com.xiaomi.infra.galaxy.emq.thrift.QueueAttribute;
-import com.xiaomi.infra.galaxy.emq.thrift.QueueQuota;
-import com.xiaomi.infra.galaxy.emq.thrift.RangeConstants;
-import com.xiaomi.infra.galaxy.emq.thrift.ReceiveMessageRequest;
-import com.xiaomi.infra.galaxy.emq.thrift.RemoveQueueRedrivePolicyRequest;
-import com.xiaomi.infra.galaxy.emq.thrift.RevokePermissionRequest;
-import com.xiaomi.infra.galaxy.emq.thrift.SendMessageBatchRequest;
-import com.xiaomi.infra.galaxy.emq.thrift.SendMessageBatchRequestEntry;
-import com.xiaomi.infra.galaxy.emq.thrift.SendMessageRequest;
-import com.xiaomi.infra.galaxy.emq.thrift.SetPermissionRequest;
-import com.xiaomi.infra.galaxy.emq.thrift.SetQueueAttributesRequest;
-import com.xiaomi.infra.galaxy.emq.thrift.SetQueueDailyStatisticsStateRequest;
-import com.xiaomi.infra.galaxy.emq.thrift.SetQueueQuotaRequest;
-import com.xiaomi.infra.galaxy.emq.thrift.SetQueueRedrivePolicyRequest;
-import com.xiaomi.infra.galaxy.emq.thrift.SetUserInfoRequest;
-import com.xiaomi.infra.galaxy.emq.thrift.SetUserQuotaRequest;
-import com.xiaomi.infra.galaxy.emq.thrift.Version;
+import com.xiaomi.infra.galaxy.emq.thrift.*;
 
 /**
  * Copyright 2015, Xiaomi.
@@ -427,13 +379,28 @@ public class EMQRequestCheckUtils {
     validateQueueName(request.getQueueName());
   }
 
+  public static void check(AddTagAlertPolicyRequest request)
+          throws GalaxyEmqServiceException {
+    validateQueueName(request.getQueueName());
+  }
+
   public static void check(DeleteQueueAlertPolicyRequest request)
       throws GalaxyEmqServiceException {
     validateQueueName(request.getQueueName());
   }
 
+  public static void check(DeleteTagAlertPolicyRequest request)
+          throws GalaxyEmqServiceException {
+    validateQueueName(request.getQueueName());
+  }
+
   public static void check(ListQueueAlertPoliciesRequest request)
       throws GalaxyEmqServiceException {
+    validateQueueName(request.getQueueName());
+  }
+
+  public static void check(ListTagAlertPoliciesRequest request)
+          throws GalaxyEmqServiceException {
     validateQueueName(request.getQueueName());
   }
 

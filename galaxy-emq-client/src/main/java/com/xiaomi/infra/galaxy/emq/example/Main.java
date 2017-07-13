@@ -19,9 +19,9 @@ import com.xiaomi.infra.galaxy.rpc.thrift.UserType;
 /* This JAVA SDK support Java6 and Java7; Java8 is not included yet */
 
 public class Main {
-    private static String secretKeyId = "AKA2IUZH2BM3X6MZS3"; // Set your AppKey, like "5521728135794"
+    private static String secretKeyId = "AKFAKPYNVW5COZ7LUB"; // Set your AppKey, like "5521728135794"
 
-    private static String secretKey = "JPkwtoHQYHS0dEYMwF0iCfYb9ti8YUgpgaICkAOa"; // Set your AppSecret, like "K7czwCuHttwZD49DD/qKzg=="
+    private static String secretKey = "tkB+ZefofEAzLtQMVQZJkDwdssPaXZ8ELJoAfEUi"; // Set your AppSecret, like "K7czwCuHttwZD49DD/qKzg=="
     private static String name = "testClient";
 
     public static void main(String[] args) {
@@ -29,22 +29,33 @@ public class Main {
                 setSecretKey(secretKey).setType(UserType.APP_SECRET);
         EMQClientFactory clientFactory = new EMQClientFactory(credential);
         QueueService.Iface queueClient = clientFactory.newQueueClient(
-                "http://cnbj1-emq.api.xiaomi.net");
+                "http://staging.emq.api.xiaomi.com");
         MessageService.Iface messageClient = clientFactory.newMessageClient(
-                "http://cnbj1-emq.api.xiaomi.net");
+                "http://staging.emq.api.xiaomi.com");
 
         try {
-            String queueName = "CL968/priorityQueue123";
-            ListTagRequest ltr = new ListTagRequest();
-            ltr.setQueueName("CL968/priorityQueue123");
-            ListTagResponse listTagResponse = queueClient.listTag(ltr);
-            System.out.println(listTagResponse);
+//            String queueName = "CL968/priorityQueue123";
+//            ListTagRequest ltr = new ListTagRequest();
+//            ltr.setQueueName("CL968/priorityQueue123");
+//            ListTagResponse listTagResponse = queueClient.listTag(ltr);
+//            System.out.println(listTagResponse);
+//
+//            GetTagInfoRequest gtr = new GetTagInfoRequest();
+//            gtr.setQueueName("CL968/priorityQueue123");
+//            gtr.setTagName("");
+//            GetTagInfoResponse getTagInfoResponse = queueClient.getTagInfo(gtr);
+//            System.out.println(getTagInfoResponse);
+            StatisticsService.Iface service = clientFactory.newStatisticsClient("http://staging.emq.api.xiaomi.com");
+            AddTagAlertPolicyRequest request = new AddTagAlertPolicyRequest();
+            request.setQueueName("CL487/justtest");
+            AlertPolicy alertPolicy = new AlertPolicy();
+            alertPolicy.setThreshold(100);
+            alertPolicy.setMeasurement(MEASUREMENT.LATENCY);
+            alertPolicy.setType(ALERT_TYPE.RECEIVE_REQUEST);
+            request.setAlertPolicy(alertPolicy);
+            request.setTagName("haha");
+            service.addTagAlertPolicy(request);
 
-            GetTagInfoRequest gtr = new GetTagInfoRequest();
-            gtr.setQueueName("CL968/priorityQueue123");
-            gtr.setTagName("");
-            GetTagInfoResponse getTagInfoResponse = queueClient.getTagInfo(gtr);
-            System.out.println(getTagInfoResponse);
 
         } catch (Exception e) {
             if (e instanceof GalaxyEmqServiceException) {
