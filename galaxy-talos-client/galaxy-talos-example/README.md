@@ -10,7 +10,7 @@
       <dependency>
         <groupId>com.xiaomi.infra.galaxy</groupId>
         <artifactId>galaxy-talos-sdk</artifactId>
-        <version>1.1.1</version>
+        <version>2.1.1</version>
       </dependency>
       ```
 
