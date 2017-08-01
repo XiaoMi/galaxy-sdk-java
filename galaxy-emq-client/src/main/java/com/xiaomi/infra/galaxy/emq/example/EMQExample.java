@@ -25,6 +25,8 @@ import com.xiaomi.infra.galaxy.emq.thrift.SendMessageResponse;
 import com.xiaomi.infra.galaxy.rpc.thrift.Credential;
 import com.xiaomi.infra.galaxy.rpc.thrift.UserType;
 
+import static com.xiaomi.infra.galaxy.emq.client.EMQClientFactory.generateHttpClient;
+
 /**
  * Copyright 2015, Xiaomi.
  * All rights reserved.
@@ -34,15 +36,16 @@ import com.xiaomi.infra.galaxy.rpc.thrift.UserType;
 /* This JAVA SDK support Java6 and Java7; Java8 is not included yet */
 
 public class EMQExample {
-  private static String secretKeyId = ""; // Set your AppKey, like "5521728135794"
+  private static String secretKeyId = ""; // Set your AppKey, like "5521728123579"
 
-  private static String secretKey = ""; // Set your AppSecret, like "K7czwCuHttwZD49DD/qKzg=="
+  private static String secretKey = ""; // Set your AppSecret, like "K7czwCuHttwrZD49DD/qKz=="
   private static String name = "testClient";
 
   public static void main(String[] args) {
     Credential credential = new Credential().setSecretKeyId(secretKeyId).
         setSecretKey(secretKey).setType(UserType.APP_SECRET);
-    EMQClientFactory clientFactory = new EMQClientFactory(credential);
+    EMQClientFactory clientFactory = new EMQClientFactory(credential,
+        generateHttpClient(10, 10));
     QueueService.Iface queueClient = clientFactory.newQueueClient(
         "http://awsbj0.emq.api.xiaomi.com");
     MessageService.Iface messageClient = clientFactory.newMessageClient(
