@@ -4,6 +4,7 @@ import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
+import java.util.Arrays;
 
 /**
  * Copyright 2015, Xiaomi.
@@ -22,7 +23,9 @@ public class EMQClient {
     @Override
     public Object invoke(Object proxy, Method method, Object[] args)
         throws Throwable {
-      EMQRequestCheckUtils.checkRequest(args);
+      if (!Arrays.asList(Object.class.getMethods()).contains(method)) {
+        EMQRequestCheckUtils.checkRequest(args);
+      }
       try {
         return method.invoke(instance, args);
       } catch (InvocationTargetException e) {
