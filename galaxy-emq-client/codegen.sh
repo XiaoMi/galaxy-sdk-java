@@ -6,7 +6,7 @@ THRIFT_PHP_PATH=../../galaxy-sdk-php
 THRIFT_JS_PATH=../../galaxy-sdk-javascript
 THRIFT_NODE_PATH=../../galaxy-sdk-nodejs
 
-THRIFT_FILES=(Common.thrift Range.thrift Constants.thrift Queue.thrift Message.thrift Statistics.thrift)
+THRIFT_FILES=(Common.thrift Range.thrift Constants.thrift Message.thrift Queue.thrift Statistics.thrift)
 
 if [ $# -ne 1 ]
 then echo "Please input sdk language!";

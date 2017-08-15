@@ -440,6 +440,16 @@ struct ListPermissionsResponse {
   1: map<string, Permission> permissionList;
 }
 
+enum LogicalOperator {
+  AND;
+  OR
+}
+
+struct AttributesFilter{
+1: required map<string, Message.MessageAttribute> attributes;
+2: required LogicalOperator logicalOperator;
+}
+
 struct CreateTagRequest {
   1: required string queueName;
   2: required string tagName;
@@ -448,6 +458,7 @@ struct CreateTagRequest {
   5: optional string attributeName;
   6: optional Message.MessageAttribute attributeValue;
   7: optional map<string, string> userAttributes;
+  8: optional AttributesFilter attributesFilter;
 }
 
 struct CreateTagResponse {
@@ -476,6 +487,7 @@ struct GetTagInfoResponse {
   6: optional string attributeName;
   7: optional Message.MessageAttribute attributeValue;
   8: optional map<string, string> userAttributes;
+  9: optional AttributesFilter attributesFilter;
 }
 
 struct ListTagRequest {
