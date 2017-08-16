@@ -1,13 +1,5 @@
 package com.xiaomi.infra.galaxy.emq.client;
 
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
 import com.xiaomi.infra.galaxy.emq.thrift.AddQueueAlertPolicyRequest;
 import com.xiaomi.infra.galaxy.emq.thrift.ChangeMessageVisibilityBatchRequest;
 import com.xiaomi.infra.galaxy.emq.thrift.ChangeMessageVisibilityBatchRequestEntry;
@@ -56,7 +48,17 @@ import com.xiaomi.infra.galaxy.emq.thrift.SetQueueQuotaRequest;
 import com.xiaomi.infra.galaxy.emq.thrift.SetQueueRedrivePolicyRequest;
 import com.xiaomi.infra.galaxy.emq.thrift.SetUserInfoRequest;
 import com.xiaomi.infra.galaxy.emq.thrift.SetUserQuotaRequest;
+import com.xiaomi.infra.galaxy.emq.thrift.VerifyEMQAdminRoleRequest;
 import com.xiaomi.infra.galaxy.emq.thrift.Version;
+import org.apache.commons.lang3.StringUtils;
+
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * Copyright 2015, Xiaomi.
@@ -467,6 +469,11 @@ public class EMQRequestCheckUtils {
     validateQueueName(request.getDlqName());
   }
 
+  public static void check(VerifyEMQAdminRoleRequest request)
+      throws GalaxyEmqServiceException {
+    validateGranteeId(request.getGranteeId());
+  }
+
   public static void check(Version request) {
   }
 
@@ -599,6 +606,20 @@ public class EMQRequestCheckUtils {
     if (slashNum != 1 && slashNum != 2) {
       throw new GalaxyEmqServiceException().setErrMsg("Invalid queue name prefix")
           .setDetails("allowed at most one '/' in queueNamePrefix " + queueNamePrefix);
+    }
+  }
+
+  public static void validateGranteeId(String granteeId)
+      throws GalaxyEmqServiceException {
+    if(granteeId != null) {
+      if(!granteeId.startsWith("CI") && !granteeId.startsWith("U:")) {
+        throw new GalaxyEmqServiceException().setErrMsg("Invalid granteeId prefix")
+            .setDetails("invalid granteeId prefix: " + granteeId.substring(0, 2));
+      }
+      if(!StringUtils.isNumeric(granteeId.substring(2))) {
+        throw new GalaxyEmqServiceException().setErrMsg("Invalid granteeId number")
+            .setDetails("invalid granteeId number: " + granteeId.substring(2));
+      }
     }
   }
 

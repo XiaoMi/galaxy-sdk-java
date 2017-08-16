@@ -209,6 +209,8 @@ public class QueueService {
 
     public VerifyEMQAdminResponse verifyEMQAdmin() throws com.xiaomi.infra.galaxy.emq.thrift.GalaxyEmqServiceException, libthrift091.TException;
 
+    public VerifyEMQAdminRoleResponse verifyEMQAdminRole(VerifyEMQAdminRoleRequest request) throws com.xiaomi.infra.galaxy.emq.thrift.GalaxyEmqServiceException, libthrift091.TException;
+
     /**
      * copy queues using queues meta
      * 
@@ -264,6 +266,8 @@ public class QueueService {
     public void queryPrivilegedQueue(QueryPrivilegedQueueRequest request, libthrift091.async.AsyncMethodCallback resultHandler) throws libthrift091.TException;
 
     public void verifyEMQAdmin(libthrift091.async.AsyncMethodCallback resultHandler) throws libthrift091.TException;
+
+    public void verifyEMQAdminRole(VerifyEMQAdminRoleRequest request, libthrift091.async.AsyncMethodCallback resultHandler) throws libthrift091.TException;
 
     public void copyQueue(CopyQueueRequest request, libthrift091.async.AsyncMethodCallback resultHandler) throws libthrift091.TException;
 
@@ -816,6 +820,32 @@ public class QueueService {
         throw result.e;
       }
       throw new libthrift091.TApplicationException(libthrift091.TApplicationException.MISSING_RESULT, "verifyEMQAdmin failed: unknown result");
+    }
+
+    public VerifyEMQAdminRoleResponse verifyEMQAdminRole(VerifyEMQAdminRoleRequest request) throws com.xiaomi.infra.galaxy.emq.thrift.GalaxyEmqServiceException, libthrift091.TException
+    {
+      send_verifyEMQAdminRole(request);
+      return recv_verifyEMQAdminRole();
+    }
+
+    public void send_verifyEMQAdminRole(VerifyEMQAdminRoleRequest request) throws libthrift091.TException
+    {
+      verifyEMQAdminRole_args args = new verifyEMQAdminRole_args();
+      args.setRequest(request);
+      sendBase("verifyEMQAdminRole", args);
+    }
+
+    public VerifyEMQAdminRoleResponse recv_verifyEMQAdminRole() throws com.xiaomi.infra.galaxy.emq.thrift.GalaxyEmqServiceException, libthrift091.TException
+    {
+      verifyEMQAdminRole_result result = new verifyEMQAdminRole_result();
+      receiveBase(result, "verifyEMQAdminRole");
+      if (result.isSetSuccess()) {
+        return result.success;
+      }
+      if (result.e != null) {
+        throw result.e;
+      }
+      throw new libthrift091.TApplicationException(libthrift091.TApplicationException.MISSING_RESULT, "verifyEMQAdminRole failed: unknown result");
     }
 
     public void copyQueue(CopyQueueRequest request) throws com.xiaomi.infra.galaxy.emq.thrift.GalaxyEmqServiceException, libthrift091.TException
@@ -1554,6 +1584,38 @@ public class QueueService {
       }
     }
 
+    public void verifyEMQAdminRole(VerifyEMQAdminRoleRequest request, libthrift091.async.AsyncMethodCallback resultHandler) throws libthrift091.TException {
+      checkReady();
+      verifyEMQAdminRole_call method_call = new verifyEMQAdminRole_call(request, resultHandler, this, ___protocolFactory, ___transport);
+      this.___currentMethod = method_call;
+      ___manager.call(method_call);
+    }
+
+    public static class verifyEMQAdminRole_call extends libthrift091.async.TAsyncMethodCall {
+      private VerifyEMQAdminRoleRequest request;
+      public verifyEMQAdminRole_call(VerifyEMQAdminRoleRequest request, libthrift091.async.AsyncMethodCallback resultHandler, libthrift091.async.TAsyncClient client, libthrift091.protocol.TProtocolFactory protocolFactory, libthrift091.transport.TNonblockingTransport transport) throws libthrift091.TException {
+        super(client, protocolFactory, transport, resultHandler, false);
+        this.request = request;
+      }
+
+      public void write_args(libthrift091.protocol.TProtocol prot) throws libthrift091.TException {
+        prot.writeMessageBegin(new libthrift091.protocol.TMessage("verifyEMQAdminRole", libthrift091.protocol.TMessageType.CALL, 0));
+        verifyEMQAdminRole_args args = new verifyEMQAdminRole_args();
+        args.setRequest(request);
+        args.write(prot);
+        prot.writeMessageEnd();
+      }
+
+      public VerifyEMQAdminRoleResponse getResult() throws com.xiaomi.infra.galaxy.emq.thrift.GalaxyEmqServiceException, libthrift091.TException {
+        if (getState() != libthrift091.async.TAsyncMethodCall.State.RESPONSE_READ) {
+          throw new IllegalStateException("Method call not finished!");
+        }
+        libthrift091.transport.TMemoryInputTransport memoryTransport = new libthrift091.transport.TMemoryInputTransport(getFrameBuffer().array());
+        libthrift091.protocol.TProtocol prot = client.getProtocolFactory().getProtocol(memoryTransport);
+        return (new Client(prot)).recv_verifyEMQAdminRole();
+      }
+    }
+
     public void copyQueue(CopyQueueRequest request, libthrift091.async.AsyncMethodCallback resultHandler) throws libthrift091.TException {
       checkReady();
       copyQueue_call method_call = new copyQueue_call(request, resultHandler, this, ___protocolFactory, ___transport);
@@ -1652,6 +1714,7 @@ public class QueueService {
       processMap.put("queryMetric", new queryMetric());
       processMap.put("queryPrivilegedQueue", new queryPrivilegedQueue());
       processMap.put("verifyEMQAdmin", new verifyEMQAdmin());
+      processMap.put("verifyEMQAdminRole", new verifyEMQAdminRole());
       processMap.put("copyQueue", new copyQueue());
       processMap.put("getQueueMeta", new getQueueMeta());
       return processMap;
@@ -2161,6 +2224,30 @@ public class QueueService {
       }
     }
 
+    public static class verifyEMQAdminRole<I extends Iface> extends libthrift091.ProcessFunction<I, verifyEMQAdminRole_args> {
+      public verifyEMQAdminRole() {
+        super("verifyEMQAdminRole");
+      }
+
+      public verifyEMQAdminRole_args getEmptyArgsInstance() {
+        return new verifyEMQAdminRole_args();
+      }
+
+      protected boolean isOneway() {
+        return false;
+      }
+
+      public verifyEMQAdminRole_result getResult(I iface, verifyEMQAdminRole_args args) throws libthrift091.TException {
+        verifyEMQAdminRole_result result = new verifyEMQAdminRole_result();
+        try {
+          result.success = iface.verifyEMQAdminRole(args.request);
+        } catch (com.xiaomi.infra.galaxy.emq.thrift.GalaxyEmqServiceException e) {
+          result.e = e;
+        }
+        return result;
+      }
+    }
+
     public static class copyQueue<I extends Iface> extends libthrift091.ProcessFunction<I, copyQueue_args> {
       public copyQueue() {
         super("copyQueue");
@@ -2243,6 +2330,7 @@ public class QueueService {
       processMap.put("queryMetric", new queryMetric());
       processMap.put("queryPrivilegedQueue", new queryPrivilegedQueue());
       processMap.put("verifyEMQAdmin", new verifyEMQAdmin());
+      processMap.put("verifyEMQAdminRole", new verifyEMQAdminRole());
       processMap.put("copyQueue", new copyQueue());
       processMap.put("getQueueMeta", new getQueueMeta());
       return processMap;
@@ -3436,6 +3524,63 @@ public class QueueService {
 
       public void start(I iface, verifyEMQAdmin_args args, libthrift091.async.AsyncMethodCallback<VerifyEMQAdminResponse> resultHandler) throws TException {
         iface.verifyEMQAdmin(resultHandler);
+      }
+    }
+
+    public static class verifyEMQAdminRole<I extends AsyncIface> extends libthrift091.AsyncProcessFunction<I, verifyEMQAdminRole_args, VerifyEMQAdminRoleResponse> {
+      public verifyEMQAdminRole() {
+        super("verifyEMQAdminRole");
+      }
+
+      public verifyEMQAdminRole_args getEmptyArgsInstance() {
+        return new verifyEMQAdminRole_args();
+      }
+
+      public AsyncMethodCallback<VerifyEMQAdminRoleResponse> getResultHandler(final AsyncFrameBuffer fb, final int seqid) {
+        final libthrift091.AsyncProcessFunction fcall = this;
+        return new AsyncMethodCallback<VerifyEMQAdminRoleResponse>() { 
+          public void onComplete(VerifyEMQAdminRoleResponse o) {
+            verifyEMQAdminRole_result result = new verifyEMQAdminRole_result();
+            result.success = o;
+            try {
+              fcall.sendResponse(fb,result, libthrift091.protocol.TMessageType.REPLY,seqid);
+              return;
+            } catch (Exception e) {
+              LOGGER.error("Exception writing to internal frame buffer", e);
+            }
+            fb.close();
+          }
+          public void onError(Exception e) {
+            byte msgType = libthrift091.protocol.TMessageType.REPLY;
+            libthrift091.TBase msg;
+            verifyEMQAdminRole_result result = new verifyEMQAdminRole_result();
+            if (e instanceof com.xiaomi.infra.galaxy.emq.thrift.GalaxyEmqServiceException) {
+                        result.e = (com.xiaomi.infra.galaxy.emq.thrift.GalaxyEmqServiceException) e;
+                        result.setEIsSet(true);
+                        msg = result;
+            }
+             else 
+            {
+              msgType = libthrift091.protocol.TMessageType.EXCEPTION;
+              msg = (libthrift091.TBase)new libthrift091.TApplicationException(libthrift091.TApplicationException.INTERNAL_ERROR, e.getMessage());
+            }
+            try {
+              fcall.sendResponse(fb,msg,msgType,seqid);
+              return;
+            } catch (Exception ex) {
+              LOGGER.error("Exception writing to internal frame buffer", ex);
+            }
+            fb.close();
+          }
+        };
+      }
+
+      protected boolean isOneway() {
+        return false;
+      }
+
+      public void start(I iface, verifyEMQAdminRole_args args, libthrift091.async.AsyncMethodCallback<VerifyEMQAdminRoleResponse> resultHandler) throws TException {
+        iface.verifyEMQAdminRole(args.request,resultHandler);
       }
     }
 
@@ -20382,6 +20527,845 @@ public class QueueService {
         BitSet incoming = iprot.readBitSet(2);
         if (incoming.get(0)) {
           struct.success = new VerifyEMQAdminResponse();
+          struct.success.read(iprot);
+          struct.setSuccessIsSet(true);
+        }
+        if (incoming.get(1)) {
+          struct.e = new com.xiaomi.infra.galaxy.emq.thrift.GalaxyEmqServiceException();
+          struct.e.read(iprot);
+          struct.setEIsSet(true);
+        }
+      }
+    }
+
+  }
+
+  public static class verifyEMQAdminRole_args implements libthrift091.TBase<verifyEMQAdminRole_args, verifyEMQAdminRole_args._Fields>, java.io.Serializable, Cloneable, Comparable<verifyEMQAdminRole_args>   {
+    private static final libthrift091.protocol.TStruct STRUCT_DESC = new libthrift091.protocol.TStruct("verifyEMQAdminRole_args");
+
+    private static final libthrift091.protocol.TField REQUEST_FIELD_DESC = new libthrift091.protocol.TField("request", libthrift091.protocol.TType.STRUCT, (short)1);
+
+    private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
+    static {
+      schemes.put(StandardScheme.class, new verifyEMQAdminRole_argsStandardSchemeFactory());
+      schemes.put(TupleScheme.class, new verifyEMQAdminRole_argsTupleSchemeFactory());
+    }
+
+    public VerifyEMQAdminRoleRequest request; // required
+
+    /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
+    public enum _Fields implements libthrift091.TFieldIdEnum {
+      REQUEST((short)1, "request");
+
+      private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
+
+      static {
+        for (_Fields field : EnumSet.allOf(_Fields.class)) {
+          byName.put(field.getFieldName(), field);
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, or null if its not found.
+       */
+      public static _Fields findByThriftId(int fieldId) {
+        switch(fieldId) {
+          case 1: // REQUEST
+            return REQUEST;
+          default:
+            return null;
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, throwing an exception
+       * if it is not found.
+       */
+      public static _Fields findByThriftIdOrThrow(int fieldId) {
+        _Fields fields = findByThriftId(fieldId);
+        if (fields == null) throw new IllegalArgumentException("Field " + fieldId + " doesn't exist!");
+        return fields;
+      }
+
+      /**
+       * Find the _Fields constant that matches name, or null if its not found.
+       */
+      public static _Fields findByName(String name) {
+        return byName.get(name);
+      }
+
+      private final short _thriftId;
+      private final String _fieldName;
+
+      _Fields(short thriftId, String fieldName) {
+        _thriftId = thriftId;
+        _fieldName = fieldName;
+      }
+
+      public short getThriftFieldId() {
+        return _thriftId;
+      }
+
+      public String getFieldName() {
+        return _fieldName;
+      }
+    }
+
+    // isset id assignments
+    public static final Map<_Fields, libthrift091.meta_data.FieldMetaData> metaDataMap;
+    static {
+      Map<_Fields, libthrift091.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, libthrift091.meta_data.FieldMetaData>(_Fields.class);
+      tmpMap.put(_Fields.REQUEST, new libthrift091.meta_data.FieldMetaData("request", libthrift091.TFieldRequirementType.DEFAULT, 
+          new libthrift091.meta_data.StructMetaData(libthrift091.protocol.TType.STRUCT, VerifyEMQAdminRoleRequest.class)));
+      metaDataMap = Collections.unmodifiableMap(tmpMap);
+      libthrift091.meta_data.FieldMetaData.addStructMetaDataMap(verifyEMQAdminRole_args.class, metaDataMap);
+    }
+
+    public verifyEMQAdminRole_args() {
+    }
+
+    public verifyEMQAdminRole_args(
+      VerifyEMQAdminRoleRequest request)
+    {
+      this();
+      this.request = request;
+    }
+
+    /**
+     * Performs a deep copy on <i>other</i>.
+     */
+    public verifyEMQAdminRole_args(verifyEMQAdminRole_args other) {
+      if (other.isSetRequest()) {
+        this.request = new VerifyEMQAdminRoleRequest(other.request);
+      }
+    }
+
+    public verifyEMQAdminRole_args deepCopy() {
+      return new verifyEMQAdminRole_args(this);
+    }
+
+    @Override
+    public void clear() {
+      this.request = null;
+    }
+
+    public VerifyEMQAdminRoleRequest getRequest() {
+      return this.request;
+    }
+
+    public verifyEMQAdminRole_args setRequest(VerifyEMQAdminRoleRequest request) {
+      this.request = request;
+      return this;
+    }
+
+    public void unsetRequest() {
+      this.request = null;
+    }
+
+    /** Returns true if field request is set (has been assigned a value) and false otherwise */
+    public boolean isSetRequest() {
+      return this.request != null;
+    }
+
+    public void setRequestIsSet(boolean value) {
+      if (!value) {
+        this.request = null;
+      }
+    }
+
+    public void setFieldValue(_Fields field, Object value) {
+      switch (field) {
+      case REQUEST:
+        if (value == null) {
+          unsetRequest();
+        } else {
+          setRequest((VerifyEMQAdminRoleRequest)value);
+        }
+        break;
+
+      }
+    }
+
+    public Object getFieldValue(_Fields field) {
+      switch (field) {
+      case REQUEST:
+        return getRequest();
+
+      }
+      throw new IllegalStateException();
+    }
+
+    /** Returns true if field corresponding to fieldID is set (has been assigned a value) and false otherwise */
+    public boolean isSet(_Fields field) {
+      if (field == null) {
+        throw new IllegalArgumentException();
+      }
+
+      switch (field) {
+      case REQUEST:
+        return isSetRequest();
+      }
+      throw new IllegalStateException();
+    }
+
+    @Override
+    public boolean equals(Object that) {
+      if (that == null)
+        return false;
+      if (that instanceof verifyEMQAdminRole_args)
+        return this.equals((verifyEMQAdminRole_args)that);
+      return false;
+    }
+
+    public boolean equals(verifyEMQAdminRole_args that) {
+      if (that == null)
+        return false;
+
+      boolean this_present_request = true && this.isSetRequest();
+      boolean that_present_request = true && that.isSetRequest();
+      if (this_present_request || that_present_request) {
+        if (!(this_present_request && that_present_request))
+          return false;
+        if (!this.request.equals(that.request))
+          return false;
+      }
+
+      return true;
+    }
+
+    @Override
+    public int hashCode() {
+      List<Object> list = new ArrayList<Object>();
+
+      boolean present_request = true && (isSetRequest());
+      list.add(present_request);
+      if (present_request)
+        list.add(request);
+
+      return list.hashCode();
+    }
+
+    @Override
+    public int compareTo(verifyEMQAdminRole_args other) {
+      if (!getClass().equals(other.getClass())) {
+        return getClass().getName().compareTo(other.getClass().getName());
+      }
+
+      int lastComparison = 0;
+
+      lastComparison = Boolean.valueOf(isSetRequest()).compareTo(other.isSetRequest());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetRequest()) {
+        lastComparison = libthrift091.TBaseHelper.compareTo(this.request, other.request);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      return 0;
+    }
+
+    public _Fields fieldForId(int fieldId) {
+      return _Fields.findByThriftId(fieldId);
+    }
+
+    public void read(libthrift091.protocol.TProtocol iprot) throws libthrift091.TException {
+      schemes.get(iprot.getScheme()).getScheme().read(iprot, this);
+    }
+
+    public void write(libthrift091.protocol.TProtocol oprot) throws libthrift091.TException {
+      schemes.get(oprot.getScheme()).getScheme().write(oprot, this);
+    }
+
+    @Override
+    public String toString() {
+      StringBuilder sb = new StringBuilder("verifyEMQAdminRole_args(");
+      boolean first = true;
+
+      sb.append("request:");
+      if (this.request == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.request);
+      }
+      first = false;
+      sb.append(")");
+      return sb.toString();
+    }
+
+    public void validate() throws libthrift091.TException {
+      // check for required fields
+      // check for sub-struct validity
+      if (request != null) {
+        request.validate();
+      }
+    }
+
+    private void writeObject(java.io.ObjectOutputStream out) throws java.io.IOException {
+      try {
+        write(new libthrift091.protocol.TCompactProtocol(new libthrift091.transport.TIOStreamTransport(out)));
+      } catch (libthrift091.TException te) {
+        throw new java.io.IOException(te);
+      }
+    }
+
+    private void readObject(java.io.ObjectInputStream in) throws java.io.IOException, ClassNotFoundException {
+      try {
+        read(new libthrift091.protocol.TCompactProtocol(new libthrift091.transport.TIOStreamTransport(in)));
+      } catch (libthrift091.TException te) {
+        throw new java.io.IOException(te);
+      }
+    }
+
+    private static class verifyEMQAdminRole_argsStandardSchemeFactory implements SchemeFactory {
+      public verifyEMQAdminRole_argsStandardScheme getScheme() {
+        return new verifyEMQAdminRole_argsStandardScheme();
+      }
+    }
+
+    private static class verifyEMQAdminRole_argsStandardScheme extends StandardScheme<verifyEMQAdminRole_args> {
+
+      public void read(libthrift091.protocol.TProtocol iprot, verifyEMQAdminRole_args struct) throws libthrift091.TException {
+        libthrift091.protocol.TField schemeField;
+        iprot.readStructBegin();
+        while (true)
+        {
+          schemeField = iprot.readFieldBegin();
+          if (schemeField.type == libthrift091.protocol.TType.STOP) { 
+            break;
+          }
+          switch (schemeField.id) {
+            case 1: // REQUEST
+              if (schemeField.type == libthrift091.protocol.TType.STRUCT) {
+                struct.request = new VerifyEMQAdminRoleRequest();
+                struct.request.read(iprot);
+                struct.setRequestIsSet(true);
+              } else { 
+                libthrift091.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+              }
+              break;
+            default:
+              libthrift091.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+          }
+          iprot.readFieldEnd();
+        }
+        iprot.readStructEnd();
+
+        // check for required fields of primitive type, which can't be checked in the validate method
+        struct.validate();
+      }
+
+      public void write(libthrift091.protocol.TProtocol oprot, verifyEMQAdminRole_args struct) throws libthrift091.TException {
+        struct.validate();
+
+        oprot.writeStructBegin(STRUCT_DESC);
+        if (struct.request != null) {
+          oprot.writeFieldBegin(REQUEST_FIELD_DESC);
+          struct.request.write(oprot);
+          oprot.writeFieldEnd();
+        }
+        oprot.writeFieldStop();
+        oprot.writeStructEnd();
+      }
+
+    }
+
+    private static class verifyEMQAdminRole_argsTupleSchemeFactory implements SchemeFactory {
+      public verifyEMQAdminRole_argsTupleScheme getScheme() {
+        return new verifyEMQAdminRole_argsTupleScheme();
+      }
+    }
+
+    private static class verifyEMQAdminRole_argsTupleScheme extends TupleScheme<verifyEMQAdminRole_args> {
+
+      @Override
+      public void write(libthrift091.protocol.TProtocol prot, verifyEMQAdminRole_args struct) throws libthrift091.TException {
+        TTupleProtocol oprot = (TTupleProtocol) prot;
+        BitSet optionals = new BitSet();
+        if (struct.isSetRequest()) {
+          optionals.set(0);
+        }
+        oprot.writeBitSet(optionals, 1);
+        if (struct.isSetRequest()) {
+          struct.request.write(oprot);
+        }
+      }
+
+      @Override
+      public void read(libthrift091.protocol.TProtocol prot, verifyEMQAdminRole_args struct) throws libthrift091.TException {
+        TTupleProtocol iprot = (TTupleProtocol) prot;
+        BitSet incoming = iprot.readBitSet(1);
+        if (incoming.get(0)) {
+          struct.request = new VerifyEMQAdminRoleRequest();
+          struct.request.read(iprot);
+          struct.setRequestIsSet(true);
+        }
+      }
+    }
+
+  }
+
+  public static class verifyEMQAdminRole_result implements libthrift091.TBase<verifyEMQAdminRole_result, verifyEMQAdminRole_result._Fields>, java.io.Serializable, Cloneable, Comparable<verifyEMQAdminRole_result>   {
+    private static final libthrift091.protocol.TStruct STRUCT_DESC = new libthrift091.protocol.TStruct("verifyEMQAdminRole_result");
+
+    private static final libthrift091.protocol.TField SUCCESS_FIELD_DESC = new libthrift091.protocol.TField("success", libthrift091.protocol.TType.STRUCT, (short)0);
+    private static final libthrift091.protocol.TField E_FIELD_DESC = new libthrift091.protocol.TField("e", libthrift091.protocol.TType.STRUCT, (short)1);
+
+    private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
+    static {
+      schemes.put(StandardScheme.class, new verifyEMQAdminRole_resultStandardSchemeFactory());
+      schemes.put(TupleScheme.class, new verifyEMQAdminRole_resultTupleSchemeFactory());
+    }
+
+    public VerifyEMQAdminRoleResponse success; // required
+    public com.xiaomi.infra.galaxy.emq.thrift.GalaxyEmqServiceException e; // required
+
+    /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
+    public enum _Fields implements libthrift091.TFieldIdEnum {
+      SUCCESS((short)0, "success"),
+      E((short)1, "e");
+
+      private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
+
+      static {
+        for (_Fields field : EnumSet.allOf(_Fields.class)) {
+          byName.put(field.getFieldName(), field);
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, or null if its not found.
+       */
+      public static _Fields findByThriftId(int fieldId) {
+        switch(fieldId) {
+          case 0: // SUCCESS
+            return SUCCESS;
+          case 1: // E
+            return E;
+          default:
+            return null;
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, throwing an exception
+       * if it is not found.
+       */
+      public static _Fields findByThriftIdOrThrow(int fieldId) {
+        _Fields fields = findByThriftId(fieldId);
+        if (fields == null) throw new IllegalArgumentException("Field " + fieldId + " doesn't exist!");
+        return fields;
+      }
+
+      /**
+       * Find the _Fields constant that matches name, or null if its not found.
+       */
+      public static _Fields findByName(String name) {
+        return byName.get(name);
+      }
+
+      private final short _thriftId;
+      private final String _fieldName;
+
+      _Fields(short thriftId, String fieldName) {
+        _thriftId = thriftId;
+        _fieldName = fieldName;
+      }
+
+      public short getThriftFieldId() {
+        return _thriftId;
+      }
+
+      public String getFieldName() {
+        return _fieldName;
+      }
+    }
+
+    // isset id assignments
+    public static final Map<_Fields, libthrift091.meta_data.FieldMetaData> metaDataMap;
+    static {
+      Map<_Fields, libthrift091.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, libthrift091.meta_data.FieldMetaData>(_Fields.class);
+      tmpMap.put(_Fields.SUCCESS, new libthrift091.meta_data.FieldMetaData("success", libthrift091.TFieldRequirementType.DEFAULT, 
+          new libthrift091.meta_data.StructMetaData(libthrift091.protocol.TType.STRUCT, VerifyEMQAdminRoleResponse.class)));
+      tmpMap.put(_Fields.E, new libthrift091.meta_data.FieldMetaData("e", libthrift091.TFieldRequirementType.DEFAULT, 
+          new libthrift091.meta_data.FieldValueMetaData(libthrift091.protocol.TType.STRUCT)));
+      metaDataMap = Collections.unmodifiableMap(tmpMap);
+      libthrift091.meta_data.FieldMetaData.addStructMetaDataMap(verifyEMQAdminRole_result.class, metaDataMap);
+    }
+
+    public verifyEMQAdminRole_result() {
+    }
+
+    public verifyEMQAdminRole_result(
+      VerifyEMQAdminRoleResponse success,
+      com.xiaomi.infra.galaxy.emq.thrift.GalaxyEmqServiceException e)
+    {
+      this();
+      this.success = success;
+      this.e = e;
+    }
+
+    /**
+     * Performs a deep copy on <i>other</i>.
+     */
+    public verifyEMQAdminRole_result(verifyEMQAdminRole_result other) {
+      if (other.isSetSuccess()) {
+        this.success = new VerifyEMQAdminRoleResponse(other.success);
+      }
+      if (other.isSetE()) {
+        this.e = new com.xiaomi.infra.galaxy.emq.thrift.GalaxyEmqServiceException(other.e);
+      }
+    }
+
+    public verifyEMQAdminRole_result deepCopy() {
+      return new verifyEMQAdminRole_result(this);
+    }
+
+    @Override
+    public void clear() {
+      this.success = null;
+      this.e = null;
+    }
+
+    public VerifyEMQAdminRoleResponse getSuccess() {
+      return this.success;
+    }
+
+    public verifyEMQAdminRole_result setSuccess(VerifyEMQAdminRoleResponse success) {
+      this.success = success;
+      return this;
+    }
+
+    public void unsetSuccess() {
+      this.success = null;
+    }
+
+    /** Returns true if field success is set (has been assigned a value) and false otherwise */
+    public boolean isSetSuccess() {
+      return this.success != null;
+    }
+
+    public void setSuccessIsSet(boolean value) {
+      if (!value) {
+        this.success = null;
+      }
+    }
+
+    public com.xiaomi.infra.galaxy.emq.thrift.GalaxyEmqServiceException getE() {
+      return this.e;
+    }
+
+    public verifyEMQAdminRole_result setE(com.xiaomi.infra.galaxy.emq.thrift.GalaxyEmqServiceException e) {
+      this.e = e;
+      return this;
+    }
+
+    public void unsetE() {
+      this.e = null;
+    }
+
+    /** Returns true if field e is set (has been assigned a value) and false otherwise */
+    public boolean isSetE() {
+      return this.e != null;
+    }
+
+    public void setEIsSet(boolean value) {
+      if (!value) {
+        this.e = null;
+      }
+    }
+
+    public void setFieldValue(_Fields field, Object value) {
+      switch (field) {
+      case SUCCESS:
+        if (value == null) {
+          unsetSuccess();
+        } else {
+          setSuccess((VerifyEMQAdminRoleResponse)value);
+        }
+        break;
+
+      case E:
+        if (value == null) {
+          unsetE();
+        } else {
+          setE((com.xiaomi.infra.galaxy.emq.thrift.GalaxyEmqServiceException)value);
+        }
+        break;
+
+      }
+    }
+
+    public Object getFieldValue(_Fields field) {
+      switch (field) {
+      case SUCCESS:
+        return getSuccess();
+
+      case E:
+        return getE();
+
+      }
+      throw new IllegalStateException();
+    }
+
+    /** Returns true if field corresponding to fieldID is set (has been assigned a value) and false otherwise */
+    public boolean isSet(_Fields field) {
+      if (field == null) {
+        throw new IllegalArgumentException();
+      }
+
+      switch (field) {
+      case SUCCESS:
+        return isSetSuccess();
+      case E:
+        return isSetE();
+      }
+      throw new IllegalStateException();
+    }
+
+    @Override
+    public boolean equals(Object that) {
+      if (that == null)
+        return false;
+      if (that instanceof verifyEMQAdminRole_result)
+        return this.equals((verifyEMQAdminRole_result)that);
+      return false;
+    }
+
+    public boolean equals(verifyEMQAdminRole_result that) {
+      if (that == null)
+        return false;
+
+      boolean this_present_success = true && this.isSetSuccess();
+      boolean that_present_success = true && that.isSetSuccess();
+      if (this_present_success || that_present_success) {
+        if (!(this_present_success && that_present_success))
+          return false;
+        if (!this.success.equals(that.success))
+          return false;
+      }
+
+      boolean this_present_e = true && this.isSetE();
+      boolean that_present_e = true && that.isSetE();
+      if (this_present_e || that_present_e) {
+        if (!(this_present_e && that_present_e))
+          return false;
+        if (!this.e.equals(that.e))
+          return false;
+      }
+
+      return true;
+    }
+
+    @Override
+    public int hashCode() {
+      List<Object> list = new ArrayList<Object>();
+
+      boolean present_success = true && (isSetSuccess());
+      list.add(present_success);
+      if (present_success)
+        list.add(success);
+
+      boolean present_e = true && (isSetE());
+      list.add(present_e);
+      if (present_e)
+        list.add(e);
+
+      return list.hashCode();
+    }
+
+    @Override
+    public int compareTo(verifyEMQAdminRole_result other) {
+      if (!getClass().equals(other.getClass())) {
+        return getClass().getName().compareTo(other.getClass().getName());
+      }
+
+      int lastComparison = 0;
+
+      lastComparison = Boolean.valueOf(isSetSuccess()).compareTo(other.isSetSuccess());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetSuccess()) {
+        lastComparison = libthrift091.TBaseHelper.compareTo(this.success, other.success);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      lastComparison = Boolean.valueOf(isSetE()).compareTo(other.isSetE());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetE()) {
+        lastComparison = libthrift091.TBaseHelper.compareTo(this.e, other.e);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      return 0;
+    }
+
+    public _Fields fieldForId(int fieldId) {
+      return _Fields.findByThriftId(fieldId);
+    }
+
+    public void read(libthrift091.protocol.TProtocol iprot) throws libthrift091.TException {
+      schemes.get(iprot.getScheme()).getScheme().read(iprot, this);
+    }
+
+    public void write(libthrift091.protocol.TProtocol oprot) throws libthrift091.TException {
+      schemes.get(oprot.getScheme()).getScheme().write(oprot, this);
+      }
+
+    @Override
+    public String toString() {
+      StringBuilder sb = new StringBuilder("verifyEMQAdminRole_result(");
+      boolean first = true;
+
+      sb.append("success:");
+      if (this.success == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.success);
+      }
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("e:");
+      if (this.e == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.e);
+      }
+      first = false;
+      sb.append(")");
+      return sb.toString();
+    }
+
+    public void validate() throws libthrift091.TException {
+      // check for required fields
+      // check for sub-struct validity
+      if (success != null) {
+        success.validate();
+      }
+    }
+
+    private void writeObject(java.io.ObjectOutputStream out) throws java.io.IOException {
+      try {
+        write(new libthrift091.protocol.TCompactProtocol(new libthrift091.transport.TIOStreamTransport(out)));
+      } catch (libthrift091.TException te) {
+        throw new java.io.IOException(te);
+      }
+    }
+
+    private void readObject(java.io.ObjectInputStream in) throws java.io.IOException, ClassNotFoundException {
+      try {
+        read(new libthrift091.protocol.TCompactProtocol(new libthrift091.transport.TIOStreamTransport(in)));
+      } catch (libthrift091.TException te) {
+        throw new java.io.IOException(te);
+      }
+    }
+
+    private static class verifyEMQAdminRole_resultStandardSchemeFactory implements SchemeFactory {
+      public verifyEMQAdminRole_resultStandardScheme getScheme() {
+        return new verifyEMQAdminRole_resultStandardScheme();
+      }
+    }
+
+    private static class verifyEMQAdminRole_resultStandardScheme extends StandardScheme<verifyEMQAdminRole_result> {
+
+      public void read(libthrift091.protocol.TProtocol iprot, verifyEMQAdminRole_result struct) throws libthrift091.TException {
+        libthrift091.protocol.TField schemeField;
+        iprot.readStructBegin();
+        while (true)
+        {
+          schemeField = iprot.readFieldBegin();
+          if (schemeField.type == libthrift091.protocol.TType.STOP) { 
+            break;
+          }
+          switch (schemeField.id) {
+            case 0: // SUCCESS
+              if (schemeField.type == libthrift091.protocol.TType.STRUCT) {
+                struct.success = new VerifyEMQAdminRoleResponse();
+                struct.success.read(iprot);
+                struct.setSuccessIsSet(true);
+              } else { 
+                libthrift091.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+              }
+              break;
+            case 1: // E
+              if (schemeField.type == libthrift091.protocol.TType.STRUCT) {
+                struct.e = new com.xiaomi.infra.galaxy.emq.thrift.GalaxyEmqServiceException();
+                struct.e.read(iprot);
+                struct.setEIsSet(true);
+              } else { 
+                libthrift091.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+              }
+              break;
+            default:
+              libthrift091.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+          }
+          iprot.readFieldEnd();
+        }
+        iprot.readStructEnd();
+
+        // check for required fields of primitive type, which can't be checked in the validate method
+        struct.validate();
+      }
+
+      public void write(libthrift091.protocol.TProtocol oprot, verifyEMQAdminRole_result struct) throws libthrift091.TException {
+        struct.validate();
+
+        oprot.writeStructBegin(STRUCT_DESC);
+        if (struct.success != null) {
+          oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
+          struct.success.write(oprot);
+          oprot.writeFieldEnd();
+        }
+        if (struct.e != null) {
+          oprot.writeFieldBegin(E_FIELD_DESC);
+          struct.e.write(oprot);
+          oprot.writeFieldEnd();
+        }
+        oprot.writeFieldStop();
+        oprot.writeStructEnd();
+      }
+
+    }
+
+    private static class verifyEMQAdminRole_resultTupleSchemeFactory implements SchemeFactory {
+      public verifyEMQAdminRole_resultTupleScheme getScheme() {
+        return new verifyEMQAdminRole_resultTupleScheme();
+      }
+    }
+
+    private static class verifyEMQAdminRole_resultTupleScheme extends TupleScheme<verifyEMQAdminRole_result> {
+
+      @Override
+      public void write(libthrift091.protocol.TProtocol prot, verifyEMQAdminRole_result struct) throws libthrift091.TException {
+        TTupleProtocol oprot = (TTupleProtocol) prot;
+        BitSet optionals = new BitSet();
+        if (struct.isSetSuccess()) {
+          optionals.set(0);
+        }
+        if (struct.isSetE()) {
+          optionals.set(1);
+        }
+        oprot.writeBitSet(optionals, 2);
+        if (struct.isSetSuccess()) {
+          struct.success.write(oprot);
+        }
+        if (struct.isSetE()) {
+          struct.e.write(oprot);
+        }
+      }
+
+      @Override
+      public void read(libthrift091.protocol.TProtocol prot, verifyEMQAdminRole_result struct) throws libthrift091.TException {
+        TTupleProtocol iprot = (TTupleProtocol) prot;
+        BitSet incoming = iprot.readBitSet(2);
+        if (incoming.get(0)) {
+          struct.success = new VerifyEMQAdminRoleResponse();
           struct.success.read(iprot);
           struct.setSuccessIsSet(true);
         }

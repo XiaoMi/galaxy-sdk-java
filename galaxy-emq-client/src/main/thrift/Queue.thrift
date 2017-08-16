@@ -557,6 +557,14 @@ struct VerifyEMQAdminResponse {
   1: required string prefix;
 }
 
+struct VerifyEMQAdminRoleRequest {
+  1: optional string granteeId;
+}
+
+struct VerifyEMQAdminRoleResponse {
+  1: required bool isAdminRole;
+}
+
 struct QueueTag{
   1: required string queueName;
   2: required string tagName;
@@ -767,6 +775,9 @@ service QueueService extends Common.EMQBaseService {
       throws(1: Common.GalaxyEmqServiceException e);
 
   VerifyEMQAdminResponse verifyEMQAdmin() 
+      throws (1: Common.GalaxyEmqServiceException e);
+
+  VerifyEMQAdminRoleResponse verifyEMQAdminRole(1: VerifyEMQAdminRoleRequest request)
       throws (1: Common.GalaxyEmqServiceException e);
 
   /**
