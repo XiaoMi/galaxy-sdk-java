@@ -228,6 +228,10 @@ struct ListTagAlertPoliciesRequest{
   *Queue name;
   **/
   1: required string queueName;
+  /**
+   *Tag name;
+   **/
+  2: optional string tagName;
 }
 
 struct ListQueueAlertPoliciesResponse{
@@ -240,7 +244,6 @@ struct ListQueueAlertPoliciesResponse{
   *Alert policy list;
   **/
   2: required list<AlertPolicy> alertPolicies;
-
 }
 
 struct ListTagAlertPoliciesResponse{
@@ -250,9 +253,14 @@ struct ListTagAlertPoliciesResponse{
   1: required string queueName;
 
   /**
+   *Tag name;
+   **/
+  2: optional string tagName;
+
+  /**
   *Alert policy list;
   **/
-  2: required map<string, list<AlertPolicy>> alertPolicies;
+  3: required list<AlertPolicy> alertPolicies;
 
 }
 

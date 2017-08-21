@@ -3,8 +3,6 @@ package com.xiaomi.infra.galaxy.emq.example;
 import java.util.ArrayList;
 import java.util.List;
 
-import libthrift091.TException;
-
 import com.xiaomi.infra.galaxy.emq.client.EMQClientFactory;
 import com.xiaomi.infra.galaxy.emq.thrift.ChangeMessageVisibilityBatchRequest;
 import com.xiaomi.infra.galaxy.emq.thrift.ChangeMessageVisibilityBatchRequestEntry;
@@ -24,6 +22,8 @@ import com.xiaomi.infra.galaxy.emq.thrift.SendMessageRequest;
 import com.xiaomi.infra.galaxy.emq.thrift.SendMessageResponse;
 import com.xiaomi.infra.galaxy.rpc.thrift.Credential;
 import com.xiaomi.infra.galaxy.rpc.thrift.UserType;
+
+import libthrift091.TException;
 
 /**
  * Copyright 2015, Xiaomi.
