@@ -34,6 +34,8 @@ R: ClassTag](
     "spark.streaming.talos.maxRetries", -1) // infinite retry
   private val backoffMs = sparkContext.getConf.getInt(
     "spark.streaming.talos.backoff.ms", 200)
+  private val backOffMaxMs = sparkContext.getConf.getInt(
+    "spark.streaming.talos.backoff.max.ms", 30000)
 
   private def errBeginAfterEnd(part: TalosRDDPartition): String =
     s"Beginning offset ${part.offsetRange.fromOffset} >= ending offset" +
@@ -135,16 +137,19 @@ R: ClassTag](
     private def resetRequestOffset(retries: Int): Unit = {
       var result = tc.getEarliestOffsets(Set(part.offsetRange.topic))
       var i = retries
+      var round = 0
 
       while (result.isLeft && (i == -1 || i > 0)) {
+        round += 1
         val errs = result.left.get
         if (errs.exists(t => t.isInstanceOf[GalaxyTalosException] &&
           fatalTalosErr.contains(t.asInstanceOf[GalaxyTalosException].errorCode))) {
           throw new SparkException(errs.mkString(","))
         }
-        logWarning(s"Fetch offsets failed, will retry again after $backoffMs ms.\n" +
+        val sleepMs = Math.min(backOffMaxMs, round * backoffMs)
+        logWarning(s"Fetch offsets failed, will retry again after $sleepMs ms.\n" +
           s"$errs")
-        Thread.sleep(backoffMs)
+        Thread.sleep(sleepMs)
         result = tc.getEarliestOffsets(Set(part.offsetRange.topic))
         if (i > 0) {
           i -= 1
@@ -185,9 +190,11 @@ R: ClassTag](
       }
 
       var i = retries
+      var round = 0
       var resp = Try(fetchMessage)
 
       while (resp.isFailure && (i == -1 || i > 0)) {
+        round += 1
         val e = resp.failed.get
         e match {
           case gte: GalaxyTalosException =>
@@ -198,8 +205,9 @@ R: ClassTag](
               resetRequestOffset(maxRetries)
             }
           case _: Exception =>
-            logWarning(s"Fetch messages failed, will retry again after $backoffMs ms.", e)
-            Thread.sleep(backoffMs)
+            val sleepMs = Math.min(backOffMaxMs, round * backoffMs)
+            logWarning(s"Fetch messages failed, will retry again after $sleepMs ms.", e)
+            Thread.sleep(sleepMs)
         }
         resp = Try(fetchMessage)
         if (i > 0) {
