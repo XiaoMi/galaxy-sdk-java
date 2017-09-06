@@ -1,6 +1,7 @@
 package com.xiaomi.infra.galaxy.emq.client;
 
 import com.xiaomi.infra.galaxy.emq.thrift.AddQueueAlertPolicyRequest;
+import com.xiaomi.infra.galaxy.emq.thrift.AddTagAlertPolicyRequest;
 import com.xiaomi.infra.galaxy.emq.thrift.ChangeMessageVisibilityBatchRequest;
 import com.xiaomi.infra.galaxy.emq.thrift.ChangeMessageVisibilityBatchRequestEntry;
 import com.xiaomi.infra.galaxy.emq.thrift.ChangeMessageVisibilityRequest;
@@ -15,6 +16,7 @@ import com.xiaomi.infra.galaxy.emq.thrift.DeleteMessageBatchRequestEntry;
 import com.xiaomi.infra.galaxy.emq.thrift.DeleteMessageRequest;
 import com.xiaomi.infra.galaxy.emq.thrift.DeleteQueueAlertPolicyRequest;
 import com.xiaomi.infra.galaxy.emq.thrift.DeleteQueueRequest;
+import com.xiaomi.infra.galaxy.emq.thrift.DeleteTagAlertPolicyRequest;
 import com.xiaomi.infra.galaxy.emq.thrift.DeleteTagRequest;
 import com.xiaomi.infra.galaxy.emq.thrift.GalaxyEmqServiceException;
 import com.xiaomi.infra.galaxy.emq.thrift.GetQueueDailyStatisticsStateRequest;
@@ -27,6 +29,7 @@ import com.xiaomi.infra.galaxy.emq.thrift.ListDeadLetterSourceQueuesRequest;
 import com.xiaomi.infra.galaxy.emq.thrift.ListPermissionsRequest;
 import com.xiaomi.infra.galaxy.emq.thrift.ListQueueAlertPoliciesRequest;
 import com.xiaomi.infra.galaxy.emq.thrift.ListQueueRequest;
+import com.xiaomi.infra.galaxy.emq.thrift.ListTagAlertPoliciesRequest;
 import com.xiaomi.infra.galaxy.emq.thrift.ListTagRequest;
 import com.xiaomi.infra.galaxy.emq.thrift.MessageAttribute;
 import com.xiaomi.infra.galaxy.emq.thrift.PurgeQueueRequest;
@@ -429,14 +432,38 @@ public class EMQRequestCheckUtils {
     validateQueueName(request.getQueueName());
   }
 
+  public static void check(AddTagAlertPolicyRequest request)
+          throws GalaxyEmqServiceException {
+    validateQueueName(request.getQueueName());
+    if (request.isSetTagName()) {
+      validateTagName(request.getTagName());
+    }
+  }
+
   public static void check(DeleteQueueAlertPolicyRequest request)
       throws GalaxyEmqServiceException {
     validateQueueName(request.getQueueName());
   }
 
+  public static void check(DeleteTagAlertPolicyRequest request)
+          throws GalaxyEmqServiceException {
+    validateQueueName(request.getQueueName());
+    if (request.isSetTagName()) {
+      validateTagName(request.getTagName());
+    }
+  }
+
   public static void check(ListQueueAlertPoliciesRequest request)
       throws GalaxyEmqServiceException {
     validateQueueName(request.getQueueName());
+  }
+
+  public static void check(ListTagAlertPoliciesRequest request)
+          throws GalaxyEmqServiceException {
+    validateQueueName(request.getQueueName());
+    if (request.isSetTagName()) {
+      validateTagName(request.getTagName());
+    }
   }
 
   public static void check(SetQueueDailyStatisticsStateRequest request)

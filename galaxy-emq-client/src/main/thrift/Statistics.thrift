@@ -167,6 +167,24 @@ struct AddQueueAlertPolicyRequest{
 
 }
 
+struct AddTagAlertPolicyRequest{
+ /**
+  *Queue name;
+  **/
+  1: required string queueName;
+
+  /**
+    *Tag name;
+    **/
+  2: optional string tagName;
+
+  /**
+  *The alert policy;
+  **/
+  3: required AlertPolicy alertPolicy;
+
+}
+
 struct DeleteQueueAlertPolicyRequest{
  /**
   *Queue name;
@@ -180,11 +198,40 @@ struct DeleteQueueAlertPolicyRequest{
 
 }
 
+struct DeleteTagAlertPolicyRequest{
+ /**
+  *Queue name;
+  **/
+  1: required string queueName;
+
+  /**
+   *Tag name;
+   **/
+  2: optional string tagName;
+
+  /**
+  *The alert policy;
+  **/
+  3: required AlertPolicy alertPolicy;
+
+}
+
 struct ListQueueAlertPoliciesRequest{
  /**
   *Queue name;
   **/
   1: required string queueName;
+}
+
+struct ListTagAlertPoliciesRequest{
+ /**
+  *Queue name;
+  **/
+  1: required string queueName;
+  /**
+   *Tag name;
+   **/
+  2: optional string tagName;
 }
 
 struct ListQueueAlertPoliciesResponse{
@@ -197,6 +244,23 @@ struct ListQueueAlertPoliciesResponse{
   *Alert policy list;
   **/
   2: required list<AlertPolicy> alertPolicies;
+}
+
+struct ListTagAlertPoliciesResponse{
+ /**
+  *Queue name;
+  **/
+  1: required string queueName;
+
+  /**
+   *Tag name;
+   **/
+  2: optional string tagName;
+
+  /**
+  *Alert policy list;
+  **/
+  3: required list<AlertPolicy> alertPolicies;
 
 }
 
@@ -263,14 +327,30 @@ service StatisticsService extends Common.EMQBaseService {
   void addQueueAlertPolicy(1: AddQueueAlertPolicyRequest request) throws (1: Common.GalaxyEmqServiceException e);
 
   /**
+    * Add an alert policy for tag;
+    **/
+  void addTagAlertPolicy(1: AddTagAlertPolicyRequest request) throws (1: Common.GalaxyEmqServiceException e);
+
+
+  /**
   * Delete an alert policy for queue;
   **/
   void deleteQueueAlertPolicy(1: DeleteQueueAlertPolicyRequest request) throws (1: Common.GalaxyEmqServiceException e);
+
+   /**
+    * Delete an alert policy for tag
+    **/
+  void deleteTagAlertPolicy(1: DeleteTagAlertPolicyRequest request) throws (1: Common.GalaxyEmqServiceException e);
 
   /**
   * Clear alert policies for queue;
   **/
   ListQueueAlertPoliciesResponse listQueueAlertPolicies(1: ListQueueAlertPoliciesRequest request) throws (1: Common.GalaxyEmqServiceException e);
+
+  /**
+  * Clear alert policies for tag;
+  **/
+  ListTagAlertPoliciesResponse listTagAlertPolicies(1: ListTagAlertPoliciesRequest request) throws (1: Common.GalaxyEmqServiceException e);
 
   /**
   * Set daily statistics state for queue;
