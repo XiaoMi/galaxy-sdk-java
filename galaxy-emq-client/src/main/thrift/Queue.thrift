@@ -153,6 +153,7 @@ struct CreateQueueRequest {
    **/
   8: optional string defaultTagName;
 
+  9: optional RedrivePolicy redrivePolicy;
 }
 
 struct CreateQueueResponse {
@@ -194,6 +195,8 @@ struct CreateQueueResponse {
   7: optional bool deleteMessageForce;
 
   8: optional string defaultTagName;
+
+  9: optional RedrivePolicy redrivePolicy;
 }
 
 struct DeleteQueueRequest {

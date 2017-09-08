@@ -39,6 +39,7 @@ import com.xiaomi.infra.galaxy.emq.thrift.QueueAttribute;
 import com.xiaomi.infra.galaxy.emq.thrift.QueueQuota;
 import com.xiaomi.infra.galaxy.emq.thrift.RangeConstants;
 import com.xiaomi.infra.galaxy.emq.thrift.ReceiveMessageRequest;
+import com.xiaomi.infra.galaxy.emq.thrift.RedrivePolicy;
 import com.xiaomi.infra.galaxy.emq.thrift.RemoveQueueRedrivePolicyRequest;
 import com.xiaomi.infra.galaxy.emq.thrift.RevokePermissionRequest;
 import com.xiaomi.infra.galaxy.emq.thrift.SendMessageBatchRequest;
@@ -130,6 +131,9 @@ public class EMQRequestCheckUtils {
     }
     if (request.getQueueQuota() != null) {
       validateQueueQuota(request.getQueueQuota());
+    }
+    if(request.getRedrivePolicy() != null) {
+      validateRedrivePolicy(request.getRedrivePolicy());
     }
   }
 
@@ -479,11 +483,7 @@ public class EMQRequestCheckUtils {
   public static void check(SetQueueRedrivePolicyRequest request)
       throws GalaxyEmqServiceException {
     validateQueueName(request.getQueueName());
-    validateQueueName(request.getRedrivePolicy().getDlqName());
-    checkParameterRange("redrivePolicy maxReceiveTime",
-        request.getRedrivePolicy().getMaxReceiveTime(),
-        RangeConstants.GALAXY_EMQ_QUEUE_REDRIVE_POLICY_MAX_RECEIVE_TIME_MINIMAL,
-        RangeConstants.GALAXY_EMQ_QUEUE_REDRIVE_POLICY_MAX_RECEIVE_TIME_MAXIMAL);
+    validateRedrivePolicy(request.getRedrivePolicy());
   }
 
   public static void check(RemoveQueueRedrivePolicyRequest request)
@@ -565,6 +565,15 @@ public class EMQRequestCheckUtils {
     if (attribute.isSetUserAttributes()) {
       validateUserAttributes(attribute.getUserAttributes());
     }
+  }
+
+  public static void validateRedrivePolicy(RedrivePolicy redrivePolicy)
+      throws GalaxyEmqServiceException {
+    validateQueueName(redrivePolicy.getDlqName());
+    checkParameterRange("redrivePolicy maxReceiveTime",
+        redrivePolicy.getMaxReceiveTime(),
+        RangeConstants.GALAXY_EMQ_QUEUE_REDRIVE_POLICY_MAX_RECEIVE_TIME_MINIMAL,
+        RangeConstants.GALAXY_EMQ_QUEUE_REDRIVE_POLICY_MAX_RECEIVE_TIME_MAXIMAL);
   }
 
   public static void validateQueueQuota(QueueQuota queueQuota)
