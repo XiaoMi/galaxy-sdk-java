@@ -14,6 +14,8 @@ import com.xiaomi.infra.galaxy.emq.thrift.DeadMessageRequest;
 import com.xiaomi.infra.galaxy.emq.thrift.DeleteMessageBatchRequest;
 import com.xiaomi.infra.galaxy.emq.thrift.DeleteMessageBatchRequestEntry;
 import com.xiaomi.infra.galaxy.emq.thrift.DeleteMessageRequest;
+import com.xiaomi.infra.galaxy.emq.thrift.DeletePeekMessageBatchRequest;
+import com.xiaomi.infra.galaxy.emq.thrift.DeletePeekMessageRequest;
 import com.xiaomi.infra.galaxy.emq.thrift.DeleteQueueAlertPolicyRequest;
 import com.xiaomi.infra.galaxy.emq.thrift.DeleteQueueRequest;
 import com.xiaomi.infra.galaxy.emq.thrift.DeleteTagAlertPolicyRequest;
@@ -32,6 +34,8 @@ import com.xiaomi.infra.galaxy.emq.thrift.ListQueueRequest;
 import com.xiaomi.infra.galaxy.emq.thrift.ListTagAlertPoliciesRequest;
 import com.xiaomi.infra.galaxy.emq.thrift.ListTagRequest;
 import com.xiaomi.infra.galaxy.emq.thrift.MessageAttribute;
+import com.xiaomi.infra.galaxy.emq.thrift.PeekMessageBatchRequest;
+import com.xiaomi.infra.galaxy.emq.thrift.PeekMessageRequest;
 import com.xiaomi.infra.galaxy.emq.thrift.PurgeQueueRequest;
 import com.xiaomi.infra.galaxy.emq.thrift.QueryPermissionForIdRequest;
 import com.xiaomi.infra.galaxy.emq.thrift.QueryPermissionRequest;
@@ -135,6 +139,21 @@ public class EMQRequestCheckUtils {
     if(request.getRedrivePolicy() != null) {
       validateRedrivePolicy(request.getRedrivePolicy());
     }
+  }
+
+  public static void check(PeekMessageRequest request)
+      throws GalaxyEmqServiceException {
+    validateQueueName(request.getQueueName());
+  }
+
+  public static void check(DeletePeekMessageRequest request)
+      throws GalaxyEmqServiceException {
+    validateQueueName(request.getQueueName());
+  }
+
+  public static void check(DeletePeekMessageBatchRequest request)
+      throws GalaxyEmqServiceException {
+    validateQueueName(request.getQueueName());
   }
 
   public static void check(DeleteQueueRequest request)

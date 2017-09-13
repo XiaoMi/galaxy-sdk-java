@@ -403,6 +403,8 @@ enum Permission {
   GET_QUEUE_INFO,  /* get queue info */
   USE_QUEUE, /* get queue info / full control messages */
   ADMIN_QUEUE, /* change attribute of queue / delete queue / list queue / purge queue */
+  PEEK_MESSAGE, /* get message no matter whether it has been received */
+  DELETE_PEEK_MESSAGE /* delete message that has not been received yet */
   FULL_CONTROL /* all permissions. The owner of queue and the administrator of EMQ have this permission always */
 }
 

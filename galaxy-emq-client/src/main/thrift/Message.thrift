@@ -426,6 +426,145 @@ struct DeadMessageBatchResponse {
   2: list<MessageBatchErrorEntry> failed;
 }
 
+struct PeekMessageResponse {
+  /**
+  * MessageID for the peeked message;
+  **/
+  1: required string messageID;
+
+  /**
+  * Message body for the received message;
+  **/
+  2: optional string messageBody;
+
+  /**
+  * Attributes of message, including:
+  * - senderId
+  * - priority
+  * - messageLength
+  * - md5OfBody
+  * - sendTimestamp
+  * - receiveTimestamp
+  * - firstReceiveTimestamp
+  * - receiveCount
+  *
+  * If the message is received from a dead letter queue,
+  * it has another four attributes:
+  * - sourceQueueName
+  * - sourceTag
+  * - deadTimestamp
+  * - originalMessageID
+  * - originalReceiveCount
+  *
+  * If the message has been set topic
+  * - topic
+  **/
+  3: optional map<string, string> attributes;
+
+  /**
+  * User-defined attributes attached to message
+  **/
+  4: optional map<string, MessageAttribute> messageAttributes;
+  /**
+  * Peek message exception, when failed
+  **/
+  5: optional Common.GalaxyEmqServiceException e;
+}
+
+struct DeletePeekMessageRequest {
+  /**
+  * Queue name;
+  **/
+  1: required string queueName;
+
+  /**
+  * receipt handle of message to peek;
+  **/
+  2: required string receiptHandle;
+}
+
+struct DeletePeekMessageBatchEntry {
+
+  /**
+  * receipt handle of message to peek;
+  **/
+  1: required string receiptHandle;
+}
+
+struct DeletePeekMessageBatchRequest {
+  /**
+  * Queue name;
+  **/
+  1: required string queueName;
+
+  /**
+  * List of PeekMessageRequest;
+  **/
+  2: required list<DeletePeekMessageBatchEntry> deletePeekMessageBatchEntryList;
+}
+
+struct DeletePeekMessageBatchResponse {
+  /**
+  * The successful receipt handle;
+  **/
+  1: list<string> successful;
+
+  /**
+  * Failed results list;
+  * Using receipt handle to index
+  **/
+  2: list<MessageBatchErrorEntry> failed;
+}
+
+struct PartitionTimeIntervalAndMaxNum{
+  /**
+  * Start timestamp;
+  **/
+  1: optional i64 startTimestamp;
+  /**
+  * End timestamp;
+  **/
+  2: optional i64 endTimestamp;
+  /**
+  * Maximum returned message number;
+  **/
+  3: optional i32 maxNum;
+  /**
+  * Id of a partition, default is a random partitionId;
+  **/
+  4: optional i32 partitionId;
+}
+
+union PeekMessageArg {
+  /**
+  * In this union, only one argument can be set.
+  **/
+  /**
+  * receipt handle of message to peek;
+  **/
+  1: string receiptHandle;
+  /**
+  * List of PeekMessageRequest;
+  **/
+  2: list<string> receiptHandleList;
+  /**
+  * Using timeInterval to peek messages
+  **/
+  3: PartitionTimeIntervalAndMaxNum partitionTimeIntervalAndMaxNum;
+}
+
+struct PeekMessageRequest {
+  /**
+  * Queue name;
+  **/
+  1: required string queueName;
+
+  /**
+  * Choose less than one argument in PeekMessageArgs;
+  **/
+  2: required PeekMessageArg peekMessageArg;
+}
+
 service MessageService extends Common.EMQBaseService {
   /**
   * Send message;
@@ -471,4 +610,19 @@ service MessageService extends Common.EMQBaseService {
   * Dead message batch;
   **/
   DeadMessageBatchResponse deadMessageBatch(1: DeadMessageBatchRequest deadMessageBatchRequest) throws(1: Common.GalaxyEmqServiceException e),
+
+  /**
+  * Peek message;
+  **/
+  list<PeekMessageResponse> peekMessage(1: PeekMessageRequest peekMessageRequest) throws (1: Common.GalaxyEmqServiceException e),
+
+  /**
+  * Delete peek message;
+  **/
+  void deletePeekMessage(1: DeletePeekMessageRequest deletePeekMessageRequest) throws (1: Common.GalaxyEmqServiceException e),
+
+  /**
+  * Delete peek message batch;
+  **/
+  DeletePeekMessageBatchResponse deletePeekMessageBatch(1: DeletePeekMessageBatchRequest deletePeekMessageBatchRequest) throws(1: Common.GalaxyEmqServiceException e),
 }

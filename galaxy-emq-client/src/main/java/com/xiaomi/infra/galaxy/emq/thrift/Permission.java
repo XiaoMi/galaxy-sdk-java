@@ -21,7 +21,9 @@ public enum Permission implements libthrift091.TEnum {
   GET_QUEUE_INFO(6),
   USE_QUEUE(7),
   ADMIN_QUEUE(8),
-  FULL_CONTROL(9);
+  PEEK_MESSAGE(9),
+  DELETE_PEEK_MESSAGE(10),
+  FULL_CONTROL(11);
 
   private final int value;
 
@@ -61,6 +63,10 @@ public enum Permission implements libthrift091.TEnum {
       case 8:
         return ADMIN_QUEUE;
       case 9:
+        return PEEK_MESSAGE;
+      case 10:
+        return DELETE_PEEK_MESSAGE;
+      case 11:
         return FULL_CONTROL;
       default:
         return null;
