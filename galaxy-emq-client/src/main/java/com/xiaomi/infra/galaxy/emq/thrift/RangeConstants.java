@@ -86,7 +86,7 @@ public class RangeConstants {
    */
   public static final int GALAXY_EMQ_QUEUE_MAX_MESSAGE_BYTES_DEFAULT = 262144;
 
-  public static final int GALAXY_EMQ_QUEUE_MAX_MESSAGE_BYTES_MINIMAL = 1024;
+  public static final int GALAXY_EMQ_QUEUE_MAX_MESSAGE_BYTES_MINIMAL = 1;
 
   public static final int GALAXY_EMQ_QUEUE_MAX_MESSAGE_BYTES_MAXIMAL = 262144;
 
