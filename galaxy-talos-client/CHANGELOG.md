@@ -1,6 +1,17 @@
 
 ## 2.1-SNAPSHOT
 
+## 2.1.3
+  * D59608: [TALOS] Fix SparkContext NotSerializableException
+  * D66529: Increase backoff time after each retry
+  * D69538: Delete offset dir in case of partition number changed
+
+## 2.1.2
+  * D58252: Do not serialize custom class
+  * D58243: Set unique consumer id to talos SimpleConsumer
+  * D58240: [TALOS] set custom consumer id to SimpleConsumer
+  * D57195: Save/Restore offsets through HDFS
+
 ## 2.1.1
   * D54643: Push number of active rdds to perfcounter
   * D55173: Add offset range debug info
