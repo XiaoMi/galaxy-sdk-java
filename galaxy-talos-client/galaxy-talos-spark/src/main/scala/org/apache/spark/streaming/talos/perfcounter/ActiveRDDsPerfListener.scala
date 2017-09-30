@@ -1,8 +1,8 @@
 package org.apache.spark.streaming.talos.perfcounter
 
-import org.apache.spark.streaming.dstream.DStream
-
 import scala.collection.mutable
+
+import org.apache.spark.streaming.dstream.DStream
 
 private[talos] class ActiveRDDsPerfListener(
   dstream: DStream[_],
@@ -21,6 +21,7 @@ private[talos] class ActiveRDDsPerfListener(
         "appName" -> appName,
         "user" -> user,
         "cluster" -> clusterName,
+        "type" -> perfType,
         "topics" -> topics.mkString("&")
       )
     ))

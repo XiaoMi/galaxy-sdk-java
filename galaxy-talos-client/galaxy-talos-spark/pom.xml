@@ -146,7 +146,7 @@
                     <junitxml>.</junitxml>
                     <filereports>TestSuite.txt</filereports>
                     <skipTests>${skipTests}</skipTests>
-                    <suites>HDFSOffsetDAOSuite,TalosClusterSuite</suites>
+                    <suites>org.apache.spark.streaming.talos.offset.HDFSOffsetDAOSuite</suites>
                 </configuration>
                 <executions>
                     <execution>

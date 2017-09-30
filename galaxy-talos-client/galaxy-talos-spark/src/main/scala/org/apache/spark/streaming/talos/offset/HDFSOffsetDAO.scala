@@ -140,6 +140,16 @@ private[talos] class HDFSOffsetDAO(
       s"Failed to restore offsets from directory $offsetDir.", readError)
   }
 
+  override def clear(): Unit = {
+    try {
+      fs.delete(new Path(offsetDir), true)
+      logInfo("Cleared offset files under " + offsetDir)
+    } catch {
+      case e: Exception =>
+        logWarning("Error clear offset files under " + offsetDir, e)
+    }
+  }
+
   /** Get checkpoint files present in the given directory, ordered by oldest-first */
   private[streaming] def getOffsetFiles(): Seq[Path] = {
     def sortFunc(path1: Path, path2: Path): Boolean = {

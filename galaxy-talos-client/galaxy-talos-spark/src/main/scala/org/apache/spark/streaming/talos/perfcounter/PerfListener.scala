@@ -16,6 +16,7 @@ private[talos] abstract class PerfListener(
   protected val user = UserGroupInformation.getCurrentUser.getShortUserName
   protected val stepInSeconds = sparkConf.getInt("spark.metrics.push.interval.secs", 60)
   protected val clusterName = sparkConf.get("spark.metrics.cluster.name", "unknown")
+  protected val perfType = sparkConf.get("spark.metrics.type", "tst")
 
   def onGeneratePerf(): Seq[PerfBean]
 

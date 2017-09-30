@@ -59,14 +59,16 @@ class HDFSOffsetDAOSuite extends FunSuite with BeforeAndAfter {
     assert(emptyOffsets.isEmpty)
 
     val offsets = Map(
-      TopicPartition("test", 0) -> 1L,
-      TopicPartition("test", 1) -> 2L
+      ("test", 0) -> 1L,
+      ("test", 1) -> 2L
     )
 
     val offsetFile = new File(dir + "offset-000")
     IOUtils.write(Utils.serialize(offsets), new FileOutputStream(offsetFile))
     val restoredOffsets = dao.restore()
-    assert(restoredOffsets.get === offsets)
+    assert(restoredOffsets.get === offsets.map { case (key, value) =>
+      TopicPartition(key._1, key._2) -> value
+    })
   }
 
 }

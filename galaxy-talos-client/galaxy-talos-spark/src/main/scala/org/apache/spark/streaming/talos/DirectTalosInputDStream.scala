@@ -1,7 +1,9 @@
 package org.apache.spark.streaming.talos
 
-import com.xiaomi.infra.galaxy.rpc.thrift.Credential
-import com.xiaomi.infra.galaxy.talos.thrift.{ErrorCode, GalaxyTalosException, MessageAndOffset}
+import scala.collection.mutable
+import scala.reflect.ClassTag
+import scala.util.{Failure, Success, Try}
+
 import org.apache.spark.rdd.RDD
 import org.apache.spark.streaming.dstream.{DStreamCheckpointData, InputDStream}
 import org.apache.spark.streaming.scheduler.rate.RateEstimator
@@ -11,25 +13,25 @@ import org.apache.spark.streaming.talos.perfcounter._
 import org.apache.spark.streaming.{StreamingContext, Time}
 import org.apache.spark.{Logging, SparkConf, SparkException}
 
-import scala.collection.mutable
-import scala.reflect.ClassTag
-import scala.util.{Failure, Success, Try}
+import com.xiaomi.infra.galaxy.rpc.thrift.Credential
+import com.xiaomi.infra.galaxy.talos.thrift.{ErrorCode, GalaxyTalosException, MessageAndOffset}
 
 /**
-  * Created by jiasheng on 16-3-15.
-  */
+ * Created by jiasheng on 16-3-15.
+ */
 @SerialVersionUID(-3744996582858876937L)
 private[streaming]
 class DirectTalosInputDStream[R: ClassTag](
-  @transient ssc_ : StreamingContext,
-  val talosParams: Map[String, String],
-  val credential: Credential,
-  val fromOffsets: Map[TopicPartition, Long],
-  messageHandler: MessageAndOffset => R
+    @transient ssc_ : StreamingContext,
+    val talosParams: Map[String, String],
+    val credential: Credential,
+    val fromOffsets: Map[TopicPartition, Long],
+    messageHandler: MessageAndOffset => R
 ) extends InputDStream[R](ssc_) with Logging {
 
   private val maxRetries = context.sparkContext.getConf.getInt(
-    "spark.streaming.talos.maxRetries", -1) // infinite retry
+    "spark.streaming.talos.maxRetries", -1)
+  // infinite retry
   private val backoffMs = context.sparkContext.getConf.getInt(
     "spark.streaming.talos.backoff.ms", 200)
 
@@ -38,6 +40,7 @@ class DirectTalosInputDStream[R: ClassTag](
     // for transiting from checkpoint app.
     case None => Option(System.getProperty("spark.streaming.talos.offset.checkpoint.dir", null))
   }
+
   @transient private var _offsetDao: Option[HDFSOffsetDAO] = null
 
   private def offsetDao: Option[HDFSOffsetDAO] = {
@@ -49,18 +52,18 @@ class DirectTalosInputDStream[R: ClassTag](
     }
     _offsetDao
   }
+
   private var committedTime = Option.empty[Time]
 
   // Keep this consistent with how other streams are named (e.g. "Flume polling stream [2]")
   private[streaming] override def name: String = s"Talos direct stream [$id]"
 
-
   override private[streaming] val checkpointData: DStreamCheckpointData[R] =
     new DirectTalosInputDStreamCheckpointData
 
   /**
-    * Asynchoronusly maintains & sends new rate limits to the receiver through the receiver tracker.
-    */
+   * Asynchoronusly maintains & sends new rate limits to the receiver through the receiver tracker.
+   */
   override protected[streaming] val rateController: Option[RateController] = {
     if (RateController.isBackPressureEnabled(ssc.conf)) {
       Some(new DirectTalosRateController(id,
@@ -75,14 +78,14 @@ class DirectTalosInputDStream[R: ClassTag](
     val numPartitions = currentOffsets.keys.size
 
     val effectiveRateLimitPerPartition = estimatedRateLimit
-      .filter(_ > 0)
-      .map { limit =>
-        if (maxRateLimitPerPartition > 0) {
-          Math.min(maxRateLimitPerPartition, (limit / numPartitions))
-        } else {
-          limit / numPartitions
-        }
-      }.getOrElse(maxRateLimitPerPartition)
+        .filter(_ > 0)
+        .map { limit =>
+          if (maxRateLimitPerPartition > 0) {
+            Math.min(maxRateLimitPerPartition, (limit / numPartitions))
+          } else {
+            limit / numPartitions
+          }
+        }.getOrElse(maxRateLimitPerPartition)
 
     if (effectiveRateLimitPerPartition > 0) {
       val secsPerBatch = context.graph.batchDuration.milliseconds.toDouble / 1000
@@ -109,7 +112,7 @@ class DirectTalosInputDStream[R: ClassTag](
     while (o.isLeft && (i == -1 || i > 0)) {
       val errs = o.left.get
       if (errs.exists(t => t.isInstanceOf[GalaxyTalosException] &&
-        fatalTalosErr.contains(t.asInstanceOf[GalaxyTalosException].errorCode))) {
+          fatalTalosErr.contains(t.asInstanceOf[GalaxyTalosException].errorCode))) {
         throw new SparkException(errs.mkString(","))
       }
       logWarning(s"Fetch offsets failed, will retry again after $backoffMs ms.\n$errs")
@@ -122,16 +125,20 @@ class DirectTalosInputDStream[R: ClassTag](
     o match {
       case Left(err) => throw new SparkException(err.toString)
       case Right(latestOffsets) =>
-        assert(latestOffsets.size == currentOffsets.size,
-          s"Partition number of ${currentOffsets.keySet.head.topic} changed! " +
-            s"Previous: ${currentOffsets.size}; Current: ${o.right.get.size}")
+        if (currentOffsets.size != latestOffsets.size ||
+            currentOffsets.exists(element => element._2 > latestOffsets.getOrElse(element._1, 0L))) {
+          val revisedOffsets = DirectTalosInputDStream.reviseCurrentOffsets(currentOffsets, latestOffsets)
+          logWarning(s"Topic recreated or modified, revise currentOffsets " +
+              s"from ${currentOffsets.toSeq.sortBy(_._1.toString).mkString(",")} to ${revisedOffsets.toSeq.sortBy(_._1.toString).mkString(",")}")
+          currentOffsets = revisedOffsets
+        }
         latestOffsets
     }
   }
 
   // limits the maximum number of messages per partition
   protected def clamp(
-    latestOffsets: Map[TopicPartition, Long]): Map[TopicPartition, Long] = {
+      latestOffsets: Map[TopicPartition, Long]): Map[TopicPartition, Long] = {
     maxMessagesPerPartition.map { mmp =>
       latestOffsets.map { case (tp, offset) =>
         tp -> Math.min(currentOffsets(tp) + mmp, offset)
@@ -152,8 +159,8 @@ class DirectTalosInputDStream[R: ClassTag](
 
   override def compute(validTime: Time): Option[RDD[R]] = {
     val untilOffsets = clamp(latestOffsets(maxRetries))
-      // untilOffset must not be smaller than fromOffset.
-      .map { case (tp, uo) => tp -> Math.max(currentOffsets(tp), uo) }
+        // untilOffset must not be smaller than fromOffset.
+        .map { case (tp, uo) => tp -> Math.max(currentOffsets(tp), uo) }
     val rdd = TalosRDD[R](context.sparkContext, talosParams, credential,
       currentOffsets, untilOffsets, messageHandler)
 
@@ -167,7 +174,7 @@ class DirectTalosInputDStream[R: ClassTag](
       offsetRange.fromOffset != offsetRange.untilOffset
     }.map { offsetRange =>
       s"topic: ${offsetRange.topic}\tpartition: ${offsetRange.partition}\t" +
-        s"offsets: ${offsetRange.fromOffset} to ${offsetRange.untilOffset}"
+          s"offsets: ${offsetRange.fromOffset} to ${offsetRange.untilOffset}"
     }.mkString("\n")
     // Copy offsetRanges to immutable.List to prevent from being modified by the user
     val metadata = Map(
@@ -201,7 +208,6 @@ class DirectTalosInputDStream[R: ClassTag](
     }
   }
 
-
   private[streaming]
   class DirectTalosInputDStreamCheckpointData extends DStreamCheckpointData(this) {
     def batchForTime: scala.collection.mutable.HashMap[Time, Array[(String, Int, Long, Long)]] = {
@@ -232,7 +238,7 @@ class DirectTalosInputDStream[R: ClassTag](
 
   private[streaming]
   class DirectTalosRateController(id: Int, estimator: RateEstimator)
-    extends RateController(id, estimator) {
+      extends RateController(id, estimator) {
     override protected def publish(rate: Long): Unit = ()
   }
 
@@ -267,10 +273,10 @@ class DirectTalosInputDStream[R: ClassTag](
     }
 
     private def getPerfBean(
-      topic: String,
-      partitionOpt: Option[Int],
-      timeStamp: Long,
-      lag: Long) = {
+        topic: String,
+        partitionOpt: Option[Int],
+        timeStamp: Long,
+        lag: Long) = {
       PerfBean(
         endpoint,
         "TalosOffsetLag",
@@ -283,6 +289,7 @@ class DirectTalosInputDStream[R: ClassTag](
           "user" -> user,
           "cluster" -> clusterName,
           "topic" -> topic,
+          "type" -> perfType,
           "partition" -> partitionOpt.getOrElse("all").toString)
       )
     }
@@ -300,5 +307,28 @@ class DirectTalosInputDStream[R: ClassTag](
       })
       perfBeans
     }
+  }
+
+}
+
+object DirectTalosInputDStream {
+  /**
+   * Revise currentOffsets in case of topic recreated or modified.
+   *
+   * @param latestOffsets
+   */
+  private[talos] def reviseCurrentOffsets(
+      currentOffsets: Map[TopicPartition, Long],
+      latestOffsets: Map[TopicPartition, Long]): Map[TopicPartition, Long] = {
+    val fromOffsets = mutable.Map.empty[TopicPartition, Long]
+    latestOffsets.foreach { case (topicPartition, latestOffset) =>
+      val currentOffset = currentOffsets.getOrElse(topicPartition, 0L)
+      if (currentOffset <= latestOffset) {
+        fromOffsets.put(topicPartition, currentOffset)
+      } else {
+        fromOffsets.put(topicPartition, 0L)
+      }
+    }
+    fromOffsets.toMap
   }
 }

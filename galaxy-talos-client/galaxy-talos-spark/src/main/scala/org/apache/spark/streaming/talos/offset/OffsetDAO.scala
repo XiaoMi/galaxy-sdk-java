@@ -9,4 +9,6 @@ private[talos] trait OffsetDAO {
 
   def restore(): Option[Map[TopicPartition, Long]]
 
+  def clear(): Unit
+
 }
