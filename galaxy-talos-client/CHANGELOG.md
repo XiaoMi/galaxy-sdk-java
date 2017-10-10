@@ -1,5 +1,7 @@
-
 ## 2.1-SNAPSHOT
+
+## 2.1.4
+  * D70083: add timeout timestamp for putMessage and getMessage request
 
 ## 2.1.3
   * D59608: [TALOS] Fix SparkContext NotSerializableException
