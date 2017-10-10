@@ -95,6 +95,7 @@ public class SimpleConsumer {
         startOffset, requestSequenceId)
         .setMaxGetMessageNumber(maxFetchedNumber)
         .setMaxGetMessageBytes(TalosClientConfigKeys.GALAXY_TALOS_CONSUMER_MAX_FETCH_BYTES_DEFAULT);
+    getMessageRequest.setTimeoutTimestamp(System.currentTimeMillis() + consumerConfig.getClientTimeout());
 
     GetMessageResponse getMessageResponse = messageClient.getMessage(getMessageRequest);
     List<MessageAndOffset> messageAndOffsetList =

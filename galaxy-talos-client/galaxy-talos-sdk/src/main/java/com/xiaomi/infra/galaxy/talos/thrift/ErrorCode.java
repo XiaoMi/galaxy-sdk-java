@@ -44,7 +44,8 @@ public enum ErrorCode implements libthrift091.TEnum {
   HDFS_FILE_NOT_EXIST(29),
   INVALID_AUTH_INFO(30),
   SUB_RESOURCE_NAME_EXIST(31),
-  SUB_RESOURCE_NAME_NOT_EXIST(32);
+  SUB_RESOURCE_NAME_NOT_EXIST(32),
+  REQUEST_PROCESS_TIMEOUT(33);
 
   private final int value;
 
@@ -131,6 +132,8 @@ public enum ErrorCode implements libthrift091.TEnum {
         return SUB_RESOURCE_NAME_EXIST;
       case 32:
         return SUB_RESOURCE_NAME_NOT_EXIST;
+      case 33:
+        return REQUEST_PROCESS_TIMEOUT;
       default:
         return null;
     }

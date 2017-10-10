@@ -109,6 +109,7 @@ public class SimpleProducer {
     PutMessageRequest putMessageRequest = new PutMessageRequest(
         topicAndPartition, messageBlockList,
         msgList.size(), requestSequenceId);
+    putMessageRequest.setTimeoutTimestamp(System.currentTimeMillis() + producerConfig.getClientTimeout());
     messageClient.putMessage(putMessageRequest);
   }
 
