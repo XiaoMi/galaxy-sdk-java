@@ -77,8 +77,8 @@ public class SimpleProducer {
       doPut(msgList);
       return true;
     } catch (Exception e) {
-      LOG.error("putMessage error: " + e.toString() +
-          ", please try to put again");
+      LOG.error("putMessage error: " +
+          ", please try to put again", e);
     }
     return false;
   }

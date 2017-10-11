@@ -56,7 +56,7 @@ public class TalosConsumer {
       try {
         topic = talosAdmin.describeTopic(new DescribeTopicRequest(topicName));
       } catch (Throwable throwable) {
-        LOG.error("Exception in CheckPartitionTask: " + throwable.toString());
+        LOG.error("Exception in CheckPartitionTask: ", throwable);
         // if throwable instance of HBaseOperationFailed, just return
         // if throwable instance of TopicNotExist, cancel all reading task
         if (Utils.isTopicNotExist(throwable)) {
@@ -114,7 +114,7 @@ public class TalosConsumer {
       try {
         getWorkerInfo();
       } catch (Throwable e) {
-        LOG.error("Get worker info error: " + e.toString());
+        LOG.error("Get worker info error: ", e);
       }
       // invoke the re-balance task every time
       reBalanceExecutor.execute(new ReBalanceTask());
@@ -178,7 +178,7 @@ public class TalosConsumer {
         try {
           renewResponse = consumerClient.renew(renewRequest);
         } catch (Throwable e) {
-          LOG.error("Worker: " + workerId + " renew error: " + e.toString());
+          LOG.error("Worker: " + workerId + " renew error: ", e);
           continue;
         }
 

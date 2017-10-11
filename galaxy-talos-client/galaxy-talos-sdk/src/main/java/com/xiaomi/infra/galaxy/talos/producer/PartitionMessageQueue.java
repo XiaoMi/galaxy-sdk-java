@@ -62,7 +62,7 @@ public class PartitionMessageQueue {
         wait(waitTime);
       } catch (InterruptedException e) {
         LOG.error("getUserMessageList for partition: " + partitionId +
-            " is interrupt when waiting: " + e.toString());
+            " is interrupt when waiting: ", e);
       }
     }
     if (LOG.isDebugEnabled()) {

@@ -97,9 +97,9 @@ public abstract class MessageReader {
       try {
         commitCheckPoint();
       } catch (Exception e) {
-        LOG.error("Error: " + e.toString() + " when commit offset for topic: " +
+        LOG.error("Error when commit offset for topic: " +
             topicAndPartition.getTopicTalosResourceName() +
-            " partition: " + topicAndPartition.getPartitionId());
+            " partition: " + topicAndPartition.getPartitionId(), e);
       }
     }
   }
@@ -108,7 +108,7 @@ public abstract class MessageReader {
     // delay when partitionNotServing
     if (Utils.isPartitionNotServing(e)) {
       LOG.warn("Partition: " + topicAndPartition.getPartitionId() +
-          " is not serving state, sleep a while for waiting it work.");
+          " is not serving state, sleep a while for waiting it work.", e);
       try {
         Thread.sleep(consumerConfig.getWaitPartitionWorkingTime());
       } catch (InterruptedException e1) {
@@ -120,18 +120,20 @@ public abstract class MessageReader {
     if (Utils.isOffsetOutOfRange(e)) {
       if (consumerConfig.isResetLatestOffsetWhenOutOfRange()) {
         LOG.warn("Got PartitionOutOfRange error, " +
-            " offset by current latest offset");
+            " offset by current latest offset", e);
         startOffset.set(MessageOffset.LATEST_OFFSET.getValue());
         lastCommitOffset = finishedOffset = - 1;
         lastCommitTime = System.currentTimeMillis();
       } else {
         LOG.warn("Got PartitionOutOfRange error," +
-            " reset offset by current start offset");
+            " reset offset by current start offset", e);
         startOffset.set(MessageOffset.START_OFFSET.getValue());
         lastCommitOffset = finishedOffset = - 1;
         lastCommitTime = System.currentTimeMillis();
       }
     } // if
+
+    LOG.warn("process unexcepted fetchException:", e);
   }
 
   /**

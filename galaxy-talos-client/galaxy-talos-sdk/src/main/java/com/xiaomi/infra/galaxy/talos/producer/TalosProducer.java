@@ -47,7 +47,7 @@ public class TalosProducer {
       try {
         topic = talosAdmin.describeTopic(new DescribeTopicRequest(topicName));
       } catch (Throwable throwable) {
-        LOG.error("Exception in CheckPartitionTask: " + throwable.toString());
+        LOG.error("Exception in CheckPartitionTask: ", throwable);
         if (Utils.isTopicNotExist(throwable)) {
           disableProducer(throwable);
         }
@@ -219,7 +219,7 @@ public class TalosProducer {
               " message number: " + bufferedCount.getBufferedMsgNumber() +
               ", message bytes:  " + bufferedCount.getBufferedMsgBytes());
         } catch (InterruptedException e) {
-          LOG.error("addUserMessage global lock wait is interrupt.");
+          LOG.error("addUserMessage global lock wait is interrupt.", e);
         }
       } // release global lock but no notify
     } // while
