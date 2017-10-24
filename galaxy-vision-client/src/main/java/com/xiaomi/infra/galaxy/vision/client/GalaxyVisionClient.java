@@ -56,12 +56,10 @@ public class GalaxyVisionClient extends BaseClient implements VisionClientInterf
   @Override
   public FaceMatchResult matchFaces(FaceMatchRequest request) throws  IOException {
     URI uri = formatUri(config.getBaseUri(), FACE_MATCH_RESOURCE, (SubResource[]) null);
-    FaceMatchRequest faceMatchRequest = new FaceMatchRequest();
-    faceMatchRequest.setFirstFeatures(request.getFirstFeatures());
-    faceMatchRequest.setSecondFeatures(request.getSecondFeatures());
-    faceMatchRequest.setThreshold(request.getThreshold());
+    ImageDetectRequest imageDetectRequest = new ImageDetectRequest();
+    imageDetectRequest.setFaceMatchRequest(request);
 
-    HttpUriRequest httpRequest = makeJsonEntityRequest(faceMatchRequest, uri, HttpMethod.POST);
+    HttpUriRequest httpRequest = makeJsonEntityRequest(imageDetectRequest, uri, HttpMethod.POST);
     HttpResponse response = executeHttpRequest(httpRequest);
     ImageDetectResult result = (ImageDetectResult) processResponse(response,
             FaceMatchResult.class, FACE_MATCH_RESOURCE);

@@ -7,7 +7,8 @@ package com.xiaomi.infra.galaxy.vision.model;
 public class ImageDetectRequest {
   private DetectFacesRequest detectFacesRequest;
   private DetectLabelsRequest detectLabelsRequest;
-  
+  private FaceMatchRequest faceMatchRequest;
+
   public DetectFacesRequest getDetectFacesRequest() {
     return detectFacesRequest;
   }
@@ -22,5 +23,13 @@ public class ImageDetectRequest {
 
   public void setDetectLabelsRequest(DetectLabelsRequest detectLabelsRequest) {
     this.detectLabelsRequest = detectLabelsRequest;
+  }
+
+  public FaceMatchRequest getFaceMatchRequest() {
+    return faceMatchRequest;
+  }
+
+  public void setFaceMatchRequest(FaceMatchRequest faceMatchRequest) {
+    this.faceMatchRequest = faceMatchRequest;
   }
 }
