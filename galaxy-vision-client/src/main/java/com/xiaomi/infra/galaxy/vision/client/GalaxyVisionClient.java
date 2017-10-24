@@ -3,6 +3,7 @@ package com.xiaomi.infra.galaxy.vision.client;
 import java.io.IOException;
 import java.net.URI;
 
+import com.xiaomi.infra.galaxy.vision.model.*;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpUriRequest;
 
@@ -10,12 +11,6 @@ import com.xiaomi.infra.galaxy.ai.common.BaseClient;
 import com.xiaomi.infra.galaxy.ai.common.Credential;
 import com.xiaomi.infra.galaxy.client.authentication.HttpMethod;
 import com.xiaomi.infra.galaxy.client.authentication.signature.SubResource;
-import com.xiaomi.infra.galaxy.vision.model.DetectFacesRequest;
-import com.xiaomi.infra.galaxy.vision.model.DetectFacesResult;
-import com.xiaomi.infra.galaxy.vision.model.DetectLabelsRequest;
-import com.xiaomi.infra.galaxy.vision.model.DetectLabelsResult;
-import com.xiaomi.infra.galaxy.vision.model.ImageDetectRequest;
-import com.xiaomi.infra.galaxy.vision.model.ImageDetectResult;
 
 /**
  * Copyright 2017, Xiaomi.
@@ -23,7 +18,8 @@ import com.xiaomi.infra.galaxy.vision.model.ImageDetectResult;
  */
 public class GalaxyVisionClient extends BaseClient implements VisionClientInterface {
   public static final String IMAGE_DETECT_RESOURCE = "v1/image:detect";
-  
+  public static final String FACE_MATCH_RESOURCE = "v1/image:match";
+
   public GalaxyVisionClient(Credential credential,
       VisionConfig fdsConfig) {
     super(credential, fdsConfig);
@@ -34,12 +30,12 @@ public class GalaxyVisionClient extends BaseClient implements VisionClientInterf
     URI uri = formatUri(config.getBaseUri(), IMAGE_DETECT_RESOURCE, (SubResource[]) null);
     ImageDetectRequest imageDetectRequest = new ImageDetectRequest();
     imageDetectRequest.setDetectFacesRequest(request);
-    
+
     HttpUriRequest httpRequest = makeJsonEntityRequest(imageDetectRequest, uri, HttpMethod.POST);
     HttpResponse response = executeHttpRequest(httpRequest);
     ImageDetectResult result = (ImageDetectResult) processResponse(response,
       ImageDetectResult.class, IMAGE_DETECT_RESOURCE);
-    
+
     return result.getDetectFacesResult();
   }
 
@@ -48,12 +44,28 @@ public class GalaxyVisionClient extends BaseClient implements VisionClientInterf
     URI uri = formatUri(config.getBaseUri(), IMAGE_DETECT_RESOURCE, (SubResource[]) null);
     ImageDetectRequest imageDetectRequest = new ImageDetectRequest();
     imageDetectRequest.setDetectLabelsRequest(request);
-    
+
     HttpUriRequest httpRequest = makeJsonEntityRequest(imageDetectRequest, uri, HttpMethod.POST);
     HttpResponse response = executeHttpRequest(httpRequest);
     ImageDetectResult result = (ImageDetectResult) processResponse(response,
       ImageDetectResult.class, IMAGE_DETECT_RESOURCE);
-    
+
     return result.getDetectLabelsResult();
+  }
+
+  @Override
+  public FaceMatchResult matchFaces(FaceMatchRequest request) throws  IOException {
+    URI uri = formatUri(config.getBaseUri(), FACE_MATCH_RESOURCE, (SubResource[]) null);
+    FaceMatchRequest faceMatchRequest = new FaceMatchRequest();
+    faceMatchRequest.setFirstFeatures(request.getFirstFeatures());
+    faceMatchRequest.setSecondFeatures(request.getSecondFeatures());
+    faceMatchRequest.setThreshold(request.getThreshold());
+
+    HttpUriRequest httpRequest = makeJsonEntityRequest(faceMatchRequest, uri, HttpMethod.POST);
+    HttpResponse response = executeHttpRequest(httpRequest);
+    ImageDetectResult result = (ImageDetectResult) processResponse(response,
+            FaceMatchResult.class, FACE_MATCH_RESOURCE);
+
+    return result.getFaceMatchResult();
   }
 }
