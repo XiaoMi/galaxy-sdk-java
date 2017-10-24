@@ -70,11 +70,6 @@ public class CompressionTest {
     MessageBlock messageBlock = Compression.compress(messageList, MessageCompressionType.NONE);
     assertEquals(MessageCompressionType.NONE, messageBlock.getCompressionType());
     assertEquals(messageList.size(), messageBlock.getMessageNumber());
-    assertEquals(messageList.size(), messageBlock.getCreateTimestampListSize());
-    // verify message createTimestamp;
-    for (int index = 0; index < messageList.size(); ++index) {
-      assertEquals((Long)messageList.get(index).getCreateTimestamp(), messageBlock.getCreateTimestampList().get(index));
-    }
 
     long startOffset = 1234;
     long appendTimestamp = 1110000;
@@ -104,11 +99,6 @@ public class CompressionTest {
     MessageBlock messageBlock = Compression.compress(messageList, MessageCompressionType.SNAPPY);
     assertEquals(MessageCompressionType.SNAPPY, messageBlock.getCompressionType());
     assertEquals(messageList.size(), messageBlock.getMessageNumber());
-    assertEquals(messageList.size(), messageBlock.getCreateTimestampListSize());
-    // verify message createTimestamp;
-    for (int index = 0; index < messageList.size(); ++index) {
-      assertEquals((Long)messageList.get(index).getCreateTimestamp(), messageBlock.getCreateTimestampList().get(index));
-    }
 
     long startOffset = 1234;
     long appendTimestamp = 1110000;
@@ -138,11 +128,6 @@ public class CompressionTest {
     MessageBlock messageBlock = Compression.compress(messageList, MessageCompressionType.GZIP);
     assertEquals(MessageCompressionType.GZIP, messageBlock.getCompressionType());
     assertEquals(messageList.size(), messageBlock.getMessageNumber());
-    assertEquals(messageList.size(), messageBlock.getCreateTimestampListSize());
-    // verify message createTimestamp;
-    for (int index = 0; index < messageList.size(); ++index) {
-      assertEquals((Long)messageList.get(index).getCreateTimestamp(), messageBlock.getCreateTimestampList().get(index));
-    }
 
     long startOffset = 1234;
     long appendTimestamp = 1110000;

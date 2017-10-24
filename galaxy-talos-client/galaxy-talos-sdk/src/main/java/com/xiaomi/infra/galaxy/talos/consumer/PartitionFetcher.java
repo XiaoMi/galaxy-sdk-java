@@ -81,7 +81,7 @@ public class PartitionFetcher {
         messageReader.initStartOffset();
       } catch (Throwable e) {
         LOG.error("Worker: " + workerId + " query partition offset error: " +
-            e.toString() + " skip this partition");
+            "we will skip this partition", e);
         clean();
         return;
       }
@@ -287,7 +287,7 @@ public class PartitionFetcher {
     try {
       consumerClient.unlockPartition(unlockRequest);
     } catch (Throwable e) {
-      LOG.warn("Worker: " + workerId + " release partition error: " + e.toString());
+      LOG.warn("Worker: " + workerId + " release partition error: ", e);
       return;
     }
     LOG.info("Worker: " + workerId + " success to release partition: " + partitionId);
@@ -312,7 +312,7 @@ public class PartitionFetcher {
     try {
       lockResponse = consumerClient.lockPartition(lockRequest);
     } catch (Throwable e) {
-      LOG.error("Worker: " + workerId + " steal partition error: " + e.toString());
+      LOG.error("Worker: " + workerId + " steal partition error: ", e);
       return false;
     }
 

@@ -50,8 +50,6 @@ public class Compression {
       createTime = messageList.get(0).getCreateTimestamp();
     }
 
-    List<Long> createTimestampList = new ArrayList<Long>(messageList.size());
-
     try {
       // we assume the message bytes is 256KB;
       ByteArrayOutputStream outputStream = new ByteArrayOutputStream(256 * 1024);
@@ -62,7 +60,6 @@ public class Compression {
         MessageSerialization.serializeMessage(message,
             dataOutputStream, messageVersion);
         createTime += (message.getCreateTimestamp() - createTime) / (i + 1);
-        createTimestampList.add(message.getCreateTimestamp());
       }
       messageBlock.setCreateTimestamp(createTime);
 
@@ -72,7 +69,6 @@ public class Compression {
       byte[] messageBlockData = outputStream.toByteArray();
       messageBlock.setMessageBlock(messageBlockData);
       messageBlock.setMessageBlockSize(messageBlockData.length);
-      messageBlock.setCreateTimestampList(createTimestampList);
     } catch (IOException e) {
       LOG.info("compress MessageList failed", e);
       throw e;

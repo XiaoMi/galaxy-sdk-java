@@ -18,7 +18,7 @@ public class SimpleTopicAbnormalCallback implements TopicAbnormalCallback {
   @Override
   public void abnormalHandler(TopicTalosResourceName topicTalosResourceName,
       Throwable throwable) {
-    LOG.error("Topic abnormal exception: " + throwable.toString() + " for: " +
-        topicTalosResourceName.getTopicTalosResourceName());
+    LOG.error("Topic abnormal exception for: " +
+        topicTalosResourceName.getTopicTalosResourceName(), throwable);
   }
 }

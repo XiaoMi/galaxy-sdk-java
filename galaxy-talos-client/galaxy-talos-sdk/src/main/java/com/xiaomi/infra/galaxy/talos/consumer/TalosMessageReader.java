@@ -92,13 +92,13 @@ public class TalosMessageReader extends MessageReader implements MessageCheckpoi
           innerCheckpoint();
         } catch (TException e) {
           // when commitOffset failed, we just do nothing;
-          LOG.error("commit offset error: " + e.toString() + " skip to it");
+          LOG.error("commit offset error, we skip to it", e);
         }
       }
     } catch (Throwable e) {
-      LOG.error("Error: " + e.toString() + " when getting messages from topic: " +
+      LOG.error("Error when getting messages from topic: " +
           topicAndPartition.getTopicTalosResourceName() + " partition: " +
-          topicAndPartition.getPartitionId());
+          topicAndPartition.getPartitionId(), e);
 
       processFetchException(e);
       lastFetchTime = System.currentTimeMillis();
@@ -148,6 +148,9 @@ public class TalosMessageReader extends MessageReader implements MessageCheckpoi
       commitOffset(messageOffset);
       return true;
     } catch (TException e) {
+      LOG.error("Error when getting messages from topic: " +
+          topicAndPartition.getTopicTalosResourceName() + " partition: " +
+          topicAndPartition.getPartitionId(), e);
       return false;
     }
   }
