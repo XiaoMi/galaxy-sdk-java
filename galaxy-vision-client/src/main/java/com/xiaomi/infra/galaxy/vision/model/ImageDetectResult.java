@@ -7,7 +7,8 @@ package com.xiaomi.infra.galaxy.vision.model;
 public class ImageDetectResult {
   private DetectFacesResult detectFacesResult;
   private DetectLabelsResult detectLabelsResult;
-  
+  private FaceMatchResult faceMatchResult;
+
   public DetectFacesResult getDetectFacesResult() {
     return detectFacesResult;
   }
@@ -22,5 +23,11 @@ public class ImageDetectResult {
 
   public void setDetectLabelsResult(DetectLabelsResult detectLabelsResult) {
     this.detectLabelsResult = detectLabelsResult;
+  }
+
+  public FaceMatchResult getFaceMatchResult() { return faceMatchResult; }
+
+  public void setFaceMatchResult(FaceMatchResult faceMatchResult) {
+    this.faceMatchResult = faceMatchResult;
   }
 }

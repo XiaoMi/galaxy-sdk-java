@@ -17,13 +17,13 @@ import com.xiaomi.infra.galaxy.vision.model.Image;
  */
 public class VisionClientExample {
   public static void main(String args[]) throws Exception {
-	  
+
     Credential credential = new Credential("Your_AK", "Your_SK");
     VisionConfig config = new VisionConfig("cnbj2.vision.api.xiaomi.com");
     GalaxyVisionClient visionClient = new GalaxyVisionClient(credential, config);
     Image image = new Image();
     image.setUri("fds://cnbj2.fds.api.xiaomi.com/vision-test/test_img.jpg");
-    // Alternatively, you can specify the image locally: 
+    // Alternatively, you can specify the image locally:
     // byte[] data = IOUtils.loadImage("test_image.jpg");
     // image.setContent(data);
 
@@ -32,7 +32,7 @@ public class VisionClientExample {
     facesRequest.setImage(image);
     DetectFacesResult result = visionClient.detectFaces(facesRequest);
     System.out.println("faces result: " + new Gson().toJson(result));
-    
+
     // send detect labels request
     DetectLabelsRequest labelsRequest = new DetectLabelsRequest();
     labelsRequest.setImage(image);

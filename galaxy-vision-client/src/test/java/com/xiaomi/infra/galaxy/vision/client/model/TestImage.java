@@ -14,7 +14,7 @@ import com.xiaomi.infra.galaxy.vision.model.Image;
  */
 public class TestImage {
   public static final byte[] test_image_bytes = new byte[VisionConfig.MAX_REQUEST_IMAGE_SIZE + 1];
-  
+
   @Test
   public void testImageSizeAndUri() throws IOException {
     // check size
@@ -26,7 +26,7 @@ public class TestImage {
     } catch (IOException e) {
       Assert.assertTrue(e.getMessage().contains("image length exceeded"));
     }
-    
+
     // check uri scheme
     try {
       image.setUri("abc://test.jpg");
@@ -34,7 +34,7 @@ public class TestImage {
     } catch (IOException e) {
       Assert.assertTrue(e.getMessage().contains("illegal uri scheme"));
     }
-    
+
     // check image format
     try {
       image.setUri("fds://test.gif");
