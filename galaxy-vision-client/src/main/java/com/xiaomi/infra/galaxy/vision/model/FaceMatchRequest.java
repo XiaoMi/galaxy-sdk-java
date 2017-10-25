@@ -1,27 +1,27 @@
 package com.xiaomi.infra.galaxy.vision.model;
 
 public class FaceMatchRequest {
-    private byte[] firstFeatures;
-    private byte[] secondFeatures;
-    private int threshold;
+    private String firstFeatures;
+    private String  secondFeatures;
+    private Integer threshold;
 
-    public byte[] getFirstFeatures() {
+    public String  getFirstFeatures() {
         return firstFeatures;
     }
 
-    public void setFirstFeatures(byte[] firstFeatures) {
+    public void setFirstFeatures(String  firstFeatures) {
         this.firstFeatures = firstFeatures;
     }
 
-    public byte[] getSecondFeatures() {
+    public String  getSecondFeatures() {
         return secondFeatures;
     }
 
-    public void setSecondFeatures(byte[] secondFeatures) {
+    public void setSecondFeatures(String  secondFeatures) {
         this.secondFeatures = secondFeatures;
     }
 
-    public int getThreshold() {
+    public Integer getThreshold() {
         return threshold;
     }
 
