@@ -62,7 +62,7 @@ public class GalaxyVisionClient extends BaseClient implements VisionClientInterf
     HttpUriRequest httpRequest = makeJsonEntityRequest(imageDetectRequest, uri, HttpMethod.POST);
     HttpResponse response = executeHttpRequest(httpRequest);
     ImageDetectResult result = (ImageDetectResult) processResponse(response,
-            FaceMatchResult.class, FACE_MATCH_RESOURCE);
+            ImageDetectResult.class, FACE_MATCH_RESOURCE);
 
     return result.getFaceMatchResult();
   }
