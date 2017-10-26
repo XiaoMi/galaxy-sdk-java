@@ -16,7 +16,7 @@ import java.io.BufferedReader;
 public class VisionClientExample {
   public static void main(String args[]) throws Exception {
 
-    Credential credential = new Credential("AKLFWE25G7USVQLQX5", "RKQmtJF+JI/pMtnbxie8jGu6rFTwD59r/Vwv9Rki");
+    Credential credential = new Credential("YOUR_AK", "YOUR_SK");
     VisionConfig config = new VisionConfig("127.0.0.1:10086");
     GalaxyVisionClient visionClient = new GalaxyVisionClient(credential, config);
     Image image = new Image();
