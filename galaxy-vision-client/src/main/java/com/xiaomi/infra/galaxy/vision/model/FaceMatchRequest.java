@@ -2,8 +2,8 @@ package com.xiaomi.infra.galaxy.vision.model;
 
 public class FaceMatchRequest {
     private String firstFeatures;
-    private String  secondFeatures;
-    private Integer threshold;
+    private String secondFeatures;
+    private Integer matchThreshold;
 
     public String  getFirstFeatures() {
         return firstFeatures;
@@ -16,16 +16,16 @@ public class FaceMatchRequest {
     public String  getSecondFeatures() {
         return secondFeatures;
     }
-
+                
     public void setSecondFeatures(String  secondFeatures) {
         this.secondFeatures = secondFeatures;
     }
 
-    public Integer getThreshold() {
-        return threshold;
+    public Integer getMatchThreshold() {
+        return matchThreshold;
     }
 
-    public void setThreshold(int threshold) {
-        this.threshold = threshold;
+    public void setMatchThreshold(int matchThreshold) {
+        this.matchThreshold = matchThreshold;
     }
 }
