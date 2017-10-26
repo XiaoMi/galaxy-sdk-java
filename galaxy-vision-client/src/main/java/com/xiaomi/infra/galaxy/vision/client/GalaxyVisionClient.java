@@ -54,13 +54,22 @@ public class GalaxyVisionClient extends BaseClient implements VisionClientInterf
   }
 
   @Override
-  public FaceMatchResult matchFaces(FaceMatchRequest request) throws  IOException {
+  public FaceMatchResult matchFaces(FaceMatchRequest request) throws IOException {
+    if (request.getFirstFeatures()==null||request.getFirstFeatures().trim()==""
+            ||request.getSecondFeatures()==null||request.getSecondFeatures().trim()==""){
+      System.out.println("Missing First or Second Features! ");
+      return null;
+    }
     URI uri = formatUri(config.getBaseUri(), FACE_MATCH_RESOURCE, (SubResource[]) null);
     HttpUriRequest httpRequest = makeJsonEntityRequest(request, uri, HttpMethod.POST);
     HttpResponse response = executeHttpRequest(httpRequest);
-    FaceMatchResult result = (FaceMatchResult) processResponse(response,
-            FaceMatchResult.class, FACE_MATCH_RESOURCE);
-
-    return result;
+    try{
+      FaceMatchResult result = (FaceMatchResult) processResponse(response,
+              FaceMatchResult.class, FACE_MATCH_RESOURCE);
+      return result;
+    }catch (Exception e){
+      System.out.println("Invalid First or Second Features! Please Check again.(Should Be Features Returned from detectFaces Method)");
+      return null;
+    }
   }
 }
