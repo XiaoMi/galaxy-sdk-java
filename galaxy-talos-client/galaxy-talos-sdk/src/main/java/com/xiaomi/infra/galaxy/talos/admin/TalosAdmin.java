@@ -53,6 +53,7 @@ import com.xiaomi.infra.galaxy.talos.thrift.TopicTalosResourceName;
 import com.xiaomi.infra.galaxy.talos.thrift.UserQuota;
 
 import static com.xiaomi.infra.galaxy.talos.client.Constants.TALOS_CLOUD_AK_PREFIX;
+import static com.xiaomi.infra.galaxy.talos.client.Constants.TALOS_GALAXY_AK_PREFIX;
 
 public class TalosAdmin {
   private static final Logger LOG = LoggerFactory.getLogger(TalosAdmin.class);
@@ -82,7 +83,8 @@ public class TalosAdmin {
   // topicAttribute for partitionNumber required
   public CreateTopicResponse createTopic(CreateTopicRequest request)
       throws GalaxyTalosException, TException {
-    if (credential.getSecretKeyId().startsWith(TALOS_CLOUD_AK_PREFIX)) {
+    if (credential.getSecretKeyId().startsWith(TALOS_CLOUD_AK_PREFIX) ||
+        credential.getSecretKeyId().startsWith(TALOS_GALAXY_AK_PREFIX)) {
       Utils.checkCloudTopicNameValidity(request.getTopicName());
     } else {
       Utils.checkNameValidity(request.getTopicName());

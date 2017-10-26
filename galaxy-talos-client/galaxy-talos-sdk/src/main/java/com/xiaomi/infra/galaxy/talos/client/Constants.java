@@ -36,5 +36,6 @@ public class Constants {
   public static final String TALOS_CLOUD_ORG_PREFIX = "CL";
   public static final String TALOS_CLOUD_TEAM_PREFIX = "CI";
   public static final String TALOS_CLOUD_AK_PREFIX = "AK";
+  public static final String TALOS_GALAXY_AK_PREFIX = "EAK";
 
 }
