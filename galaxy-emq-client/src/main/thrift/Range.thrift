@@ -1,7 +1,7 @@
 namespace java com.xiaomi.infra.galaxy.emq.thrift
 namespace php EMQ.Range
 namespace py emq.range
-namespace go emq.range
+namespace go emq.options
 
 /**
  * Copyright 2015, Xiaomi.

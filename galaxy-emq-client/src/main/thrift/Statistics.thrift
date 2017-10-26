@@ -4,6 +4,7 @@ include "Queue.thrift"
 namespace java com.xiaomi.infra.galaxy.emq.thrift
 namespace php EMQ.Statistics
 namespace py emq.statistics
+namespace go emq.statistics
 
 /**
  * Copyright 2015, Xiaomi.

@@ -1,3 +1,4 @@
+namespace go emq.constants
 /**
  * client端请求超时时间（ms）
  */

@@ -5,6 +5,7 @@ THRIFT_PYTHON_PATH=../../galaxy-sdk-python
 THRIFT_PHP_PATH=../../galaxy-sdk-php
 THRIFT_JS_PATH=../../galaxy-sdk-javascript
 THRIFT_NODE_PATH=../../galaxy-sdk-nodejs
+THRIFT_GO_PATH=../../galaxy-sdk-go
 
 THRIFT_FILES=(Common.thrift Range.thrift Constants.thrift Message.thrift Queue.thrift Statistics.thrift)
 
@@ -76,4 +77,15 @@ then
     done
     find ${THRIFT_NODE_PATH}/lib/emq -name "*.js" -type f | xargs sed -i "s/require('thrift')/require('..\/thrift')/g"
 fi
+
+if [ "$1" = "go" ] || [ "$1" = "all" ]
+then
+    for f in ${THRIFT_FILES[@]}
+    do
+        f=${THRIFT_ROOT_PATH}/${f}
+        echo "Compiling $f to go"
+        thrift -out ${THRIFT_GO_PATH} -gen go:package_prefix=github.com/XiaoMi/galaxy-sdk-go/,thrift_import=github.com/XiaoMi/galaxy-sdk-go/thrift $f
+    done
+fi
+
 
