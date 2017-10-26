@@ -16,14 +16,15 @@ import java.io.BufferedReader;
 public class VisionClientExample {
   public static void main(String args[]) throws Exception {
 
-    Credential credential = new Credential("Your_AK", "Your_SK");
-    VisionConfig config = new VisionConfig("cnbj2.vision.api.xiaomi.com");
+    Credential credential = new Credential("AKLFWE25G7USVQLQX5", "RKQmtJF+JI/pMtnbxie8jGu6rFTwD59r/Vwv9Rki");
+    VisionConfig config = new VisionConfig("127.0.0.1:10086");
     GalaxyVisionClient visionClient = new GalaxyVisionClient(credential, config);
     Image image = new Image();
-    image.setUri("fds://cnbj2.fds.api.xiaomi.com/vision-test/test_img.jpg");
+    image.setUri("fds://cnbj1-fds.api.xiaomi.net/test-upload/img_90.jpg");
+
     // Alternatively, you can specify the image locally:
-    // byte[] data = IOUtils.loadImage("test_image.jpg");
-    // image.setContent(data);
+    //byte[] data = IOUtils.loadImage("img_130.jpg");
+    //image.setContent(data);
 
     // send detect faces request
     DetectFacesRequest facesRequest = new DetectFacesRequest();
@@ -39,17 +40,18 @@ public class VisionClientExample {
     System.out.println("labels result: " + new Gson().toJson(labelsResult));
 
     Image faceImage1 = new Image();
-    image.setUri("fds://cnbj2.fds.api.xiaomi.com/vision-test/test_img1.jpg");
+    faceImage1.setUri("fds://cnbj1-fds.api.xiaomi.net/test-upload/img_18.jpg");
     DetectFacesRequest faceImage1Request = new DetectFacesRequest();
     faceImage1Request.setImage(faceImage1);
     DetectFacesResult faceImage1Result = visionClient.detectFaces(faceImage1Request);
-
+    System.out.println("Image1 faces result: " + new Gson().toJson(faceImage1Result));
 
     Image faceImage2 = new Image();
-    image.setUri("fds://cnbj2.fds.api.xiaomi.com/vision-test/test_img2.jpg");
+    faceImage2.setUri("fds://cnbj1-fds.api.xiaomi.net/test-upload/img_65.jpg");
     DetectFacesRequest faceImage2Request = new DetectFacesRequest();
     faceImage2Request.setImage(faceImage2);
     DetectFacesResult faceImage2Result = visionClient.detectFaces(faceImage2Request);
+    System.out.println("Image2 faces result: " + new Gson().toJson(faceImage2Result));
 
     FaceMatchRequest faceMatchRequest = new FaceMatchRequest();
     faceMatchRequest.setFirstFeatures(faceImage1Result.getFaceDetails().get(0).getFeatures());
