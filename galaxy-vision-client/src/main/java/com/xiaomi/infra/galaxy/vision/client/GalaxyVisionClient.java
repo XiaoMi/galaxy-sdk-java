@@ -68,7 +68,7 @@ public class GalaxyVisionClient extends BaseClient implements VisionClientInterf
               FaceMatchResult.class, FACE_MATCH_RESOURCE);
       return result;
     }catch (Exception e){
-      System.out.println("Invalid First or Second Features! Please Check again.(Should Be Features Returned from detectFaces Method)");
+      System.out.println("Invalid First or Second Features! Please Check Again.(Should Be Features Returned from detectFaces Method)");
       return null;
     }
   }

@@ -16,7 +16,7 @@ public class FaceMatchRequest {
     public String  getSecondFeatures() {
         return secondFeatures;
     }
-                
+
     public void setSecondFeatures(String  secondFeatures) {
         this.secondFeatures = secondFeatures;
     }
@@ -25,7 +25,7 @@ public class FaceMatchRequest {
         return matchThreshold;
     }
 
-    public void setMatchThreshold(int matchThreshold) {
+    public void setMatchThreshold(Integer matchThreshold) {
         this.matchThreshold = matchThreshold;
     }
 }
