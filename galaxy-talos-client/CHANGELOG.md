@@ -1,5 +1,10 @@
 ## 2.1-SNAPSHOT
 
+## 2.1.5
+  * D73159: talos producer add msg timeout & limit msg block size
+  * D71982: fix creating eco topic
+  * D70313: fix talos client not print exception stack
+
 ## 2.1.4
   * D70083: add timeout timestamp for putMessage and getMessage request
 
