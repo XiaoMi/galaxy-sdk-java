@@ -202,6 +202,38 @@ public class TalosProducer {
         ", partitions: " + partitionNumber);
   }
 
+  public synchronized void addUserMessage(List<Message> msgList, long timeoutMillis)
+      throws ProducerNotActiveException, AddMessageTimeoutException {
+    // check producer state
+    if (!isActive()) {
+      throw new ProducerNotActiveException("Producer is not active, " +
+          "current state: " + producerState);
+    }
+
+    // check total buffered message number
+    while (bufferedCount.isFull()) {
+      synchronized (globalLock) {
+        try {
+          LOG.info("too many buffered messages, globalLock is active." +
+              " message number: " + bufferedCount.getBufferedMsgNumber() +
+              ", message bytes:  " + bufferedCount.getBufferedMsgBytes());
+
+          long startWaitTime = System.currentTimeMillis();
+          globalLock.wait(timeoutMillis);
+          // judging wait exit by 'timeout' or 'notify'
+          if (System.currentTimeMillis() - startWaitTime >= timeoutMillis) {
+            throw new AddMessageTimeoutException("Producer buffer is full and " +
+                "addUserMessage timeout by: " + timeoutMillis + " millis");
+          }
+        } catch (InterruptedException e) {
+          LOG.error("addUserMessage global lock wait is interrupt.", e);
+        }
+      } // release global lock but no notify
+    }
+
+    doAddUserMessage(msgList);
+  }
+
   public synchronized void addUserMessage(List<Message> msgList)
       throws ProducerNotActiveException {
     // check producer state
@@ -214,16 +246,20 @@ public class TalosProducer {
     while (bufferedCount.isFull()) {
       synchronized (globalLock) {
         try {
-          globalLock.wait();
           LOG.info("too many buffered messages, globalLock is active." +
               " message number: " + bufferedCount.getBufferedMsgNumber() +
               ", message bytes:  " + bufferedCount.getBufferedMsgBytes());
+          globalLock.wait();
         } catch (InterruptedException e) {
           LOG.error("addUserMessage global lock wait is interrupt.", e);
         }
       } // release global lock but no notify
     } // while
 
+    doAddUserMessage(msgList);
+  }
+
+  private synchronized void doAddUserMessage(List<Message> msgList) {
     // user can optionally set 'partitionKey' and 'sequenceNumber' when construct Message
     Map<Integer, List<UserMessage>> partitionBufferMap =
         new HashMap<Integer, List<UserMessage>>();

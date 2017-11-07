@@ -118,4 +118,17 @@ public class SimpleProducerTest {
         any(PutMessageRequest.class));
     inOrder.verifyNoMoreInteractions();
   }
+
+  @Test (expected = IllegalArgumentException.class)
+  public void testMessageBlockSizeLimit() throws Exception {
+    StringBuilder sb = new StringBuilder();
+    for (int i = 0; i <= 20 * 1024 * 1024; ++i) {
+      sb.append('a');
+    }
+    Message message = new Message(ByteBuffer.wrap(sb.toString().getBytes()));
+    List<Message> msgList = new ArrayList<Message>();
+    msgList.add(message);
+    simpleProducer.putMessageList(msgList);
+  }
+
 }

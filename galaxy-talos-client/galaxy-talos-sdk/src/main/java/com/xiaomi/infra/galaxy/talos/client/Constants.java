@@ -25,6 +25,7 @@ public class Constants {
    */
   public static final int TALOS_SINGLE_MESSAGE_BYTES_MINIMAL = 1;
   public static final int TALOS_SINGLE_MESSAGE_BYTES_MAXIMAL = 10 * 1024 * 1024;
+  public static final int TALOS_MESSAGE_BLOCK_BYTES_MAXIMAL = 20 * 1024 * 1024;
 
   public static final int TALOS_PARTITION_KEY_LENGTH_MINIMAL = 1;
   public static final int TALOS_PARTITION_KEY_LENGTH_MAXIMAL = 256;

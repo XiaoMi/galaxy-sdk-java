@@ -337,4 +337,25 @@ public class TalosProducerTest {
     assertEquals(100 * messageList.size(), msgPutSuccessCount);
 
   }
+
+  @Test (expected = AddMessageTimeoutException.class)
+  public void testAddUserMessageTimeout() throws Exception {
+    talosProducerConfig.setMaxBufferedMsgBytes(0);
+    talosProducerConfig.setMaxBufferedMsgNumber(0);
+    topic.getTopicAttribute().setPartitionNumber(1);
+    when(talosAdminMock.describeTopic(new DescribeTopicRequest(topicName))).thenReturn(topic);
+
+    doReturn(messageClientMock).when(talosClientFactoryMock).newMessageClient();
+    doReturn(new PutMessageResponse()).when(messageClientMock).putMessage(any(PutMessageRequest.class));
+
+    talosProducer = new TalosProducer(talosProducerConfig,
+        new TopicTalosResourceName(resourceName), talosAdminMock, talosClientFactoryMock,
+        partitionSenderMock, new SimpleTopicAbnormalCallback(),
+        new TestCallback());
+
+    for (int i = 0; i < 100; ++i) {
+      talosProducer.addUserMessage(messageList, 100);
+    }
+    talosProducer.shutdown();
+  }
 }

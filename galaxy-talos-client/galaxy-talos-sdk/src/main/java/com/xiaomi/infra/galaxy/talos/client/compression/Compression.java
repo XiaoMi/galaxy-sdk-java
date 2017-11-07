@@ -12,17 +12,15 @@ import java.io.DataOutputStream;
 import java.io.EOFException;
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.google.common.base.Preconditions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.xiaomi.infra.galaxy.talos.client.Constants;
 import com.xiaomi.infra.galaxy.talos.client.serialization.MessageSerialization;
 import com.xiaomi.infra.galaxy.talos.client.serialization.MessageSerializationFactory;
-import com.xiaomi.infra.galaxy.talos.client.serialization.MessageSerializer;
 import com.xiaomi.infra.galaxy.talos.client.serialization.MessageVersion;
 import com.xiaomi.infra.galaxy.talos.thrift.Message;
 import com.xiaomi.infra.galaxy.talos.thrift.MessageAndOffset;
@@ -67,6 +65,11 @@ public class Compression {
       dataOutputStream.close();
 
       byte[] messageBlockData = outputStream.toByteArray();
+      if (messageBlockData.length > Constants.TALOS_MESSAGE_BLOCK_BYTES_MAXIMAL) {
+        throw new IllegalArgumentException("MessageBlock must be less than or equal to " +
+            Constants.TALOS_MESSAGE_BLOCK_BYTES_MAXIMAL + " bytes, got bytes: " +
+            messageBlockData.length);
+      }
       messageBlock.setMessageBlock(messageBlockData);
       messageBlock.setMessageBlockSize(messageBlockData.length);
     } catch (IOException e) {
