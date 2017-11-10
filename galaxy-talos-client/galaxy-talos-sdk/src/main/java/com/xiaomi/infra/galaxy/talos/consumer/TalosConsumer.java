@@ -269,12 +269,14 @@ public class TalosConsumer {
   private int partitionNumber;
   private TopicTalosResourceName topicTalosResourceName;
   private Map<String, List<Integer>> workerInfoMap;
+  private Map<Integer, Long> partitionCheckPoint;
 
   private TalosConsumer(String consumerGroupName, TalosConsumerConfig consumerConfig,
       Credential credential, TopicTalosResourceName topicTalosResourceName,
       MessageReaderFactory messageReaderFactory,
       MessageProcessorFactory messageProcessorFactory, String clientIdPrefix,
-      TopicAbnormalCallback abnormalCallback) throws TException {
+      TopicAbnormalCallback abnormalCallback, Map<Integer, Long> partitionCheckPoint)
+      throws TException {
     workerId = Utils.generateClientId(clientIdPrefix);
     random = new Random();
     Utils.checkNameValidity(consumerGroupName);
@@ -288,6 +290,8 @@ public class TalosConsumer {
     consumerClient = talosClientFactory.newConsumerClient();
     topicAbnormalCallback = abnormalCallback;
     readWriteLock = new ReentrantReadWriteLock();
+    this.partitionCheckPoint = partitionCheckPoint == null ?
+        new HashMap<Integer, Long>() : partitionCheckPoint;
 
     partitionScheduledExecutor = Executors.newSingleThreadScheduledExecutor();
     workerScheduleExecutor = Executors.newSingleThreadScheduledExecutor();
@@ -310,6 +314,8 @@ public class TalosConsumer {
     initRenewTask();
   }
 
+
+  // general construct
   public TalosConsumer(String consumerGroupName, TalosConsumerConfig consumerConfig,
       Credential credential, TopicTalosResourceName topicTalosResourceName,
       MessageProcessorFactory messageProcessorFactory, String clientIdPrefix,
@@ -317,9 +323,22 @@ public class TalosConsumer {
       throws TException {
     this(consumerGroupName, consumerConfig, credential, topicTalosResourceName,
         new TalosMessageReaderFactory(), messageProcessorFactory, clientIdPrefix,
-        abnormalCallback);
+        abnormalCallback, new HashMap<Integer, Long>());
   }
 
+  // construct with CheckPoint
+  public TalosConsumer(String consumerGroupName, TalosConsumerConfig consumerConfig,
+      Credential credential, TopicTalosResourceName topicTalosResourceName,
+      MessageProcessorFactory messageProcessorFactory, String clientIdPrefix,
+      TopicAbnormalCallback abnormalCallback, Map<Integer, Long> checkPointMap)
+      throws TException {
+    this(consumerGroupName, consumerConfig, credential, topicTalosResourceName,
+        new TalosMessageReaderFactory(), messageProcessorFactory, clientIdPrefix,
+        abnormalCallback, checkPointMap);
+  }
+
+
+  // null credential
   public TalosConsumer(String consumerGroup, TalosConsumerConfig consumerConfig,
       TopicTalosResourceName topicTalosResourceName,
       MessageProcessorFactory messageProcessorFactory,
@@ -328,6 +347,7 @@ public class TalosConsumer {
         topicTalosResourceName, messageProcessorFactory, topicAbnormalCallback);
   }
 
+  // null clientIdPrefix
   public TalosConsumer(String consumerGroup, TalosConsumerConfig consumerConfig,
       Credential credential, TopicTalosResourceName topicTalosResourceName,
       MessageProcessorFactory messageProcessorFactory,
@@ -371,6 +391,20 @@ public class TalosConsumer {
     initCheckPartitionTask();
     initCheckWorkerInfoTask();
     initRenewTask();
+  }
+
+  // get current committed offset of every serving partition
+  public Map<Integer, Long> getCurCheckPoint() {
+    Map<Integer, Long> curCheckPoint = new HashMap<Integer, Long>();
+    readWriteLock.readLock().lock();
+    for (Map.Entry<Integer, PartitionFetcher> entry :
+        partitionFetcherMap.entrySet()) {
+      if (entry.getValue().isHoldingLock()) {
+        curCheckPoint.put(entry.getKey(), entry.getValue().getCurCheckPoint());
+      }
+    }
+    readWriteLock.readLock().unlock();
+    return curCheckPoint;
   }
 
   private void checkAndGetTopicInfo(TopicTalosResourceName topicTalosResourceName)
@@ -566,11 +600,13 @@ public class TalosConsumer {
     readWriteLock.writeLock().lock();
     for (Integer partitionId : toStealList) {
       if (!partitionFetcherMap.containsKey(partitionId)) {
+        // Note 'partitionCheckPoint.get(partitionId)' may be null, it's ok
         PartitionFetcher partitionFetcher = new PartitionFetcher(consumerGroup,
             topicName, topicTalosResourceName, partitionId, talosConsumerConfig,
             workerId, consumerClient, talosClientFactory.newMessageClient(),
             messageProcessorFactory.createProcessor(),
-            messageReaderFactory.createMessageReader(talosConsumerConfig));
+            messageReaderFactory.createMessageReader(talosConsumerConfig),
+            partitionCheckPoint.get(partitionId));
         partitionFetcherMap.put(partitionId, partitionFetcher);
       }
       partitionFetcherMap.get(partitionId).lock();

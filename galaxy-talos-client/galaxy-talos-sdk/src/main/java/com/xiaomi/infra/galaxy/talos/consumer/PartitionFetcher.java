@@ -21,6 +21,7 @@ import com.xiaomi.infra.galaxy.talos.thrift.ConsumeUnit;
 import com.xiaomi.infra.galaxy.talos.thrift.ConsumerService;
 import com.xiaomi.infra.galaxy.talos.thrift.LockPartitionRequest;
 import com.xiaomi.infra.galaxy.talos.thrift.LockPartitionResponse;
+import com.xiaomi.infra.galaxy.talos.thrift.MessageOffset;
 import com.xiaomi.infra.galaxy.talos.thrift.MessageService;
 import com.xiaomi.infra.galaxy.talos.thrift.TopicAndPartition;
 import com.xiaomi.infra.galaxy.talos.thrift.TopicTalosResourceName;
@@ -119,7 +120,8 @@ public class PartitionFetcher {
       TopicTalosResourceName topicTalosResourceName, int partitionId,
       TalosConsumerConfig talosConsumerConfig, String workerId,
       ConsumerService.Iface consumerClient, MessageService.Iface messageClient,
-      MessageProcessor messageProcessor, MessageReader messageReader) {
+      MessageProcessor messageProcessor, MessageReader messageReader,
+      Long outerCheckPoint) {
     this.consumerGroup = consumerGroup;
     this.topicTalosResourceName = topicTalosResourceName;
     this.partitionId = partitionId;
@@ -140,7 +142,8 @@ public class PartitionFetcher {
         .setTopicAndPartition(topicAndPartition)
         .setSimpleConsumer(simpleConsumer)
         .setMessageProcessor(messageProcessor)
-        .setConsumerClient(consumerClient);
+        .setConsumerClient(consumerClient)
+        .setOuterCheckPoint(outerCheckPoint);
     this.messageReader = messageReader;
 
     LOG.info("The PartitionFetcher for topic: " + topicTalosResourceName +
@@ -202,6 +205,13 @@ public class PartitionFetcher {
       LOG.info("Worker: " + workerId + " has set partition: " +
           partitionId + " to 'UNLOCKING', it is revoking gracefully.");
     }
+  }
+
+  public synchronized long getCurCheckPoint() {
+    if (!isHoldingLock()) {
+      return MessageOffset.START_OFFSET.getValue();
+    }
+    return messageReader.getCurCheckPoint();
   }
 
   public void shutDown() {

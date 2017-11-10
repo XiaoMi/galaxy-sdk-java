@@ -41,6 +41,10 @@ public abstract class MessageReader {
   protected SimpleConsumer simpleConsumer;
   protected ConsumerService.Iface consumerClient;
 
+  // outer-checkPoint can be used only one time, burn after reading to prevent
+  // partitionFetcher re-lock() and re-use outer-checkPoint again by consumer re-balance
+  protected Long outerCheckPoint;
+
   public MessageReader(TalosConsumerConfig consumerConfig) {
     this.consumerConfig = consumerConfig;
     lastCommitOffset = finishedOffset = -1;
@@ -49,6 +53,7 @@ public abstract class MessageReader {
     commitThreshold = consumerConfig.getCommitOffsetThreshold();
     commitInterval = consumerConfig.getCommitOffsetInterval();
     fetchInterval = consumerConfig.getFetchMessageInterval();
+    outerCheckPoint = null;
   }
 
   public MessageReader setWorkerId(String workerId) {
@@ -82,8 +87,22 @@ public abstract class MessageReader {
     return this;
   }
 
+  public void setOuterCheckPoint(Long outerCheckPoint) {
+    this.outerCheckPoint = outerCheckPoint;
+  }
+
   public AtomicLong getStartOffset() {
     return startOffset;
+  }
+
+  public long getCurCheckPoint() {
+    // init state or before the first committing
+    if (lastCommitOffset <= startOffset.get()) {
+      return startOffset.get();
+    }
+
+    // From lastCommitOffset + 1 when reading next time
+    return lastCommitOffset + 1;
   }
 
   protected boolean shoudCommit() {

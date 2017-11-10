@@ -28,12 +28,20 @@ public class TalosMessageReader extends MessageReader implements MessageCheckpoi
 
   @Override
   public void initStartOffset() throws Exception {
-    // get last commit offset
-    long readingStartOffset = queryStartOffset();
+    // get last commit offset or init by outer checkPoint
+    long readingStartOffset;
+    if (outerCheckPoint != null && outerCheckPoint >= 0) {
+      readingStartOffset = outerCheckPoint;
+      // burn after reading the first time
+      outerCheckPoint = null;
+    } else {
+      readingStartOffset = queryStartOffset();
+    }
 
     // when consumer starting up, checking:
     // 1) whether not exist last commit offset, which means 'readingStartOffset==-1'
     // 2) whether reset offset
+    // 3) note that: the priority of 'reset-config' is larger than 'outer-checkPoint'
     if (readingStartOffset == -1 || consumerConfig.isResetOffsetWhenStart()) {
       startOffset.set(consumerConfig.getResetOffsetValueWhenStart());
     } else {
