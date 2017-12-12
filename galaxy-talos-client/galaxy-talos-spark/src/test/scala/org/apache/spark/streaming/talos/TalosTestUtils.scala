@@ -1,7 +1,6 @@
 package org.apache.spark.streaming.talos
 
 import java.nio.ByteBuffer
-import java.util
 import java.util.{Map => JMap, Set => JSet}
 
 import com.xiaomi.infra.galaxy.rpc.thrift.{Credential, UserType}
@@ -37,7 +36,7 @@ class TalosTestUtils(params: immutable.Map[String, String])
   val talosParams = immutable.Map[String, String](
     TalosClientConfigKeys.GALAXY_TALOS_SERVICE_ENDPOINT -> uri
   ) ++ params
-  val javaTalosParams = new util.HashMap[String, String]()
+  val javaTalosParams = new java.util.HashMap[String, String]()
   talosParams.foreach { case (k, v) => javaTalosParams.put(k, v) }
 
   val credential = new Credential()

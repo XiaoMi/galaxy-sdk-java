@@ -1,7 +1,5 @@
 package org.apache.spark.streaming.talos
 
-import java.util
-
 import com.xiaomi.infra.galaxy.rpc.thrift.Credential
 import com.xiaomi.infra.galaxy.talos.client.TalosClientConfigKeys
 import com.xiaomi.infra.galaxy.talos.consumer.SimpleConsumer
@@ -9,6 +7,7 @@ import com.xiaomi.infra.galaxy.talos.thrift.{ErrorCode, GalaxyTalosException, Me
 import org.apache.spark.annotation.{DeveloperApi, Experimental}
 import org.apache.spark.partial.{BoundedDouble, PartialResult}
 import org.apache.spark.rdd.RDD
+import org.apache.spark.streaming.talos.util.Utils
 import org.apache.spark.util.NextIterator
 import org.apache.spark.{Logging, Partition, SparkContext, SparkException, TaskContext}
 
@@ -130,6 +129,7 @@ R: ClassTag](
 
     val tc = new TalosCluster(talosParams, credential)
     var requestOffset = part.offsetRange.fromOffset
+    val consumerId = Utils.md5(s"${applicationId}-${part.offsetRange.topic}-${part.offsetRange.partition}")
     var iter: Iterator[MessageAndOffset] = null
 
     private def fetchNumber = part.offsetRange.untilOffset - requestOffset
@@ -179,12 +179,12 @@ R: ClassTag](
           TalosClientConfigKeys.GALAXY_TALOS_CONSUMER_MAX_FETCH_RECORDS_MAXIMUM)
 
         if(maxFetch <=0 ){
-          new util.ArrayList[MessageAndOffset]()
+          new java.util.ArrayList[MessageAndOffset]()
         } else {
           val consumer: SimpleConsumer = tc.simpleConsumer(
             part.offsetRange.topic,
             part.offsetRange.partition,
-            Some(s"${applicationId}-${part.offsetRange.topic}-${part.offsetRange.partition}"))
+            Some(consumerId))
           consumer.fetchMessage(requestOffset, maxFetch.toInt)
         }
       }
