@@ -279,8 +279,8 @@ public class TalosProducer {
     partitionBufferMap.put(currentPartitionId, new ArrayList<UserMessage>());
 
     for (Message message : msgList) {
-      // when user direct add Message to producer, we will reset it's MessageType
-      // to MessageType.BINARY,
+      // set timestamp and messageType if not set;
+      Utils.updateMessage(message, MessageType.BINARY);
       Utils.updateMessage(message, MessageType.BINARY);
       // check data validity
       Utils.checkMessageValidity(message);

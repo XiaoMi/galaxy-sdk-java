@@ -65,16 +65,8 @@ public class SimpleProducer {
       return true;
     }
 
-    for (Message message : msgList) {
-      // when user direct add Message to producer, we will reset it's MessageType
-      // to MessageType.BINARY,
-      Utils.updateMessage(message, MessageType.BINARY);
-      // check data validity
-      Utils.checkMessageValidity(message);
-    }
-
     try {
-      doPut(msgList);
+      putMessageList(msgList);
       return true;
     } catch (Exception e) {
       LOG.error("putMessage error: " +
@@ -90,17 +82,18 @@ public class SimpleProducer {
 
     // check data validity
     for (Message message : msgList) {
-      // when user direct add Message to producer, we will reset it's MessageType
-      // to MessageType.BINARY,
+      // set timestamp and messageType if not set;
       Utils.updateMessage(message, MessageType.BINARY);
-      // check data validity
-      Utils.checkMessageValidity(message);
     }
+
+    // check data validity
+    Utils.checkMessageValidity(msgList);
 
     doPut(msgList);
   }
 
   protected void doPut(List<Message> msgList) throws IOException, TException {
+    // TODO: compressMessageList return List<MessageBlock> when MsgList is too large;
     MessageBlock messageBlock = compressMessageList(msgList);
     List<MessageBlock> messageBlockList = new ArrayList<MessageBlock>(1);
     messageBlockList.add(messageBlock);

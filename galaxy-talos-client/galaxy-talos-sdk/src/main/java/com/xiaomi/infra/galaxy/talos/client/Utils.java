@@ -7,6 +7,7 @@
 package com.xiaomi.infra.galaxy.talos.client;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.regex.Pattern;
@@ -144,7 +145,24 @@ public class Utils {
       message.setCreateTimestamp(System.currentTimeMillis());
     }
 
-    message.setMessageType(messageType);
+    if (!message.isSetMessageType()) {
+      message.setMessageType(messageType);
+    }
+  }
+
+  public static void checkMessageValidity(List<Message> messageList) {
+    long totalSize = 0;
+    for (Message message : messageList) {
+      checkMessageValidity(message);
+      totalSize += message.getMessage().length;
+    }
+
+    // TODO: latter we will split messageList to List<Message> when messageList
+    // is too large, and not just throw exception;
+    if (totalSize > Constants.TALOS_SINGLE_MESSAGE_BYTES_MAXIMAL * 2) {
+      throw new IllegalArgumentException("Total Messages byte must less than " +
+          Constants.TALOS_SINGLE_MESSAGE_BYTES_MAXIMAL * 2);
+    }
   }
 
   public static void checkMessageValidity(Message message) {
