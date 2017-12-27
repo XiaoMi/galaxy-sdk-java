@@ -61,6 +61,10 @@ public class AuthenticationConstants {
    */
   public static final String HK_TIMESTAMP = "X-Xiaomi-Timestamp";
 
+  public static final String MI_DATE = "x-xiaomi-date";
+
+  public static final String XIAOMI_HEADER_PREFIX = "x-xiaomi-";
+
   public static final String HK_CONTENT_MD5 = "X-Xiaomi-Content-MD5";
 
   /**

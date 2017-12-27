@@ -22,7 +22,19 @@ public enum SnapshotState implements libthrift091.TEnum {
   /**
    * 正在创建，不可操作
    */
-  INPROGRESS(2);
+  INPROGRESS(2),
+  /**
+   * 已恢复
+   */
+  RESTORED(3),
+  /**
+   * 正上传到FDS
+   */
+  UPLOADING(4),
+  /**
+   * 已上传到FDS
+   */
+  UPLOADED(5);
 
   private final int value;
 
@@ -47,6 +59,12 @@ public enum SnapshotState implements libthrift091.TEnum {
         return ENABLED;
       case 2:
         return INPROGRESS;
+      case 3:
+        return RESTORED;
+      case 4:
+        return UPLOADING;
+      case 5:
+        return UPLOADED;
       default:
         return null;
     }
