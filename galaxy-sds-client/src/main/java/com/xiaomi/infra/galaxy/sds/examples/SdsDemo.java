@@ -2,12 +2,15 @@ package com.xiaomi.infra.galaxy.sds.examples;
 
 import com.xiaomi.infra.galaxy.sds.client.ClientFactory;
 import com.xiaomi.infra.galaxy.sds.thrift.AdminService;
+import com.xiaomi.infra.galaxy.sds.thrift.ColdStandBy;
+import com.xiaomi.infra.galaxy.sds.thrift.ColdStandByCycle;
 import com.xiaomi.infra.galaxy.sds.thrift.CommonConstants;
 import com.xiaomi.infra.galaxy.sds.thrift.Credential;
 import com.xiaomi.infra.galaxy.sds.thrift.DataType;
 import com.xiaomi.infra.galaxy.sds.thrift.Datum;
 import com.xiaomi.infra.galaxy.sds.thrift.DatumUtil;
 import com.xiaomi.infra.galaxy.sds.thrift.EntityGroupSpec;
+import com.xiaomi.infra.galaxy.sds.thrift.ErrorCode;
 import com.xiaomi.infra.galaxy.sds.thrift.GetRequest;
 import com.xiaomi.infra.galaxy.sds.thrift.GetResult;
 import com.xiaomi.infra.galaxy.sds.thrift.KeySpec;
@@ -19,6 +22,7 @@ import com.xiaomi.infra.galaxy.sds.thrift.PutResult;
 import com.xiaomi.infra.galaxy.sds.thrift.ScanRequest;
 import com.xiaomi.infra.galaxy.sds.thrift.ScanResult;
 import com.xiaomi.infra.galaxy.sds.thrift.SecondaryIndexConsistencyMode;
+import com.xiaomi.infra.galaxy.sds.thrift.ServiceException;
 import com.xiaomi.infra.galaxy.sds.thrift.SimpleCondition;
 import com.xiaomi.infra.galaxy.sds.thrift.TableMetadata;
 import com.xiaomi.infra.galaxy.sds.thrift.TableQuota;
@@ -91,7 +95,9 @@ public class SdsDemo {
     TableMetadata tableMetadata = new TableMetadata();
     tableMetadata
         .setQuota(new TableQuota().setSize(100 * 1024 * 1024))
-        .setThroughput(new ProvisionThroughput().setReadCapacity(20).setWriteCapacity(20));
+        .setThroughput(new ProvisionThroughput().setReadCapacity(20).setWriteCapacity(20))
+        .setColdStandBy(new ColdStandBy().setEnableColdStandBy(true).setColdStandBySize(5)
+                       .setColdStandByCycle(ColdStandByCycle.WEEK));
 
     return new TableSpec().setSchema(tableSchema)
         .setMetadata(tableMetadata);
@@ -190,6 +196,17 @@ public class SdsDemo {
       kvsList = scanResult.getRecords();
       for (Map<String, Datum> kvs : kvsList) {
         printResult(kvs);
+      }
+
+      System.out.println("================= list snapshots ====================");
+      try{
+         System.out.println(adminClient.listSnapshots(tableName));
+      }catch(ServiceException e){
+        if(e.getErrorCode() == ErrorCode.RESOURCE_NOT_FOUND){
+          System.out.println("table [" + tableName + "] not has snapshot yet");
+        }else{
+          e.printStackTrace();
+        }
       }
     } finally {
       adminClient.disableTable(tableName);
