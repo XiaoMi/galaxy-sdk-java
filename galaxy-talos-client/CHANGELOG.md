@@ -1,5 +1,11 @@
 ## 2.1-SNAPSHOT
 
+## 2.1.6
+  * D78866: update TalosClient add listTopicsinfo
+  * D78568: simpleProducer putMessage reject message size larger than 20MB
+  * D77343: Fix talos simple consumer id
+  * D73606: consumer support read back
+
 ## 2.1.5
   * D73159: talos producer add msg timeout & limit msg block size
   * D71982: fix creating eco topic
