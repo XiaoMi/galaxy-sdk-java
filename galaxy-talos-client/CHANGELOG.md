@@ -1,4 +1,4 @@
-## 2.1-SNAPSHOT
+## 2.2-SNAPSHOT
 
 ## 2.1.6
   * D78866: update TalosClient add listTopicsinfo
