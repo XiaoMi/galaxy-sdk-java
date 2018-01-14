@@ -95,7 +95,7 @@ class DirectTalosInputDStream[R: ClassTag](
     }
   }
 
-  protected var currentOffsets = fromOffsets
+  @volatile protected var currentOffsets = fromOffsets
 
   protected val tc = new TalosCluster(talosParams, credential)
 
@@ -260,15 +260,9 @@ class DirectTalosInputDStream[R: ClassTag](
         val offsetRange = generatedRDDs(minTime).asInstanceOf[TalosRDD[R]].offsetRanges
         val consumeOffsets = offsetRange.map(or =>
           (new TopicPartition(or.topic, or.partition), or.fromOffset)).toMap
-        Try(latestOffsets(0)) match {
-          case Success(offsets) =>
-            Some(offsets.map {
-              case (tp, lo) => (tp, lo - consumeOffsets(tp))
-            })
-          case Failure(e) =>
-            logWarning("Get ConsumerOffsetLag info failed.", e)
-            None
-        }
+        Some(currentOffsets.map {
+          case (tp, lo) => (tp, lo - consumeOffsets(tp))
+        })
       }
     }
 
