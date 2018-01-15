@@ -1,5 +1,8 @@
 ## 2.2-SNAPSHOT
 
+## 2.1.7
+  * D81286: Calculate offset lag without fetching latest offset
+
 ## 2.1.6
   * D78866: update TalosClient add listTopicsinfo
   * D78568: simpleProducer putMessage reject message size larger than 20MB
