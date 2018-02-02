@@ -6,6 +6,7 @@
 .project
 .settings/
 target/
+build/
 junit-report/
 dependency-reduced-pom.xml
 .travis.yml

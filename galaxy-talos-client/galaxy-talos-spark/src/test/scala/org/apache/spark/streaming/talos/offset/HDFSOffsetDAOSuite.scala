@@ -47,7 +47,7 @@ class HDFSOffsetDAOSuite extends FunSuite with BeforeAndAfter {
     }
     import scala.collection.JavaConverters._
     val filesNum = FileUtils.listFiles(new File(dir), null, false)
-      .asScala.filter(_.getName.startsWith("offset")).size
+        .asScala.filter(_.getName.startsWith("offset")).size
     assert(filesNum == 10)
     val files = dao.getOffsetFiles()
     assert(files.head.getName === "offset-2")

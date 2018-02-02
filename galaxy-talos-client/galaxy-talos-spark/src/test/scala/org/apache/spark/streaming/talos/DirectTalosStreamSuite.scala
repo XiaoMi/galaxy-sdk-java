@@ -1,35 +1,36 @@
 package org.apache.spark.streaming.talos
 
 import java.io.File
+import java.nio.charset.Charset
 import java.util.concurrent.atomic.AtomicLong
-
-import com.xiaomi.infra.galaxy.talos.thrift.MessageAndOffset
-import org.apache.spark.streaming.dstream.DStream
-import org.apache.spark.streaming.scheduler.rate.RateEstimator
-import org.apache.spark.streaming.scheduler._
-import org.apache.spark.streaming.talos.DirectScalaStreamSuite.InputInfoCollector
-import org.apache.spark.streaming.{Milliseconds, StreamingContext}
-import org.apache.spark.util.Utils
-import org.apache.spark.{Logging, SparkConf, SparkContext, SparkFunSuite}
-import org.scalatest.concurrent.Eventually
-import org.scalatest.{BeforeAndAfter, BeforeAndAfterAll}
+import java.util.{List => JList, Map => JMap, Set => JSet}
 
 import scala.collection.mutable.ArrayBuffer
 import scala.collection.{immutable, mutable}
 import scala.concurrent.duration._
+import scala.util.{Failure, Success, Try}
+
+import org.apache.spark.streaming.dstream.DStream
+import org.apache.spark.streaming.scheduler._
+import org.apache.spark.streaming.scheduler.rate.RateEstimator
+import org.apache.spark.streaming.talos.DirectTalosStreamSuite.InputInfoCollector
+import org.apache.spark.streaming.{Milliseconds, StreamingContext, Time}
+import org.apache.spark.util.Utils
+import org.apache.spark.{SparkConf, SparkContext}
+import org.mockito.Matchers._
+import org.mockito.Mockito._
+
+import com.xiaomi.infra.galaxy.talos.admin.TalosAdmin
+import com.xiaomi.infra.galaxy.talos.client.TalosClientConfig
+import com.xiaomi.infra.galaxy.talos.thrift.{GetTopicOffsetRequest, MessageAndOffset, OffsetInfo}
 
 /**
-  * Created by jiasheng on 16-3-21.
-  */
-class DirectScalaStreamSuite
-  extends SparkFunSuite
-    with BeforeAndAfter
-    with BeforeAndAfterAll
-    with Eventually
-    with Logging {
+ * Created by jiasheng on 16-3-21.
+ */
+class DirectTalosStreamSuite extends TalosClusterSuite {
   val sparkConf = new SparkConf()
-    .setMaster("local[4]")
-    .setAppName(this.getClass.getSimpleName)
+      .setMaster("local[4]")
+      .setAppName(this.getClass.getSimpleName)
 
   private var sc: SparkContext = _
   private var ssc: StreamingContext = _
@@ -37,13 +38,6 @@ class DirectScalaStreamSuite
   private var testDir: File = _
 
   private var talosTestUtils: TalosTestUtils = _
-
-
-  override protected def beforeAll(): Unit = {
-  }
-
-  override protected def afterAll(): Unit = {
-  }
 
   after {
     if (ssc != null) {
@@ -58,8 +52,221 @@ class DirectScalaStreamSuite
     }
   }
 
+  // basic talos operation
+  test("cache creating instance") {
+    val topic = "cache-creating-instance"
+    talosTestUtils = new TalosTestUtils(uri, immutable.Map[String, String]())
+    talosTestUtils.deleteTopic(topic)
+    talosTestUtils.createTopic(topic, 1)
+    talosTestUtils.sendMessagesAndWaitForReceive(topic, "message", "message")
+
+    val config = talosTestUtils.tc.config
+    assert(config.equals(talosTestUtils.tc.config), "Not using cached Configuration instance")
+    val admin = talosTestUtils.tc.admin()
+    assert(admin.equals(talosTestUtils.tc.admin()), "Not using cached TalosAdmin instance")
+    val resourceName = talosTestUtils.tc.topicResourceName(topic)
+    assert(resourceName.equals(talosTestUtils.tc.topicResourceName(topic)))
+    val simpleConsumer = talosTestUtils.tc.simpleConsumer(topic, 0)
+    assert(simpleConsumer.equals(talosTestUtils.tc.simpleConsumer(topic, 0)))
+  }
+
+  test("earliest offset api") {
+    val topic = "earliest-offset-api"
+    talosTestUtils = new TalosTestUtils(uri, immutable.Map[String, String]())
+    talosTestUtils.deleteTopic(topic)
+    talosTestUtils.createTopic(topic, 1)
+    talosTestUtils.sendMessagesAndWaitForReceive(topic, "message", "message")
+
+    val offset = talosTestUtils.tc.getEarliestOffsets(Set(topic)).right.get
+    assert(offset.head._2 === 0, "didn't get earliest offset")
+  }
+
+  test("latest offset api") {
+    val topic = "latest-offset-api"
+    talosTestUtils = new TalosTestUtils(uri, immutable.Map[String, String]())
+    talosTestUtils.deleteTopic(topic)
+    talosTestUtils.createTopic(topic, 1)
+    talosTestUtils.sendMessagesAndWaitForReceive(topic, "message", "message")
+
+    val offset = talosTestUtils.tc.getLatestOffsets(Set(topic)).right.get
+    assert(offset.head._2 === 2, "didn't get latest offset")
+  }
+
+  test("invalid offset info") {
+    talosTestUtils = new TalosTestUtils(uri, immutable.Map[String, String]())
+    val topics = Set("invalid-offset-info")
+    val partitionNum = 1
+    topics.foreach { t =>
+      talosTestUtils.deleteTopic(t)
+      talosTestUtils.createTopic(t, partitionNum)
+    }
+
+    // spy
+    val mockTalosAdmin = spy(
+      new TalosAdmin(new TalosClientConfig(talosTestUtils.tc.config), talosTestUtils.tc.credential))
+    talosTestUtils.tc._talosAdmin = mockTalosAdmin
+
+    // stub
+    val invalidOffsetInfo = new OffsetInfo(0)
+    invalidOffsetInfo.setStartOffset(-1)
+    invalidOffsetInfo.setEndOffset(-1)
+    val invalidOffsetInfoList = List(invalidOffsetInfo)
+    import scala.collection.JavaConverters._
+    doReturn(invalidOffsetInfoList.toList.asJava).when(mockTalosAdmin).getTopicOffset(any(classOf[GetTopicOffsetRequest]))
+
+    // verify
+    ssc = new StreamingContext(sparkConf, Milliseconds(200))
+    Try {
+      val messageHandler = (mo: MessageAndOffset) => (mo.message.partitionKey,
+          new String(mo.message.message.array(), Charset.forName("UTF-8")))
+      TalosUtils.createDirectStream(talosTestUtils.tc, ssc, talosTestUtils.talosParams,
+        talosTestUtils.credential, topics, messageHandler)
+    } match {
+      case Success(_) => assert(false, "createDirectStream should failed in case of invalid OffsetInfo.")
+      case Failure(e) => assert(e.isInstanceOf[java.lang.AssertionError] && e.getMessage.contains("Invalid OffsetInfo"),
+        s"Exception should be java.lang.AssertionError")
+    }
+  }
+
+  test("latest offset should not be smaller than current offset") {
+    talosTestUtils = new TalosTestUtils(uri, immutable.Map[String, String]())
+    val topics = Set("latest-offset-should-not-xxxx")
+    val partitionNum = 1
+    topics.foreach { t =>
+      talosTestUtils.deleteTopic(t)
+      talosTestUtils.createTopic(t, partitionNum)
+    }
+
+    // spy
+    val mockTalosAdmin = spy(
+      new TalosAdmin(new TalosClientConfig(talosTestUtils.tc.config), talosTestUtils.tc.credential))
+    talosTestUtils.tc._talosAdmin = mockTalosAdmin
+
+    // stub
+    val partitionEndOffset = 100
+    val partitionOffsetInfo = new OffsetInfo(0)
+    partitionOffsetInfo.setStartOffset(0)
+    partitionOffsetInfo.setEndOffset(partitionEndOffset)
+    val offsetInfoList = List(partitionOffsetInfo)
+    import scala.collection.JavaConverters._
+    doReturn(offsetInfoList.toList.asJava).when(mockTalosAdmin).getTopicOffset(any(classOf[GetTopicOffsetRequest]))
+
+    ssc = new StreamingContext(sparkConf, Milliseconds(200))
+    val talosDstream: DirectTalosInputDStream[(String, String)] = withClue("Error creating direct stream") {
+      TalosUtils.createDirectStream(ssc, talosTestUtils.talosParams,
+        talosTestUtils.credential, topics)
+    }.asInstanceOf[DirectTalosInputDStream[(String, String)]]
+    // set current offset larger than latest offset
+    talosDstream.currentOffsets = Map {
+      TopicPartition(topics.iterator.next(), 0) -> (partitionEndOffset + 10)
+    }
+
+    // verify
+    Try {
+      talosDstream.compute(Time(1000))
+    } match {
+      case Success(_) => assert(false, "DirectTalosInputDStream should throw exception in case of invalid latest offset.")
+      case Failure(e) => {
+        assert(e.isInstanceOf[java.lang.AssertionError] && e.getMessage.contains("Invalid"),
+          "Exception should be java.lang.AssertionError")
+        logInfo(s"Expected exception: $e")
+      }
+    }
+  }
+
+  test("RDD from offset should not be smaller than partition start offset") {
+    talosTestUtils = new TalosTestUtils(uri, immutable.Map[String, String]())
+    val topics = Set("rdd-from-offset-should-not-xxxx")
+    val partitionNum = 1
+    topics.foreach { t =>
+      talosTestUtils.deleteTopic(t)
+      talosTestUtils.createTopic(t, partitionNum)
+    }
+
+    // spy
+    val mockTalosAdmin = spy(
+      new TalosAdmin(new TalosClientConfig(talosTestUtils.tc.config), talosTestUtils.tc.credential))
+    talosTestUtils.tc._talosAdmin = mockTalosAdmin
+
+    // stub
+    val partitionStartOffset = 100
+    val partitionOffsetInfo = new OffsetInfo(0)
+    partitionOffsetInfo.setStartOffset(partitionStartOffset)
+    partitionOffsetInfo.setEndOffset(partitionStartOffset + 10)
+    val offsetInfoList = List(partitionOffsetInfo)
+    import scala.collection.JavaConverters._
+    doReturn(offsetInfoList.toList.asJava).when(mockTalosAdmin).getTopicOffset(any(classOf[GetTopicOffsetRequest]))
+
+    ssc = new StreamingContext(sparkConf, Milliseconds(Long.MaxValue))
+    val talosDstream: DirectTalosInputDStream[(String, String)] = withClue("Error creating direct stream") {
+      TalosUtils.createDirectStream(ssc, talosTestUtils.talosParams,
+        talosTestUtils.credential, topics)
+    }.asInstanceOf[DirectTalosInputDStream[(String, String)]]
+    talosDstream.tc._talosAdmin = mockTalosAdmin
+    // set current offset smaller than partition start offset
+    talosDstream.currentOffsets = Map {
+      TopicPartition(topics.iterator.next(), 0) -> (partitionStartOffset - 10)
+    }
+
+    // verify
+    talosDstream.foreachRDD(rdd => rdd.take(1))
+    ssc.start()
+    val talosRDD: TalosRDD[(String, String)] = talosDstream.compute(Time(1000)).get.asInstanceOf[TalosRDD[(String, String)]]
+    ssc.stop()
+    assert(talosRDD.offsetRanges(0).fromOffset == partitionStartOffset, "fromOffset should be reset to partition start offset")
+  }
+
+  test("partition number increased") {
+    talosTestUtils = new TalosTestUtils(uri, immutable.Map[String, String]())
+    val topics = Set("partition-number-increased")
+    val partitionNum = 1
+    topics.foreach { t =>
+      talosTestUtils.deleteTopic(t)
+      talosTestUtils.createTopic(t, partitionNum)
+    }
+
+    // spy
+    val mockTalosAdmin = spy(
+      new TalosAdmin(new TalosClientConfig(talosTestUtils.tc.config), talosTestUtils.tc.credential))
+    talosTestUtils.tc._talosAdmin = mockTalosAdmin
+
+    // stub
+    val partitionStartOffset0 = 100
+    val partitionOffsetInfo0 = new OffsetInfo(0)
+    partitionOffsetInfo0.setStartOffset(partitionStartOffset0)
+    partitionOffsetInfo0.setEndOffset(partitionStartOffset0 + 10)
+    val partitionStartOffset1 = 10
+    val partitionOffsetInfo1 = new OffsetInfo(1)
+    partitionOffsetInfo1.setStartOffset(partitionStartOffset1)
+    partitionOffsetInfo1.setEndOffset(partitionStartOffset1 + 10)
+    val offsetInfoList = List(partitionOffsetInfo0, partitionOffsetInfo1)
+    import scala.collection.JavaConverters._
+    doReturn(offsetInfoList.toList.asJava).when(mockTalosAdmin).getTopicOffset(any(classOf[GetTopicOffsetRequest]))
+
+    ssc = new StreamingContext(sparkConf, Milliseconds(Long.MaxValue))
+    val talosDstream: DirectTalosInputDStream[(String, String)] = withClue("Error creating direct stream") {
+      TalosUtils.createDirectStream(ssc, talosTestUtils.talosParams,
+        talosTestUtils.credential, topics)
+    }.asInstanceOf[DirectTalosInputDStream[(String, String)]]
+    talosDstream.tc._talosAdmin = mockTalosAdmin
+    // set current offset smaller than partition start offset
+    talosDstream.currentOffsets = Map {
+      TopicPartition(topics.iterator.next(), 0) -> partitionStartOffset0
+    }
+
+    // verify
+    talosDstream.foreachRDD(rdd => rdd.take(1))
+    ssc.start()
+    val talosRDD: TalosRDD[(String, String)] = talosDstream.compute(Time(1000)).get.asInstanceOf[TalosRDD[(String, String)]]
+    ssc.stop()
+    assert(talosRDD.offsetRanges.size == 2 &&
+        // TalosRDD should contains new partition.
+        talosRDD.offsetRanges.contains(OffsetRange(topics.iterator.next(), 1, partitionOffsetInfo1.startOffset, partitionOffsetInfo1.endOffset + 1)),
+      "fromOffset should be reset to partition start offset")
+  }
+
   test("basic stream receiving with multiple topics and smallest starting offset") {
-    talosTestUtils = new TalosTestUtils(
+    talosTestUtils = new TalosTestUtils(uri,
       immutable.Map[String, String]("auto.offset.reset" -> "smallest"))
 
     val topics = Set("spark-talos-1", "spark-talos-2", "spark-talos-3")
@@ -112,13 +319,12 @@ class DirectScalaStreamSuite
   }
 
   test("receiving from largest starting offset") {
-    talosTestUtils = new TalosTestUtils(immutable.Map[String, String](
-      "auto.offset.reset" -> "largest"
-    ))
+    talosTestUtils = new TalosTestUtils(uri,
+      immutable.Map[String, String]("auto.offset.reset" -> "largest"))
     val topic = "spark-talos-largest"
     val message = "a"
     talosTestUtils.deleteTopic(topic)
-    talosTestUtils.createTopic(topic, 8)
+    talosTestUtils.createTopic(topic, 2)
     talosTestUtils.sendMessages(topic, Seq.fill(10)(message): _*)
 
     var maxOffsetPartition: (TopicPartition, Long) = null
@@ -137,7 +343,7 @@ class DirectScalaStreamSuite
     }
     assert(
       stream.asInstanceOf[DirectTalosInputDStream[_]]
-        .fromOffsets(maxOffsetPartition._1) >= maxOffsetPartition._2,
+          .fromOffsets(maxOffsetPartition._1) >= maxOffsetPartition._2,
       "Start offset not from latest!"
     )
 
@@ -153,25 +359,23 @@ class DirectScalaStreamSuite
   }
 
   test("offset recovery") {
-    talosTestUtils = new TalosTestUtils(immutable.Map[String, String](
-      "auto.offset.reset" -> "smallest"
-    ))
+    talosTestUtils = new TalosTestUtils(uri,
+      immutable.Map[String, String]("auto.offset.reset" -> "smallest"))
     testDir = Utils.createTempDir()
     val topic = "spark-talos-recovery"
 
     // recreate topic
     talosTestUtils.deleteTopic(topic)
-    talosTestUtils.createTopic(topic, 8)
+    talosTestUtils.createTopic(topic, 2)
 
     // Send data to Talos and wait for it to be received
     def sendDataAndWaitForReceive(data: Seq[Int]): Unit = {
       val strings = data.map(_.toString)
       talosTestUtils.sendMessages(topic, strings: _*)
       eventually(timeout(10 seconds), interval(50 milliseconds)) {
-        assert(strings.forall(DirectScalaStreamSuite.collectedData.contains))
+        assert(strings.forall(DirectTalosStreamSuite.collectedData.contains))
       }
     }
-
 
     // Setup the streaming context
     ssc = new StreamingContext(sparkConf, Milliseconds(100))
@@ -188,12 +392,12 @@ class DirectScalaStreamSuite
     // This is to collect the raw data received from Talos
     talosStream.foreachRDD { (rdd, time) =>
       val data = rdd.map(_._2).collect()
-      DirectScalaStreamSuite.collectedData ++= data
+      DirectTalosStreamSuite.collectedData ++= data
     }
 
     // This is ensure all the data is eventually receiving only once
     stateStream.foreachRDD { rdd =>
-      rdd.collect().headOption.foreach { x => DirectScalaStreamSuite.total = x._2 }
+      rdd.collect().headOption.foreach { x => DirectTalosStreamSuite.total = x._2 }
     }
     ssc.start()
 
@@ -233,21 +437,20 @@ class DirectScalaStreamSuite
     ssc.start()
     sendDataAndWaitForReceive(11 to 20)
     eventually(timeout(10 seconds), interval(50 milliseconds)) {
-      assert(DirectScalaStreamSuite.total === (1 to 20).sum)
+      assert(DirectTalosStreamSuite.total === (1 to 20).sum)
     }
     ssc.stop()
   }
 
   test("Direct Talos stream report input information") {
-    talosTestUtils = new TalosTestUtils(immutable.Map[String, String](
-      "auto.offset.reset" -> "smallest"
-    ))
+    talosTestUtils = new TalosTestUtils(uri,
+      immutable.Map[String, String]("auto.offset.reset" -> "smallest"))
     val topic = "spark-talos-report-test"
     val totalSent = 100
     val messages = (1 to totalSent).map(_.toString)
 
     talosTestUtils.deleteTopic(topic)
-    talosTestUtils.createTopic(topic, 8)
+    talosTestUtils.createTopic(topic, 2)
     talosTestUtils.sendMessages(topic, messages: _*)
 
     ssc = new StreamingContext(sparkConf, Milliseconds(200))
@@ -277,9 +480,8 @@ class DirectScalaStreamSuite
   }
 
   test("using rate controller") {
-    talosTestUtils = new TalosTestUtils(immutable.Map[String, String](
-      "auto.offset.reset" -> "smallest"
-    ))
+    talosTestUtils = new TalosTestUtils(uri,
+      immutable.Map[String, String]("auto.offset.reset" -> "smallest"))
     val topic = "spark-talos-backpressure-test"
     talosTestUtils.deleteTopic(topic)
     talosTestUtils.createTopic(topic, 1)
@@ -290,11 +492,11 @@ class DirectScalaStreamSuite
     //    talosTestUtils.sendMessages(topic, messages: _*)
 
     val sparkConf = new SparkConf()
-      // Safe, even with streaming, because we're using the direct API.
-      // Using 1 core is useful to make the test more predictable.
-      .setMaster("local[1]")
-      .setAppName(this.getClass.getSimpleName)
-      .set("spark.streaming.talos.maxRatePerPartition", "100")
+        // Safe, even with streaming, because we're using the direct API.
+        // Using 1 core is useful to make the test more predictable.
+        .setMaster("local[1]")
+        .setAppName(this.getClass.getSimpleName)
+        .set("spark.streaming.talos.maxRatePerPartition", "100")
 
     // Setup the streaming context
     ssc = new StreamingContext(sparkConf, Milliseconds(batchIntervalMs))
@@ -330,9 +532,10 @@ class DirectScalaStreamSuite
     val timeoutSec: Int = 5
     Seq(100, 50, 20).foreach { rate =>
       collectedData.clear() // Empty this buffer on each pass.
-      estimator.updateRate(rate) // Set a new rate.
-    // Send messages.
-    val messages = (1 to timeoutSec * 1000 / batchIntervalMs * rate).map(_.toString)
+      estimator.updateRate(rate)
+      // Set a new rate.
+      // Send messages.
+      val messages = (1 to timeoutSec * 1000 / batchIntervalMs * rate).map(_.toString)
       talosTestUtils.sendMessages(topic, messages: _*)
       // Expect blocks of data equal to "rate", scaled by the interval length in secs.
       val expectedSize = Math.round(rate * batchIntervalMs * 0.001)
@@ -361,7 +564,7 @@ class DirectScalaStreamSuite
   }
 }
 
-object DirectScalaStreamSuite {
+object DirectTalosStreamSuite {
   val collectedData = new mutable.ArrayBuffer[String]() with mutable.SynchronizedBuffer[String]
   @volatile var total = -1
 
@@ -385,17 +588,16 @@ object DirectScalaStreamSuite {
 
 }
 
-
 private[streaming] class ConstantEstimator(@volatile private var rate: Long)
-  extends RateEstimator {
+    extends RateEstimator {
 
   def updateRate(newRate: Long): Unit = {
     rate = newRate
   }
 
   def compute(
-    time: Long,
-    elements: Long,
-    processingDelay: Long,
-    schedulingDelay: Long): Option[Double] = Some(rate)
+      time: Long,
+      elements: Long,
+      processingDelay: Long,
+      schedulingDelay: Long): Option[Double] = Some(rate)
 }

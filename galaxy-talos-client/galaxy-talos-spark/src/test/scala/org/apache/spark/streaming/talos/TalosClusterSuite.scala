@@ -1,44 +1,55 @@
 package org.apache.spark.streaming.talos
 
-import org.apache.spark.SparkFunSuite
-import org.scalatest.BeforeAndAfterAll
-import scala.collection.immutable
+import org.apache.spark.{Logging, SparkFunSuite}
+import org.scalatest.concurrent.Eventually
+import org.scalatest.{BeforeAndAfter, BeforeAndAfterAll}
+
+import com.xiaomi.infra.galaxy.auth.authentication.XiaomiAuthSpi
+import com.xiaomi.infra.galaxy.talos.common.config.{TalosConfigKeys, TalosConfigurationLoader}
+import com.xiaomi.infra.galaxy.talos.server.cluster.TalosMiniCluster
 
 /**
-  * Created by jiasheng on 16-3-25.
-  */
-class TalosClusterSuite extends SparkFunSuite with BeforeAndAfterAll {
-  private val topic = "spark-talos-cluster-test"
-  private var talosTestUtils: TalosTestUtils = _
+ * Created by jiasheng on 16-3-25.
+ */
+class TalosClusterSuite extends SparkFunSuite
+    with BeforeAndAfter
+    with BeforeAndAfterAll
+    with Eventually
+    with Logging {
+  protected var uri: String = _
+  private var mockCluster: TalosMiniCluster = _
 
   override protected def beforeAll(): Unit = {
-    talosTestUtils = new TalosTestUtils(immutable.Map[String, String]())
-    talosTestUtils.deleteTopic(topic)
-    talosTestUtils.createTopic(topic, 1)
-    talosTestUtils.sendMessagesAndWaitForReceive(topic, "message", "message")
+    setUpCluster()
+    uri = mockCluster.getServiceURIList.get(0)
   }
 
-  override protected def afterAll(): Unit = {}
-
-  test("cache creating instance") {
-    val config = talosTestUtils.tc.config
-    assert(config.equals(talosTestUtils.tc.config), "Not using cached Configuration instance")
-    val admin = talosTestUtils.tc.admin()
-    assert(admin.equals(talosTestUtils.tc.admin()), "Not using cached TalosAdmin instance")
-    val resourceName = talosTestUtils.tc.topicResourceName(topic)
-    assert(resourceName.equals(talosTestUtils.tc.topicResourceName(topic)))
-    val simpleConsumer = talosTestUtils.tc.simpleConsumer(topic, 0)
-    assert(simpleConsumer.equals(talosTestUtils.tc.simpleConsumer(topic, 0)))
+  override protected def afterAll(): Unit = {
+    if (mockCluster != null) {
+      tearDownCluster()
+    }
+    uri = null
   }
 
-  test("earliest offset api") {
-    val offset = talosTestUtils.tc.getEarliestOffsets(Set(topic)).right.get
-    assert(offset.head._2 === 0, "didn't get earliest offset")
+  private def setUpCluster(): Unit = {
+    val configuration = TalosConfigurationLoader.getConfiguration()
+    configuration.setInt(TalosConfigKeys.GALAXY_TALOS_TOPIC_META_CACHE_UPDATE_INTERVAL_MILLIS, 3000)
 
+    /**
+     * set mock dev login for testing authentication
+     */
+    configuration.setBoolean(TalosConfigKeys.GALAXY_TALOS_MOCK_DEV_LOGIN, true)
+    mockCluster = new TalosMiniCluster(configuration)
+    // set client configuration
+    // use SimpleAuthProvider as we can't connect to AuthService,
+    // which set secretKey and secretKeyId the same value;
+    System.setProperty(XiaomiAuthSpi.GALAXY_FDS_XIAOMI_AUTH_SERVICE_PROVIDER_KEY,
+      "com.xiaomi.infra.galaxy.auth.authentication.miauth.SimpleAuthProvider")
+    mockCluster.start()
   }
 
-  test("latest offset api") {
-    val offset = talosTestUtils.tc.getLatestOffsets(Set(topic)).right.get
-    assert(offset.head._2 === 2, "didn't get latest offset")
+  private def tearDownCluster(): Unit = {
+    mockCluster.stop()
+    mockCluster.clean()
   }
 }

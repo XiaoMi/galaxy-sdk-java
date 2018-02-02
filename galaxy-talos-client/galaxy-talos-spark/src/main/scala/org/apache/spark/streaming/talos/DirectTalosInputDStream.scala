@@ -95,9 +95,9 @@ class DirectTalosInputDStream[R: ClassTag](
     }
   }
 
-  @volatile protected var currentOffsets = fromOffsets
+  @volatile protected[talos] var currentOffsets = fromOffsets
 
-  protected val tc = new TalosCluster(talosParams, credential)
+  protected[talos] var tc = new TalosCluster(talosParams, credential)
 
   // TODO: talos support throttle control!
   private val maxRateLimitPerPartition: Int = context.sparkContext.getConf.getInt(
@@ -106,9 +106,9 @@ class DirectTalosInputDStream[R: ClassTag](
   private val fatalTalosErr = Set(ErrorCode.TOPIC_NOT_EXIST, ErrorCode.PARTITION_NOT_EXIST,
     ErrorCode.INVALID_AUTH_INFO, ErrorCode.PERMISSION_DENIED_ERROR)
 
-  protected final def latestOffsets(retries: Int): Map[TopicPartition, Long] = {
+  protected final def partitionOffsetRanges(retries: Int): Map[TopicPartition, (Long, Long)] = {
     var i = retries
-    var o = tc.getLatestOffsets(currentOffsets.keySet.map(_.topic))
+    var o = tc.getOffsets(currentOffsets.keySet.map(_.topic))
     while (o.isLeft && (i == -1 || i > 0)) {
       val errs = o.left.get
       if (errs.exists(t => t.isInstanceOf[GalaxyTalosException] &&
@@ -117,23 +117,34 @@ class DirectTalosInputDStream[R: ClassTag](
       }
       logWarning(s"Fetch offsets failed, will retry again after $backoffMs ms.\n$errs")
       Thread.sleep(backoffMs)
-      o = tc.getLatestOffsets(currentOffsets.keySet.map(_.topic))
+      o = tc.getOffsets(currentOffsets.keySet.map(_.topic))
       if (i > 0) {
         i -= 1
       }
     }
     o match {
       case Left(err) => throw new SparkException(err.toString)
-      case Right(latestOffsets) =>
-        if (currentOffsets.size != latestOffsets.size ||
-            currentOffsets.exists(element => element._2 > latestOffsets.getOrElse(element._1, 0L))) {
-          val revisedOffsets = DirectTalosInputDStream.reviseCurrentOffsets(currentOffsets, latestOffsets)
-          logWarning(s"Topic recreated or modified, revise currentOffsets " +
-              s"from ${currentOffsets.toSeq.sortBy(_._1.toString).mkString(",")} to ${revisedOffsets.toSeq.sortBy(_._1.toString).mkString(",")}")
-          currentOffsets = revisedOffsets
-        }
-        latestOffsets
+      case Right(latestOffsets) => latestOffsets
     }
+  }
+
+  /**
+   * currentOffsets.size must be the same as latestOffsets and larger than earliestOffsets.
+   */
+  private[talos] def reviseCurrentOffsets(
+      latestOffsetRanges: Map[TopicPartition, (Long, Long)]): Map[TopicPartition, Long] = {
+    val revisedOffsetMap = mutable.Map.empty[TopicPartition, Long]
+
+    latestOffsetRanges.foreach { case (topicPartition, (fromOffset, untilOffset)) =>
+      // if new partition, set to fromOffset
+      val revisedOffset = math.max(currentOffsets.getOrElse(topicPartition, fromOffset), fromOffset)
+      // untilOffset must be no less than revisedOffset.
+      assert(untilOffset >= revisedOffset,
+        s"Invalid $topicPartition offset range: $fromOffset -> $untilOffset, current offset: $revisedOffset")
+
+      revisedOffsetMap.put(topicPartition, revisedOffset)
+    }
+    revisedOffsetMap.toMap
   }
 
   // limits the maximum number of messages per partition
@@ -158,9 +169,10 @@ class DirectTalosInputDStream[R: ClassTag](
   }
 
   override def compute(validTime: Time): Option[RDD[R]] = {
-    val untilOffsets = clamp(latestOffsets(maxRetries))
-        // untilOffset must not be smaller than fromOffset.
-        .map { case (tp, uo) => tp -> Math.max(currentOffsets(tp), uo) }
+    val por = partitionOffsetRanges(maxRetries)
+    currentOffsets = reviseCurrentOffsets(por)
+    val untilOffsets = clamp(por.map { case (tp, (_, uo)) => (tp, uo) })
+
     val rdd = TalosRDD[R](context.sparkContext, talosParams, credential,
       currentOffsets, untilOffsets, messageHandler)
 
@@ -260,9 +272,15 @@ class DirectTalosInputDStream[R: ClassTag](
         val offsetRange = generatedRDDs(minTime).asInstanceOf[TalosRDD[R]].offsetRanges
         val consumeOffsets = offsetRange.map(or =>
           (new TopicPartition(or.topic, or.partition), or.fromOffset)).toMap
-        Some(currentOffsets.map {
-          case (tp, lo) => (tp, lo - consumeOffsets(tp))
-        })
+        Try(partitionOffsetRanges(0)) match {
+          case Success(offsets) =>
+            Some(offsets.map {
+              case (tp, (_, lo)) => (tp, lo - consumeOffsets(tp))
+            })
+          case Failure(e) =>
+            logWarning("Get ConsumerOffsetLag info failed.", e)
+            None
+        }
       }
     }
 
@@ -303,26 +321,4 @@ class DirectTalosInputDStream[R: ClassTag](
     }
   }
 
-}
-
-object DirectTalosInputDStream {
-  /**
-   * Revise currentOffsets in case of topic recreated or modified.
-   *
-   * @param latestOffsets
-   */
-  private[talos] def reviseCurrentOffsets(
-      currentOffsets: Map[TopicPartition, Long],
-      latestOffsets: Map[TopicPartition, Long]): Map[TopicPartition, Long] = {
-    val fromOffsets = mutable.Map.empty[TopicPartition, Long]
-    latestOffsets.foreach { case (topicPartition, latestOffset) =>
-      val currentOffset = currentOffsets.getOrElse(topicPartition, 0L)
-      if (currentOffset <= latestOffset) {
-        fromOffsets.put(topicPartition, currentOffset)
-      } else {
-        fromOffsets.put(topicPartition, 0L)
-      }
-    }
-    fromOffsets.toMap
-  }
 }

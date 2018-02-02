@@ -4,8 +4,9 @@ import java.lang.{Integer => JInt, Long => JLong}
 import java.nio.charset.Charset
 import java.util.{List => JList, Map => JMap, Set => JSet}
 
-import com.xiaomi.infra.galaxy.rpc.thrift.Credential
-import com.xiaomi.infra.galaxy.talos.thrift.MessageAndOffset
+import scala.collection.JavaConversions._
+import scala.reflect.ClassTag
+
 import org.apache.spark.api.java.function.{Function => JFunction}
 import org.apache.spark.streaming.api.java.{JavaInputDStream, JavaPairInputDStream, JavaStreamingContext}
 import org.apache.spark.streaming.dstream.InputDStream
@@ -14,8 +15,8 @@ import org.apache.spark.streaming.talos.offset.HDFSOffsetDAO
 import org.apache.spark.streaming.{Duration, StreamingContext}
 import org.apache.spark.{Logging, SparkConf, SparkException}
 
-import scala.collection.JavaConversions._
-import scala.reflect.ClassTag
+import com.xiaomi.infra.galaxy.rpc.thrift.Credential
+import com.xiaomi.infra.galaxy.talos.thrift.MessageAndOffset
 
 /**
  * Created by jiasheng on 16-3-15.
@@ -23,25 +24,37 @@ import scala.reflect.ClassTag
 object TalosUtils extends Logging {
 
   def createDirectStream(
-    ssc: StreamingContext,
-    talosParams: Map[String, String],
-    credential: Credential,
-    topics: Set[String]
+      ssc: StreamingContext,
+      talosParams: Map[String, String],
+      credential: Credential,
+      topics: Set[String]
   ): InputDStream[(String, String)] = {
     val messageHandler = (mo: MessageAndOffset) => (mo.message.partitionKey,
-      new String(mo.message.message.array(), Charset.forName("UTF-8")))
+        new String(mo.message.message.array(), Charset.forName("UTF-8")))
     createDirectStream(ssc, talosParams, credential, topics, messageHandler)
   }
 
   def createDirectStream[T: ClassTag](
-    ssc: StreamingContext,
-    talosParams: Map[String, String],
-    credential: Credential,
-    topics: Set[String],
-    messageHandler: MessageAndOffset => T
+      ssc: StreamingContext,
+      talosParams: Map[String, String],
+      credential: Credential,
+      topics: Set[String],
+      messageHandler: MessageAndOffset => T
+  ): InputDStream[T] = {
+    val tc = new TalosCluster(talosParams, credential)
+    createDirectStream(tc, ssc, talosParams, credential, topics, messageHandler)
+  }
+
+  // for test
+  private[talos] def createDirectStream[T: ClassTag](
+      tc: TalosCluster,
+      ssc: StreamingContext,
+      talosParams: Map[String, String],
+      credential: Credential,
+      topics: Set[String],
+      messageHandler: MessageAndOffset => T
   ): InputDStream[T] = {
 
-    val tc = new TalosCluster(talosParams, credential)
     val reset = talosParams.get("auto.offset.reset").map(_.toLowerCase).getOrElse("largest")
     val offsetDirOpt = talosParams.get("offset.checkpoint.dir")
 
@@ -72,12 +85,12 @@ object TalosUtils extends Logging {
   }
 
   def createDirectStream[T](
-    jssc: JavaStreamingContext,
-    recordClass: Class[T],
-    talosParams: JMap[String, String],
-    credential: Credential,
-    topics: JSet[String],
-    messageHandler: JFunction[MessageAndOffset, T]
+      jssc: JavaStreamingContext,
+      recordClass: Class[T],
+      talosParams: JMap[String, String],
+      credential: Credential,
+      topics: JSet[String],
+      messageHandler: JFunction[MessageAndOffset, T]
   ): JavaInputDStream[T] = {
     implicit val recordCmt: ClassTag[T] = ClassTag(recordClass)
 
@@ -91,10 +104,10 @@ object TalosUtils extends Logging {
   }
 
   def createDirectStream(
-    jssc: JavaStreamingContext,
-    talosParams: JMap[String, String],
-    credential: Credential,
-    topics: JSet[String]
+      jssc: JavaStreamingContext,
+      talosParams: JMap[String, String],
+      credential: Credential,
+      topics: JSet[String]
   ): JavaPairInputDStream[String, String] = {
     createDirectStream(
       jssc.ssc,
@@ -121,16 +134,16 @@ object TalosUtils extends Logging {
    * @return StreamingContext created or restored.
    */
   def createStreamingContext(
-    conf: SparkConf,
-    batchDuration: Duration,
-    talosParams: Map[String, String],
-    credential: Credential,
-    topics: Set[String]
+      conf: SparkConf,
+      batchDuration: Duration,
+      talosParams: Map[String, String],
+      credential: Credential,
+      topics: Set[String]
   )(
-    dStreamFunc: InputDStream[(String, String)] => Unit
+      dStreamFunc: InputDStream[(String, String)] => Unit
   ): StreamingContext = {
     val messageHandler = (mo: MessageAndOffset) => (mo.message.partitionKey,
-      new String(mo.message.message.array(), Charset.forName("UTF-8")))
+        new String(mo.message.message.array(), Charset.forName("UTF-8")))
     createStreamingContext(conf, batchDuration, talosParams, credential, topics, messageHandler)(
       dStreamFunc
     )
@@ -154,14 +167,14 @@ object TalosUtils extends Logging {
    * @return StreamingContext created or restored.
    */
   def createStreamingContext[T: ClassTag](
-    conf: SparkConf,
-    batchDuration: Duration,
-    talosParams: Map[String, String],
-    credential: Credential,
-    topics: Set[String],
-    messageHandler: MessageAndOffset => T
+      conf: SparkConf,
+      batchDuration: Duration,
+      talosParams: Map[String, String],
+      credential: Credential,
+      topics: Set[String],
+      messageHandler: MessageAndOffset => T
   )(
-    dStreamFunc: InputDStream[T] => Unit
+      dStreamFunc: InputDStream[T] => Unit
   ): StreamingContext = {
     StreamingContext.getOrCreate(conf.get("spark.app.name"), () => {
       val ssc = new StreamingContext(conf, batchDuration)
@@ -178,8 +191,8 @@ object TalosUtils extends Logging {
 
     if (!ssc.isCheckpointingEnabled && enableCheckpointing) {
       logWarning("We have automatically set checkpointing dir to your app name: " +
-        s"${ssc.sparkContext.appName}. You can disable this by setting " +
-        s"'$enableCheckpointingConfigKey' to false in SparkConf.")
+          s"${ssc.sparkContext.appName}. You can disable this by setting " +
+          s"'$enableCheckpointingConfigKey' to false in SparkConf.")
       ssc.checkpoint(ssc.sparkContext.appName)
     }
   }

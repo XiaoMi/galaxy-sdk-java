@@ -1,5 +1,12 @@
 package org.apache.spark.streaming.talos;
 
+import java.io.Serializable;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Set;
+
 import org.apache.spark.SparkConf;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.function.Function;
@@ -12,13 +19,10 @@ import org.junit.Before;
 import org.junit.Test;
 import scala.Tuple2;
 
-import java.io.Serializable;
-import java.util.*;
-
 /**
  * Created by jiasheng on 16-3-25.
  */
-public class JavaDirectTalosStreamSuite implements Serializable {
+public class JavaDirectTalosStreamSuite extends TalosClusterSuite implements Serializable {
     private transient JavaStreamingContext ssc = null;
     private transient TalosTestUtils talosTestUtils = null;
     private String topic = "spark-talos-java-test";
@@ -28,7 +32,7 @@ public class JavaDirectTalosStreamSuite implements Serializable {
         SparkConf sparkConf = new SparkConf()
                 .setMaster("local[4]").setAppName(this.getClass().getSimpleName());
         ssc = new JavaStreamingContext(sparkConf, Durations.milliseconds(200));
-        talosTestUtils = new TalosTestUtils(new HashMap<String, String>() {{
+        talosTestUtils = new TalosTestUtils(uri(), new HashMap<String, String>() {{
             put("auto.offset.reset", "smallest");
         }});
         talosTestUtils.deleteTopic(topic);

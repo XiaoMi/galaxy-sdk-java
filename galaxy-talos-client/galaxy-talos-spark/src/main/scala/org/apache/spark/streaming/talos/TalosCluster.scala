@@ -2,17 +2,17 @@ package org.apache.spark.streaming.talos
 
 import java.util.Properties
 
+import scala.collection.mutable
+import scala.collection.mutable.ArrayBuffer
+
+import org.apache.spark.streaming.talos.TalosCluster.Err
+import org.apache.spark.{Logging, SparkException}
+
 import com.xiaomi.infra.galaxy.rpc.thrift.Credential
 import com.xiaomi.infra.galaxy.talos.admin.TalosAdmin
 import com.xiaomi.infra.galaxy.talos.client.TalosClientConfig
 import com.xiaomi.infra.galaxy.talos.consumer.{SimpleConsumer, TalosConsumerConfig}
 import com.xiaomi.infra.galaxy.talos.thrift._
-import org.apache.spark.streaming.talos.TalosCluster.Offset.Offset
-import org.apache.spark.streaming.talos.TalosCluster.{Err, Offset}
-import org.apache.spark.{Logging, SparkException}
-
-import scala.collection.mutable
-import scala.collection.mutable.ArrayBuffer
 
 /**
  * Created by jiasheng on 16-3-15.
@@ -20,17 +20,17 @@ import scala.collection.mutable.ArrayBuffer
 @SerialVersionUID(-995673360675374997L)
 private[spark]
 class TalosCluster(
-  val talosParams: Map[String, String],
-  val credential: Credential
+    val talosParams: Map[String, String],
+    val credential: Credential
 ) extends Serializable with Logging {
   @transient
-  private var _config: Properties = null
+  private[talos] var _config: Properties = null
   @transient
-  private var _talosAdmin: TalosAdmin = null
+  private[talos] var _talosAdmin: TalosAdmin = null
   @transient
-  private var _cacheSimpleConsumer: mutable.Map[TopicPartition, SimpleConsumer] = null
+  private[talos] var _cacheSimpleConsumer: mutable.Map[TopicPartition, SimpleConsumer] = null
   @transient
-  private var _topicResourceNames: mutable.Map[String, TopicTalosResourceName] = null
+  private[talos] var _topicResourceNames: mutable.Map[String, TopicTalosResourceName] = null
 
   def config: Properties = this.synchronized {
     if (_config == null) {
@@ -62,9 +62,9 @@ class TalosCluster(
   }
 
   def simpleConsumer(
-    topic: String,
-    partition: Int,
-    simpleConsumerIdOpt: Option[String]
+      topic: String,
+      partition: Int,
+      simpleConsumerIdOpt: Option[String]
   ): SimpleConsumer = this.synchronized {
     if (_cacheSimpleConsumer == null) {
       _cacheSimpleConsumer = mutable.Map.empty[TopicPartition, SimpleConsumer]
@@ -79,18 +79,19 @@ class TalosCluster(
   }
 
   def getLatestOffsets(topics: Set[String]): Either[Err, Map[TopicPartition, Long]] = {
-    getOffsets(topics, Offset.Latest)
+    getOffsets(topics).right.map(offsetMap => offsetMap.map {
+      case (topicPartition, (_, untilOffset)) => (topicPartition, untilOffset)
+    })
   }
 
   def getEarliestOffsets(topics: Set[String]): Either[Err, Map[TopicPartition, Long]] = {
-    getOffsets(topics, Offset.Earliest)
+    getOffsets(topics).right.map(offsetMap => offsetMap.map {
+      case (topicPartition, (fromOffset, _)) => (topicPartition, fromOffset)
+    })
   }
 
-
-  private def getOffsets(
-    topics: Set[String],
-    offset: Offset
-  ): Either[Err, Map[TopicPartition, Long]] = {
+  // topic_partition -> (from_offset, until_offset);
+  def getOffsets(topics: Set[String]): Either[Err, Map[TopicPartition, (Long, Long)]] = {
     try {
       val result = topics.map(topic => {
         val partitionOffsets = admin().getTopicOffset(
@@ -105,18 +106,14 @@ class TalosCluster(
             throw exception
           }
 
-          new TopicPartition((topic, po.partitionId)) ->
-            (offset match {
-              case Offset.Earliest => po.startOffset
-              // in Kafka, latest offset is LogEndOffset:
-              // The offset of the next message that WILL be appended to the log
-              case Offset.Latest => po.endOffset + 1
-            })
+          assert(po.startOffset != -1, s"Invalid OffsetInfo: $po")
+
+          // in Kafka, latest offset is LogEndOffset:
+          // The offset of the next message that WILL be appended to the log
+          new TopicPartition((topic, po.partitionId)) -> (po.startOffset, po.endOffset + 1)
         }
         ).toMap
-      }).fold(Map[TopicPartition, Long]())((l, r) => l ++ r)
-      logInfo(s"${offset.toString} offset info:\n" +
-        s"${result.toSeq.sortBy(_._1.toString).mkString(",")}")
+      }).fold(Map[TopicPartition, (Long, Long)]())((l, r) => l ++ r)
       Right(result)
     } catch {
       case e: Exception =>

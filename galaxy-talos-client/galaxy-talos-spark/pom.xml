@@ -14,11 +14,17 @@
     <version>2.2-SNAPSHOT</version>
 
     <properties>
+        <java.version>1.6</java.version>
         <scala.version>2.10.4</scala.version>
         <scala.binary.version>2.10</scala.binary.version>
+
+        <galaxy-talos-server.version>2.1.6</galaxy-talos-server.version>
         <spark.version>1.6.1</spark.version>
-        <java.version>1.6</java.version>
-        <PermGen>512m</PermGen>
+        <hdfs.version>2.4.0-mdh2.3.29</hdfs.version>
+        <hbase.version>0.94.11-mdh1.2.51.0-hadoop2.4</hbase.version>
+        <hbase-client.version>1.8.1</hbase-client.version>
+
+        <PermGen>1024m</PermGen>
         <MaxPermGen>1024m</MaxPermGen>
         <CodeCacheSize>1024m</CodeCacheSize>
         <skipTests>false</skipTests>
@@ -40,6 +46,73 @@
                     <groupId>com.xiaomi.infra.galaxy</groupId>
                     <artifactId>galaxy-authorization</artifactId>
                 </exclusion>
+                <exclusion>
+                    <groupId>org.apache.httpcomponents</groupId>
+                    <artifactId>httpclient</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.apache.httpcomponents</groupId>
+                    <artifactId>httpcore</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>com.xiaomi.infra.galaxy</groupId>
+            <artifactId>galaxy-talos-server</artifactId>
+            <version>${galaxy-talos-server.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.xiaomi.infra</groupId>
+            <artifactId>hbase-client</artifactId>
+            <version>${hbase-client.version}</version>
+            <scope>test</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.jboss.netty</groupId>
+                    <artifactId>netty</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.hbase</groupId>
+            <artifactId>hbase</artifactId>
+            <version>${hbase.version}</version>
+            <scope>test</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.slf4j</groupId>
+                    <artifactId>slf4j-api</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.slf4j</groupId>
+                    <artifactId>slf4j-log4j12</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.jboss.netty</groupId>
+                    <artifactId>netty</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.hbase</groupId>
+            <artifactId>hbase</artifactId>
+            <version>${hbase.version}</version>
+            <type>test-jar</type>
+            <scope>test</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.slf4j</groupId>
+                    <artifactId>slf4j-api</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.slf4j</groupId>
+                    <artifactId>slf4j-log4j12</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.jboss.netty</groupId>
+                    <artifactId>netty</artifactId>
+                </exclusion>
             </exclusions>
         </dependency>
         <dependency>
@@ -47,6 +120,12 @@
             <artifactId>spark-core_${scala.binary.version}</artifactId>
             <version>${spark.version}</version>
             <type>test-jar</type>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-all</artifactId>
+            <version>1.8.5</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -70,53 +149,53 @@
     <build>
         <plugins>
             <plugin>
-              <groupId>net.alchim31.maven</groupId>
-              <artifactId>scala-maven-plugin</artifactId>
-              <version>3.2.2</version>
-              <executions>
-                <execution>
-                  <id>eclipse-add-source</id>
-                  <goals>
-                    <goal>add-source</goal>
-                  </goals>
-                </execution>
-                <execution>
-                  <id>scala-compile-first</id>
-                  <phase>process-resources</phase>
-                  <goals>
-                    <goal>compile</goal>
-                  </goals>
-                </execution>
-                <execution>
-                  <id>attach-scaladocs</id>
-                  <phase>verify</phase>
-                  <goals>
-                    <goal>doc-jar</goal>
-                  </goals>
-                </execution>
-              </executions>
-              <configuration>
-                <scalaVersion>${scala.version}</scalaVersion>
-                <args>
-                  <arg>-unchecked</arg>
-                  <arg>-deprecation</arg>
-                  <arg>-feature</arg>
-                </args>
-                <jvmArgs>
-                  <jvmArg>-Xms1024m</jvmArg>
-                  <jvmArg>-Xmx1024m</jvmArg>
-                  <jvmArg>-XX:PermSize=${PermGen}</jvmArg>
-                  <jvmArg>-XX:MaxPermSize=${MaxPermGen}</jvmArg>
-                  <jvmArg>-XX:ReservedCodeCacheSize=${CodeCacheSize}</jvmArg>
-                </jvmArgs>
-                <javacArgs>
-                  <javacArg>-source</javacArg>
-                  <javacArg>${java.version}</javacArg>
-                  <javacArg>-target</javacArg>
-                  <javacArg>${java.version}</javacArg>
-                  <javacArg>-Xlint:all,-serial,-path</javacArg>
-                </javacArgs>
-              </configuration>
+                <groupId>net.alchim31.maven</groupId>
+                <artifactId>scala-maven-plugin</artifactId>
+                <version>3.2.2</version>
+                <executions>
+                    <execution>
+                        <id>eclipse-add-source</id>
+                        <goals>
+                            <goal>add-source</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>scala-compile-first</id>
+                        <phase>process-resources</phase>
+                        <goals>
+                            <goal>compile</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>attach-scaladocs</id>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>doc-jar</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <scalaVersion>${scala.version}</scalaVersion>
+                    <args>
+                        <arg>-unchecked</arg>
+                        <arg>-deprecation</arg>
+                        <arg>-feature</arg>
+                    </args>
+                    <jvmArgs>
+                        <jvmArg>-Xms2048m</jvmArg>
+                        <jvmArg>-Xmx2048m</jvmArg>
+                        <jvmArg>-XX:PermSize=${PermGen}</jvmArg>
+                        <jvmArg>-XX:MaxPermSize=${MaxPermGen}</jvmArg>
+                        <jvmArg>-XX:ReservedCodeCacheSize=${CodeCacheSize}</jvmArg>
+                    </jvmArgs>
+                    <javacArgs>
+                        <javacArg>-source</javacArg>
+                        <javacArg>${java.version}</javacArg>
+                        <javacArg>-target</javacArg>
+                        <javacArg>${java.version}</javacArg>
+                        <javacArg>-Xlint:all,-serial,-path</javacArg>
+                    </javacArgs>
+                </configuration>
             </plugin>
             <plugin>
                 <groupId>org.scala-tools</groupId>
@@ -142,11 +221,11 @@
                 <artifactId>scalatest-maven-plugin</artifactId>
                 <version>1.0</version>
                 <configuration>
-                    <reportsDirectory>${project.build.directory}/surefire-reports</reportsDirectory>
+                    <reportsDirectory>${project.build.directory}/scalatest-reports</reportsDirectory>
                     <junitxml>.</junitxml>
                     <filereports>TestSuite.txt</filereports>
                     <skipTests>${skipTests}</skipTests>
-                    <suites>org.apache.spark.streaming.talos.offset.HDFSOffsetDAOSuite</suites>
+                    <argLine>-Xms2048m -Xmx2048m -XX:PermSize=${PermGen}</argLine>
                 </configuration>
                 <executions>
                     <execution>
@@ -162,9 +241,6 @@
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>2.18.1</version>
                 <configuration>
-                    <excludes>
-                        <exclude>**/*</exclude>
-                    </excludes>
                     <reportsDirectory>${project.build.directory}/surefire-reports</reportsDirectory>
                     <failIfNoTests>false</failIfNoTests>
                     <skipTests>${skipTests}</skipTests>
