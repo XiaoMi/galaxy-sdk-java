@@ -1,5 +1,8 @@
 ## 2.2-SNAPSHOT
 
+## 2.1.8
+  * D83974: Add TalosMiniCluster for talos-spark tests & Check talos partition  OffsetInfo when generating new TalosRDD
+
 ## 2.1.7
   * D81286: Calculate offset lag without fetching latest offset
 

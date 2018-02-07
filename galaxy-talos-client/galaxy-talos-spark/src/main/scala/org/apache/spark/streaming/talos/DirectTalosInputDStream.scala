@@ -272,7 +272,7 @@ class DirectTalosInputDStream[R: ClassTag](
         val offsetRange = generatedRDDs(minTime).asInstanceOf[TalosRDD[R]].offsetRanges
         val consumeOffsets = offsetRange.map(or =>
           (new TopicPartition(or.topic, or.partition), or.fromOffset)).toMap
-        Try(partitionOffsetRanges(0)) match {
+        Try(partitionOffsetRanges(1)) match {
           case Success(offsets) =>
             Some(offsets.map {
               case (tp, (_, lo)) => (tp, lo - consumeOffsets(tp))
