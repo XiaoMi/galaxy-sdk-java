@@ -45,7 +45,8 @@ public enum ErrorCode implements libthrift091.TEnum {
   INVALID_AUTH_INFO(30),
   SUB_RESOURCE_NAME_EXIST(31),
   SUB_RESOURCE_NAME_NOT_EXIST(32),
-  REQUEST_PROCESS_TIMEOUT(33);
+  REQUEST_PROCESS_TIMEOUT(33),
+  QUOTA_EXCEEDED(34);
 
   private final int value;
 
@@ -134,6 +135,8 @@ public enum ErrorCode implements libthrift091.TEnum {
         return SUB_RESOURCE_NAME_NOT_EXIST;
       case 33:
         return REQUEST_PROCESS_TIMEOUT;
+      case 34:
+        return QUOTA_EXCEEDED;
       default:
         return null;
     }

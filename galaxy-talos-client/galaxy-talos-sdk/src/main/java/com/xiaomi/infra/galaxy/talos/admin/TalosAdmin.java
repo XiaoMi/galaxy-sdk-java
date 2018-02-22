@@ -19,6 +19,9 @@ import com.xiaomi.infra.galaxy.talos.client.TalosClientConfig;
 import com.xiaomi.infra.galaxy.talos.client.TalosClientFactory;
 import com.xiaomi.infra.galaxy.talos.client.Utils;
 import com.xiaomi.infra.galaxy.talos.thrift.AddSubResourceNameRequest;
+import com.xiaomi.infra.galaxy.talos.thrift.ApplyQuotaRequest;
+import com.xiaomi.infra.galaxy.talos.thrift.ApproveQuotaRequest;
+import com.xiaomi.infra.galaxy.talos.thrift.ApproveQuotaResponse;
 import com.xiaomi.infra.galaxy.talos.thrift.ChangeTopicAttributeRequest;
 import com.xiaomi.infra.galaxy.talos.thrift.CreateTopicRequest;
 import com.xiaomi.infra.galaxy.talos.thrift.CreateTopicResponse;
@@ -34,15 +37,19 @@ import com.xiaomi.infra.galaxy.talos.thrift.GetPermissionRequest;
 import com.xiaomi.infra.galaxy.talos.thrift.GetPermissionResponse;
 import com.xiaomi.infra.galaxy.talos.thrift.GetTopicOffsetRequest;
 import com.xiaomi.infra.galaxy.talos.thrift.GetTopicOffsetResponse;
+import com.xiaomi.infra.galaxy.talos.thrift.ListPendingQuotaResponse;
 import com.xiaomi.infra.galaxy.talos.thrift.ListPermissionRequest;
 import com.xiaomi.infra.galaxy.talos.thrift.ListPermissionResponse;
-import com.xiaomi.infra.galaxy.talos.thrift.ListTopicsResponse;
+import com.xiaomi.infra.galaxy.talos.thrift.ListQuotaResponse;
 import com.xiaomi.infra.galaxy.talos.thrift.ListTopicsInfoResponse;
+import com.xiaomi.infra.galaxy.talos.thrift.ListTopicsResponse;
 import com.xiaomi.infra.galaxy.talos.thrift.MessageService;
 import com.xiaomi.infra.galaxy.talos.thrift.OffsetInfo;
 import com.xiaomi.infra.galaxy.talos.thrift.QueryTopicQuotaRequest;
 import com.xiaomi.infra.galaxy.talos.thrift.QuotaService;
 import com.xiaomi.infra.galaxy.talos.thrift.RevokePermissionRequest;
+import com.xiaomi.infra.galaxy.talos.thrift.RevokeQuotaRequest;
+import com.xiaomi.infra.galaxy.talos.thrift.RevokeQuotaResponse;
 import com.xiaomi.infra.galaxy.talos.thrift.SetPermissionRequest;
 import com.xiaomi.infra.galaxy.talos.thrift.SetTopicQuotaRequest;
 import com.xiaomi.infra.galaxy.talos.thrift.SetUserQuotaRequest;
@@ -166,6 +173,31 @@ public class TalosAdmin {
   public void revokePermission(RevokePermissionRequest request)
       throws GalaxyTalosException, TException {
     topicClient.revokePermission(request);
+  }
+
+  public void applyQuota(ApplyQuotaRequest request)
+      throws GalaxyTalosException, TException {
+    quotaClient.applyQuota(request);
+  }
+
+  public ListQuotaResponse listQuota()
+      throws GalaxyTalosException, TException {
+    return quotaClient.listQuota();
+  }
+
+  public ListPendingQuotaResponse listPendingQuota()
+      throws GalaxyTalosException, TException {
+    return quotaClient.listPendingQuota();
+  }
+
+  public ApproveQuotaResponse approveQuota(ApproveQuotaRequest request)
+      throws GalaxyTalosException, TException {
+    return quotaClient.approveQuota(request);
+  }
+
+  public RevokeQuotaResponse revokeQuota(RevokeQuotaRequest request)
+      throws GalaxyTalosException, TException {
+    return quotaClient.revokeQuota(request);
   }
 
   public Map<String, Integer> listPermission(ListPermissionRequest request)
