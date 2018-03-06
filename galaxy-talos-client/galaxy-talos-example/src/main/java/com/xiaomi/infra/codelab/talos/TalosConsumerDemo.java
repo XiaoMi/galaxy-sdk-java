@@ -41,19 +41,23 @@ public class TalosConsumerDemo {
 
     @Override
     public void process(List<MessageAndOffset> messages, MessageCheckpointer messageCheckpointer) {
-      // add your process logic for 'messages'
-      for (MessageAndOffset messageAndOffset : messages) {
-        LOG.info("Message content: " + new String(
-            messageAndOffset.getMessage().getMessage()));
+      try {
+        // add your process logic for 'messages'
+        for (MessageAndOffset messageAndOffset : messages) {
+          LOG.info("Message content: " + new String(
+              messageAndOffset.getMessage().getMessage()));
+        }
+
+        long count = successGetNumber.addAndGet(messages.size());
+        LOG.info("Consuming total data so far: " + count);
+
+        /** if user has set 'galaxy.talos.consumer.checkpoint.auto.commit' to false,
+         * then you can call the 'checkpoint' to commit the list of messages.
+         */
+        // messageCheckpointer.checkpoint();
+      } catch (Throwable throwable) {
+        LOG.error("process error, ", throwable);
       }
-
-      long count = successGetNumber.addAndGet(messages.size());
-      LOG.info("Consuming total data so far: " + count);
-
-      /** if user has set 'galaxy.talos.consumer.checkpoint.auto.commit' to false,
-       * then you can call the 'checkpoint' to commit the list of messages.
-       */
-      // messageCheckpointer.checkpoint();
     }
 
     @Override
