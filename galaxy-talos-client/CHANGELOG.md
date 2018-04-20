@@ -1,3 +1,6 @@
+## 2.2.1
+  * D91454: add error code for throttling
+
 ## 2.2.0
   * D84780: add quota operation for sdk
 
