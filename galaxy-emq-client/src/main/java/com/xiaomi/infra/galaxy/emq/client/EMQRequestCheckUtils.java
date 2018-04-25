@@ -1,5 +1,15 @@
 package com.xiaomi.infra.galaxy.emq.client;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import org.apache.commons.lang3.StringUtils;
+
 import com.xiaomi.infra.galaxy.emq.thrift.AddQueueAlertPolicyRequest;
 import com.xiaomi.infra.galaxy.emq.thrift.AddTagAlertPolicyRequest;
 import com.xiaomi.infra.galaxy.emq.thrift.ChangeMessageVisibilityBatchRequest;
@@ -34,7 +44,6 @@ import com.xiaomi.infra.galaxy.emq.thrift.ListQueueRequest;
 import com.xiaomi.infra.galaxy.emq.thrift.ListTagAlertPoliciesRequest;
 import com.xiaomi.infra.galaxy.emq.thrift.ListTagRequest;
 import com.xiaomi.infra.galaxy.emq.thrift.MessageAttribute;
-import com.xiaomi.infra.galaxy.emq.thrift.PeekMessageBatchRequest;
 import com.xiaomi.infra.galaxy.emq.thrift.PeekMessageRequest;
 import com.xiaomi.infra.galaxy.emq.thrift.PurgeQueueRequest;
 import com.xiaomi.infra.galaxy.emq.thrift.QueryPermissionForIdRequest;
@@ -58,15 +67,6 @@ import com.xiaomi.infra.galaxy.emq.thrift.SetUserInfoRequest;
 import com.xiaomi.infra.galaxy.emq.thrift.SetUserQuotaRequest;
 import com.xiaomi.infra.galaxy.emq.thrift.VerifyEMQAdminRoleRequest;
 import com.xiaomi.infra.galaxy.emq.thrift.Version;
-import org.apache.commons.lang3.StringUtils;
-
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 /**
  * Copyright 2015, Xiaomi.
@@ -76,6 +76,8 @@ import java.util.Set;
 
 public class EMQRequestCheckUtils {
   public static Map<String, Method> checkMethodMap;
+  private static final char DASH = '-';
+  private static final char SLASH = '/';
 
   static {
     checkMethodMap = new HashMap<String, Method>();
@@ -616,7 +618,7 @@ public class EMQRequestCheckUtils {
       throws GalaxyEmqServiceException {
     checkNotEmpty(queueName, "queue name");
     for (char c : queueName.toCharArray()) {
-      if (!Character.isJavaIdentifierPart(c) && c != '/') {
+      if (!Character.isJavaIdentifierPart(c) && c != SLASH && c != DASH) {
         throw new GalaxyEmqServiceException().setErrMsg("Invalid Queue Name").
             setDetails("invalid characters in queue name");
       }
@@ -652,7 +654,7 @@ public class EMQRequestCheckUtils {
       throw new GalaxyEmqServiceException().setErrMsg("null prefix");
     }
     for (char c : queueNamePrefix.toCharArray()) {
-      if (!Character.isJavaIdentifierPart(c) && c != '/') {
+      if (!Character.isJavaIdentifierPart(c) && c != SLASH && c != DASH) {
         throw new GalaxyEmqServiceException().setErrMsg("Invalid queue name prefix")
             .setDetails("invalid characters in queueNamePrefix" + queueNamePrefix);
       }
