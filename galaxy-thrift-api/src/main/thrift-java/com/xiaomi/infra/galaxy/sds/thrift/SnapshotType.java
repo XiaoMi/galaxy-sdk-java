@@ -26,7 +26,11 @@ public enum SnapshotType implements libthrift091.TEnum {
   /**
    * 打开了point-in-time recovery 打的快照
    */
-  PITR(3);
+  PITR(3),
+  /**
+   * 冷备打的快照
+   */
+  COLDSTANDBY(4);
 
   private final int value;
 
@@ -53,6 +57,8 @@ public enum SnapshotType implements libthrift091.TEnum {
         return SYSTEM;
       case 3:
         return PITR;
+      case 4:
+        return COLDSTANDBY;
       default:
         return null;
     }
