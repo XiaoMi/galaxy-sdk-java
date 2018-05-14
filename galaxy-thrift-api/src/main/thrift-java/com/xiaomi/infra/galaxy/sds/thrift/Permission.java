@@ -23,7 +23,15 @@ public enum Permission implements libthrift091.TEnum {
   /**
    * DDL操作的权限
    */
-  ADMIN(3);
+  ADMIN(3),
+  /**
+   * 修改quota的权限
+   */
+  QUOTA_ADMIN(4),
+  /**
+   * 查看表结构的权限
+   */
+  DESCRIBE_ADMIN(5);
 
   private final int value;
 
@@ -50,6 +58,10 @@ public enum Permission implements libthrift091.TEnum {
         return WRITE;
       case 3:
         return ADMIN;
+      case 4:
+        return QUOTA_ADMIN;
+      case 5:
+        return DESCRIBE_ADMIN;
       default:
         return null;
     }
