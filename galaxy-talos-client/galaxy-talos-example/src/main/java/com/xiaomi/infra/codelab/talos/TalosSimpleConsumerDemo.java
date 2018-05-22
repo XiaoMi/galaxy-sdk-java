@@ -1,17 +1,12 @@
 /**
- * Copyright 2015, Xiaomi.
- * All rights reserved.
- * Author: yongxing@xiaomi.com
+ * Copyright 2018, Xiaomi. All rights reserved. Author: zhangqian8@xiaomi.com
  */
-
 package com.xiaomi.infra.codelab.talos;
 
-import java.io.IOException;
-import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicLong;
 
+import java.io.IOException;
 import libthrift091.TException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,41 +15,41 @@ import com.xiaomi.infra.galaxy.rpc.thrift.Credential;
 import com.xiaomi.infra.galaxy.rpc.thrift.UserType;
 import com.xiaomi.infra.galaxy.talos.admin.TalosAdmin;
 import com.xiaomi.infra.galaxy.talos.client.TalosClientConfig;
-import com.xiaomi.infra.galaxy.talos.producer.SimpleProducer;
-import com.xiaomi.infra.galaxy.talos.producer.TalosProducerConfig;
+import com.xiaomi.infra.galaxy.talos.consumer.SimpleConsumer;
+import com.xiaomi.infra.galaxy.talos.consumer.TalosConsumerConfig;
 import com.xiaomi.infra.galaxy.talos.thrift.DescribeTopicRequest;
-import com.xiaomi.infra.galaxy.talos.thrift.GalaxyTalosException;
-import com.xiaomi.infra.galaxy.talos.thrift.Message;
+import com.xiaomi.infra.galaxy.talos.thrift.MessageAndOffset;
 import com.xiaomi.infra.galaxy.talos.thrift.Topic;
 import com.xiaomi.infra.galaxy.talos.thrift.TopicAndPartition;
 import com.xiaomi.infra.galaxy.talos.thrift.TopicTalosResourceName;
 
-public class TalosSimpleProducerDemo {
-  private static final Logger LOG = LoggerFactory.getLogger(TalosSimpleProducerDemo.class);
+public class TalosSimpleConsumerDemo {
+  private static final Logger LOG = LoggerFactory.getLogger(TalosSimpleConsumerDemo.class);
 
   private static final String propertyFileName = "$your_propertyFile";
   private static final String accessKey = "$your_team_accessKey";
   private static final String accessSecret = "$your_team_accessSecret";
   private static final String topicName = "testTopic";
-  private static final int partitionId = 7;
-  private static final AtomicLong successPutNumber = new AtomicLong(0);
+  private static final int partitionId1 = 1;
 
   private TalosClientConfig clientConfig;
-  private TalosProducerConfig producerConfig;
+  private TalosConsumerConfig consumerConfig;
   private Credential credential;
   private TalosAdmin talosAdmin;
 
   private TopicTalosResourceName topicTalosResourceName;
-  private static SimpleProducer simpleProducer;
+  private static SimpleConsumer simpleConsumer;
+  private long finishedOffset;
+  private int maxFetchNum;
 
-  public TalosSimpleProducerDemo() throws Exception {
+  public TalosSimpleConsumerDemo() throws Exception {
     // init client config by put $your_propertyFile in your classpath
     // with the content of:
     /*
       galaxy.talos.service.endpoint=$talosServiceURI
     */
     clientConfig = new TalosClientConfig(propertyFileName);
-    producerConfig = new TalosProducerConfig(propertyFileName);
+    consumerConfig = new TalosConsumerConfig(propertyFileName);
 
     // credential
     credential = new Credential();
@@ -73,35 +68,35 @@ public class TalosSimpleProducerDemo {
 
   public void start() throws TException {
     // init producer
-    TopicAndPartition topicAndPartition = new TopicAndPartition(
-        topicName, topicTalosResourceName, partitionId);
-    simpleProducer = new SimpleProducer(producerConfig,
-        topicAndPartition, credential);
+    TopicAndPartition topicAndPartition1 = new TopicAndPartition(
+        topicName, topicTalosResourceName, partitionId1);
+    simpleConsumer = new SimpleConsumer(consumerConfig,
+        topicAndPartition1, credential);
+    finishedOffset = 0;
+    maxFetchNum = 10;
 
-    String messageStr = "test message: this message is a text string.";
-    Message message = new Message(ByteBuffer.wrap(messageStr.getBytes()));
-    List<Message> messageList = new ArrayList<Message>();
-    messageList.add(message);
+    List<MessageAndOffset> messageList = new ArrayList<MessageAndOffset>();
     // a toy demo for putting messages to Talos server continuously
     // by using a infinite loop
     while (true) {
       try {
-        simpleProducer.putMessageList(messageList);
+        messageList = simpleConsumer.fetchMessage(finishedOffset + 1, maxFetchNum);
+        finishedOffset = messageList.get(messageList.size() - 1).getMessageOffset();
         try {
-          Thread.sleep(2000);
+          Thread.sleep(10);
         } catch (InterruptedException e) {
-          e.printStackTrace();
+            e.printStackTrace();
         }
+        LOG.info("success get message count: " + messageList.size());
       } catch (IOException e) {
-        LOG.warn("put message failed, try again");
+        LOG.warn("get message failed, try again");
       }
-      LOG.info("success put message count: " + successPutNumber.getAndIncrement());
     }
   }
 
   public static void main(String[] args) throws Exception {
-    TalosSimpleProducerDemo simpleProducerDemo = new TalosSimpleProducerDemo();
+    TalosSimpleConsumerDemo simpleConsumerDemo = new TalosSimpleConsumerDemo();
     // add message list to producer continuously
-    simpleProducerDemo.start();
+    simpleConsumerDemo.start();
   }
 }

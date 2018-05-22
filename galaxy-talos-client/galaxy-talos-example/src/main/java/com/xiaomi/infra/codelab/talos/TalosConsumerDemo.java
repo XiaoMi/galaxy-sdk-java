@@ -75,8 +75,8 @@ public class TalosConsumerDemo {
   }
 
   private static final String propertyFileName = "$your_propertyFile";
-  private static final String appKeyId = "$your_appKey";
-  private static final String appKeySecret = "$your_appSecret";
+  private static final String accessKey = "$your_team_accessKey";
+  private static final String accessSecret = "$your_team_accessSecret";
   private static final String topicName = "testTopic";
   private static final AtomicLong successGetNumber = new AtomicLong(0);
 
@@ -100,9 +100,9 @@ public class TalosConsumerDemo {
 
     // credential
     credential = new Credential();
-    credential.setSecretKeyId(appKeyId)  // using 'AppKey'
-        .setSecretKey(appKeySecret)      // using 'AppSecret'
-        .setType(UserType.APP_SECRET);
+    credential.setSecretKeyId(accessKey)
+        .setSecretKey(accessSecret)
+        .setType(UserType.DEV_XIAOMI);
 
     // get topic info
     talosAdmin = new TalosAdmin(clientConfig, credential);

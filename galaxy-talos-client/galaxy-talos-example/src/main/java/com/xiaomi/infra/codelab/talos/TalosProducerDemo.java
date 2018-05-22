@@ -62,8 +62,8 @@ public class TalosProducerDemo {
   }
 
   private static final String propertyFileName = "$your_propertyFile";
-  private static final String appKeyId = "$your_appKey";
-  private static final String appKeySecret = "$your_appSecret";
+  private static final String accessKey = "$your_team_accessKey";
+  private static final String accessSecret = "$your_team_accessSecret";
   private static final String topicName = "testTopic";
   private static final int toPutMsgNumber = 7;
   private static final AtomicLong successPutNumber = new AtomicLong(0);
@@ -87,9 +87,9 @@ public class TalosProducerDemo {
 
     // credential
     credential = new Credential();
-    credential.setSecretKeyId(appKeyId)  // using 'AppKey'
-        .setSecretKey(appKeySecret)      // using 'AppSecret'
-        .setType(UserType.APP_SECRET);
+    credential.setSecretKeyId(accessKey)
+        .setSecretKey(accessSecret)
+        .setType(UserType.DEV_XIAOMI);
 
     // init admin and try to get or create topic info
     talosAdmin = new TalosAdmin(clientConfig, credential);
@@ -108,15 +108,23 @@ public class TalosProducerDemo {
         new MyMessageCallback());
 
     List<Message> messageList = new ArrayList<Message>();
-    for (int i = 0; i < toPutMsgNumber; ++i) {
-      String messageStr = "message id: " + i + ": this message is a text string.";
-      Message message = new Message(ByteBuffer.wrap(messageStr.getBytes()));
-      messageList.add(message);
+    while (true) {
+      for (int i = 0; i < toPutMsgNumber; ++i) {
+        String messageStr = "message id: " + i + ": this message is a text string.";
+        Message message = new Message(ByteBuffer.wrap(messageStr.getBytes()));
+        messageList.add(message);
+      }
+      talosProducer.addUserMessage(messageList);
+      try {
+        Thread.sleep(10000);
+      } catch (InterruptedException e) {
+        e.printStackTrace();
+      }
     }
-    talosProducer.addUserMessage(messageList);
     // when call shutdown function,
     // the producer will wait all the messages in buffer to send to server
-    talosProducer.shutdown();
+
+    //talosProducer.shutdown();
   }
 
   public static void main(String[] args) throws Exception {
