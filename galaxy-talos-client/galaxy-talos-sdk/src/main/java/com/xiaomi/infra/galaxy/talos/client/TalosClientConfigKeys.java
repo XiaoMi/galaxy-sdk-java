@@ -35,6 +35,27 @@ public class TalosClientConfigKeys {
   public static final boolean GALAXY_TALOS_CLIENT_IS_RETRY_DEFAULT = false;
 
   /**
+   * The client whether auto location the serving restserver
+   */
+  public static final String GALAXY_TALOS_CLIENT_IS_AUTO_LOCATION =
+      "galaxy.talos.client.is.auto.location";
+  public static final boolean GALAXY_TALOS_CLIENT_IS_AUTO_LOCATION_DEFAULT = true;
+
+  /**
+   * The client get schedule info max retry
+   */
+  public static final String GALAXY_TALOS_CLIENT_SCHEDULE_INFO_MAX_RETRY =
+      "galaxy.talos.client.schedule.info.max.retry";
+  public static final int GALAXY_TALOS_CLIENT_SCHEDULE_INFO_MAX_RETRY_DEFAULT = 2;
+
+  /**
+   * interval for client update it's scheduleinfo cache
+   */
+  public static final String GALAXY_TALOS_CLIENT_SCHEDULE_INFO_INTERVAL =
+      "galaxy.talos.client.schedule.info.interval";
+  public static final int GALAXY_TALOS_CLIENT_SCHEDULE_INFO_INTERVAL_DEFAULT = 1000 * 10;
+
+  /**
    * The client max retry times before throw exception
    */
   public static final String GALAXY_TALOS_CLIENT_MAX_RETRY =

@@ -12,8 +12,12 @@ import java.util.concurrent.atomic.AtomicLong;
 
 import com.google.common.base.Preconditions;
 import libthrift091.TException;
+import libthrift091.transport.TTransportException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.xiaomi.infra.galaxy.rpc.thrift.Credential;
+import com.xiaomi.infra.galaxy.talos.client.ScheduleInfoCache;
 import com.xiaomi.infra.galaxy.talos.client.TalosClientConfigKeys;
 import com.xiaomi.infra.galaxy.talos.client.TalosClientFactory;
 import com.xiaomi.infra.galaxy.talos.client.Utils;
@@ -27,9 +31,12 @@ import com.xiaomi.infra.galaxy.talos.thrift.TopicAndPartition;
 import com.xiaomi.infra.galaxy.talos.thrift.TopicTalosResourceName;
 
 public class SimpleConsumer {
+  private static final Logger LOG = LoggerFactory.getLogger(SimpleConsumer.class);
+
   private TopicAndPartition topicAndPartition;
   private MessageService.Iface messageClient;
   private TalosConsumerConfig consumerConfig;
+  private ScheduleInfoCache scheduleInfoCache;
 
   private static final AtomicLong requestId = new AtomicLong(1);
   private String simpleConsumerId;
@@ -37,22 +44,50 @@ public class SimpleConsumer {
   public SimpleConsumer(TalosConsumerConfig consumerConfig,
       TopicAndPartition topicAndPartition, MessageService.Iface messageClient,
       String consumerIdPrefix) {
-    Utils.checkTopicAndPartition(topicAndPartition);
-    this.consumerConfig = consumerConfig;
-    this.topicAndPartition = topicAndPartition;
-    this.messageClient = messageClient;
-    simpleConsumerId = Utils.generateClientId(consumerIdPrefix);
+    this(consumerConfig, topicAndPartition, null,
+        messageClient, consumerIdPrefix);
   }
 
   public SimpleConsumer(TalosConsumerConfig consumerConfig,
       TopicAndPartition topicAndPartition, MessageService.Iface messageClient) {
+    // for TalosConsumer
     this(consumerConfig, topicAndPartition, messageClient, "");
   }
 
   public SimpleConsumer(TalosConsumerConfig consumerConfig,
       TopicAndPartition topicAndPartition, Credential credential) {
     this(consumerConfig, topicAndPartition, new TalosClientFactory(
-        consumerConfig, credential).newMessageClient());
+        consumerConfig, credential));
+  }
+
+  public SimpleConsumer(TalosConsumerConfig consumerConfig,
+      TopicAndPartition topicAndPartition, TalosClientFactory talosClientFactory,
+      MessageService.Iface messageClient, String consumerIdPrefix) {
+    Utils.checkTopicAndPartition(topicAndPartition);
+    this.consumerConfig = consumerConfig;
+    this.topicAndPartition = topicAndPartition;
+    this.messageClient = messageClient;
+    simpleConsumerId = Utils.generateClientId(consumerIdPrefix);
+    this.scheduleInfoCache = ScheduleInfoCache.getScheduleInfoCache(topicAndPartition.
+        topicTalosResourceName, consumerConfig, messageClient, talosClientFactory);
+  }
+
+  public SimpleConsumer(TalosConsumerConfig consumerConfig,
+      TopicAndPartition topicAndPartition, TalosClientFactory talosClientFactory) {
+    this(consumerConfig, topicAndPartition, talosClientFactory,
+        talosClientFactory.newMessageClient(), "");
+  }
+
+  // for test
+  public SimpleConsumer(TalosConsumerConfig consumerConfig,
+      TopicAndPartition topicAndPartition, MessageService.Iface messageClientMock,
+      ScheduleInfoCache scheduleInfoCacheMock) {
+    Utils.checkTopicAndPartition(topicAndPartition);
+    this.consumerConfig = consumerConfig;
+    this.topicAndPartition = topicAndPartition;
+    this.messageClient = messageClientMock;
+    simpleConsumerId = Utils.generateClientId("");
+    this.scheduleInfoCache = scheduleInfoCacheMock;
   }
 
   public TopicTalosResourceName getTopicTalosResourceName() {
@@ -97,7 +132,27 @@ public class SimpleConsumer {
         .setMaxGetMessageBytes(TalosClientConfigKeys.GALAXY_TALOS_CONSUMER_MAX_FETCH_BYTES_DEFAULT);
     getMessageRequest.setTimeoutTimestamp(System.currentTimeMillis() + consumerConfig.getClientTimeout());
 
-    GetMessageResponse getMessageResponse = messageClient.getMessage(getMessageRequest);
+    GetMessageResponse getMessageResponse = new GetMessageResponse();
+    try {
+      getMessageResponse = scheduleInfoCache.getOrCreateMessageClient(topicAndPartition)
+          .getMessage(getMessageRequest);
+    } catch(TTransportException tTransportException){
+      if (scheduleInfoCache != null) {
+        scheduleInfoCache.updatescheduleInfoCache();
+      }
+      getMessageResponse = messageClient.getMessage(getMessageRequest);
+    }
+
+    //update scheduleInfocache when request have been transfered
+    if (getMessageResponse.isSetIsTransfer() && getMessageResponse.isIsTransfer()) {
+      if(LOG.isDebugEnabled()){
+        LOG.debug("request has been transfered, refresh scheduleInfo");
+      }
+      if (scheduleInfoCache != null) {
+        scheduleInfoCache.updatescheduleInfoCache();
+      }
+    }
+
     List<MessageAndOffset> messageAndOffsetList =
         Compression.decompress(getMessageResponse.getMessageBlocks(),
             getMessageResponse.getUnHandledMessageNumber());
@@ -117,5 +172,9 @@ public class SimpleConsumer {
       int end = messageAndOffsetList.size();
       return messageAndOffsetList.subList(start, end);
     }
+  }
+
+  public void shutDown() {
+    scheduleInfoCache.shutDown();
   }
 }

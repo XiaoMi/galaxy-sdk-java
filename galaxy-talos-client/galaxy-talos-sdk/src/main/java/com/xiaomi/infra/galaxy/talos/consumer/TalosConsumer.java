@@ -27,12 +27,14 @@ import org.slf4j.LoggerFactory;
 
 import com.xiaomi.infra.galaxy.rpc.thrift.Credential;
 import com.xiaomi.infra.galaxy.talos.admin.TalosAdmin;
+import com.xiaomi.infra.galaxy.talos.client.ScheduleInfoCache;
 import com.xiaomi.infra.galaxy.talos.client.TalosClientFactory;
 import com.xiaomi.infra.galaxy.talos.client.TopicAbnormalCallback;
 import com.xiaomi.infra.galaxy.talos.client.Utils;
 import com.xiaomi.infra.galaxy.talos.thrift.ConsumeUnit;
 import com.xiaomi.infra.galaxy.talos.thrift.ConsumerService;
 import com.xiaomi.infra.galaxy.talos.thrift.DescribeTopicRequest;
+import com.xiaomi.infra.galaxy.talos.thrift.GetScheduleInfoRequest;
 import com.xiaomi.infra.galaxy.talos.thrift.LockWorkerRequest;
 import com.xiaomi.infra.galaxy.talos.thrift.LockWorkerResponse;
 import com.xiaomi.infra.galaxy.talos.thrift.QueryWorkerRequest;
@@ -40,6 +42,7 @@ import com.xiaomi.infra.galaxy.talos.thrift.QueryWorkerResponse;
 import com.xiaomi.infra.galaxy.talos.thrift.RenewRequest;
 import com.xiaomi.infra.galaxy.talos.thrift.RenewResponse;
 import com.xiaomi.infra.galaxy.talos.thrift.Topic;
+import com.xiaomi.infra.galaxy.talos.thrift.TopicAndPartition;
 import com.xiaomi.infra.galaxy.talos.thrift.TopicTalosResourceName;
 
 public class TalosConsumer {
@@ -248,6 +251,7 @@ public class TalosConsumer {
   private Map<Integer, PartitionFetcher> partitionFetcherMap;
   private TalosConsumerConfig talosConsumerConfig;
   private TalosClientFactory talosClientFactory;
+  private ScheduleInfoCache scheduleInfoCache;
   private TalosAdmin talosAdmin;
   private ConsumerService.Iface consumerClient;
   private TopicAbnormalCallback topicAbnormalCallback;
@@ -292,6 +296,9 @@ public class TalosConsumer {
     readWriteLock = new ReentrantReadWriteLock();
     this.partitionCheckPoint = partitionCheckPoint == null ?
         new HashMap<Integer, Long>() : partitionCheckPoint;
+    // get scheduleInfo
+    this.scheduleInfoCache = ScheduleInfoCache.getScheduleInfoCache(topicTalosResourceName,
+        consumerConfig, talosClientFactory.newMessageClient(), talosClientFactory);
 
     partitionScheduledExecutor = Executors.newSingleThreadScheduledExecutor();
     workerScheduleExecutor = Executors.newSingleThreadScheduledExecutor();
@@ -313,7 +320,6 @@ public class TalosConsumer {
     initCheckWorkerInfoTask();
     initRenewTask();
   }
-
 
   // general construct
   public TalosConsumer(String consumerGroupName, TalosConsumerConfig consumerConfig,
@@ -697,6 +703,7 @@ public class TalosConsumer {
     workerScheduleExecutor.shutdownNow();
     renewScheduleExecutor.shutdownNow();
     reBalanceExecutor.shutdownNow();
+    scheduleInfoCache.shutDown();
     LOG.info("Worker: " + workerId + " shutdown.");
   }
 

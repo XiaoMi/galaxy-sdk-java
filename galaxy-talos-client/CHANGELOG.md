@@ -1,3 +1,7 @@
+## 2.3.0
+  * D85787: add talos auto location feature
+  * D95872: edit demos for eco account
+
 ## 2.2.1-jdk1.8
 
 ## 2.2.1

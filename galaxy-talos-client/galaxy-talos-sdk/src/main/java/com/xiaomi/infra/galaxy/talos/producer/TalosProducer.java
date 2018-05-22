@@ -29,6 +29,7 @@ import org.slf4j.LoggerFactory;
 import com.xiaomi.infra.galaxy.rpc.thrift.Credential;
 import com.xiaomi.infra.galaxy.talos.admin.TalosAdmin;
 import com.xiaomi.infra.galaxy.talos.client.Constants;
+import com.xiaomi.infra.galaxy.talos.client.ScheduleInfoCache;
 import com.xiaomi.infra.galaxy.talos.client.TalosClientFactory;
 import com.xiaomi.infra.galaxy.talos.client.TopicAbnormalCallback;
 import com.xiaomi.infra.galaxy.talos.client.Utils;
@@ -105,6 +106,7 @@ public class TalosProducer {
   private String clientId;
   private TalosClientFactory talosClientFactory;
   private TalosAdmin talosAdmin;
+  private ScheduleInfoCache scheduleInfoCache;
 
   private String topicName;
   private int partitionNumber;
@@ -155,6 +157,8 @@ public class TalosProducer {
     clientId = Utils.generateClientId();
     talosClientFactory = new TalosClientFactory(talosProducerConfig, credential);
     talosAdmin = new TalosAdmin(talosClientFactory);
+    this.scheduleInfoCache = ScheduleInfoCache.getScheduleInfoCache(topicTalosResourceName,
+        producerConfig, talosClientFactory.newMessageClient(), talosClientFactory);
     checkAndGetTopicInfo(topicTalosResourceName);
 
     messageCallbackExecutors = Executors.newFixedThreadPool(
@@ -191,6 +195,8 @@ public class TalosProducer {
     clientId = Utils.generateClientId();
     this.talosClientFactory = talosClientFactory;
     this.talosAdmin = talosAdmin;
+    this.scheduleInfoCache = ScheduleInfoCache.getScheduleInfoCache(topicTalosResourceName,
+        producerConfig, talosClientFactory.newMessageClient(), talosClientFactory);
     checkAndGetTopicInfo(topicTalosResourceName);
     messageCallbackExecutors = Executors.newFixedThreadPool(
         talosProducerConfig.getThreadPoolsize());
@@ -337,6 +343,7 @@ public class TalosProducer {
     partitionCheckFuture.cancel(false);
     partitionCheckExecutor.shutdownNow();
     messageCallbackExecutors.shutdownNow();
+    scheduleInfoCache.shutDown();
   }
 
   public boolean isActive() {

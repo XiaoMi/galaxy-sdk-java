@@ -35,6 +35,8 @@ import com.xiaomi.infra.galaxy.talos.thrift.GetPartitionOffsetRequest;
 import com.xiaomi.infra.galaxy.talos.thrift.GetPartitionOffsetResponse;
 import com.xiaomi.infra.galaxy.talos.thrift.GetPermissionRequest;
 import com.xiaomi.infra.galaxy.talos.thrift.GetPermissionResponse;
+import com.xiaomi.infra.galaxy.talos.thrift.GetScheduleInfoRequest;
+import com.xiaomi.infra.galaxy.talos.thrift.GetScheduleInfoResponse;
 import com.xiaomi.infra.galaxy.talos.thrift.GetTopicOffsetRequest;
 import com.xiaomi.infra.galaxy.talos.thrift.GetTopicOffsetResponse;
 import com.xiaomi.infra.galaxy.talos.thrift.ListPendingQuotaResponse;
@@ -54,6 +56,7 @@ import com.xiaomi.infra.galaxy.talos.thrift.SetPermissionRequest;
 import com.xiaomi.infra.galaxy.talos.thrift.SetTopicQuotaRequest;
 import com.xiaomi.infra.galaxy.talos.thrift.SetUserQuotaRequest;
 import com.xiaomi.infra.galaxy.talos.thrift.Topic;
+import com.xiaomi.infra.galaxy.talos.thrift.TopicAndPartition;
 import com.xiaomi.infra.galaxy.talos.thrift.TopicAttribute;
 import com.xiaomi.infra.galaxy.talos.thrift.TopicInfo;
 import com.xiaomi.infra.galaxy.talos.thrift.TopicService;
@@ -162,6 +165,12 @@ public class TalosAdmin {
       throws TException {
     GetPartitionOffsetResponse response = messageClient.getPartitionOffset(request);
     return response.getOffsetInfo();
+  }
+
+  public Map<TopicAndPartition, String> getScheduleInfo(GetScheduleInfoRequest request)
+      throws GalaxyTalosException, TException {
+    GetScheduleInfoResponse response = messageClient.getScheduleInfo(request);
+    return response.getScheduleInfo();
   }
 
   public void setPermission(SetPermissionRequest request)

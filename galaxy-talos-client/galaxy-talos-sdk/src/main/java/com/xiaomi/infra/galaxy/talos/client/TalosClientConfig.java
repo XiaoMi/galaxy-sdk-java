@@ -25,6 +25,9 @@ public class TalosClientConfig implements Serializable {
   private int maxTotalConnections;
   private int maxTotalConnectionsPerRoute;
   private boolean isRetry;
+  private boolean isAutoLocation;
+  private int scheduleInfoMaxRetry;
+  private int scheduleInfoInterval;
 
   protected Properties properties;
 
@@ -69,6 +72,15 @@ public class TalosClientConfig implements Serializable {
     isRetry = Boolean.parseBoolean(properties.getProperty(
         TalosClientConfigKeys.GALAXY_TALOS_CLIENT_IS_RETRY,
         String.valueOf(TalosClientConfigKeys.GALAXY_TALOS_CLIENT_IS_RETRY_DEFAULT)));
+    isAutoLocation = Boolean.parseBoolean(properties.getProperty(
+        TalosClientConfigKeys.GALAXY_TALOS_CLIENT_IS_AUTO_LOCATION,
+        String.valueOf(TalosClientConfigKeys.GALAXY_TALOS_CLIENT_IS_AUTO_LOCATION_DEFAULT)));
+    scheduleInfoMaxRetry = Integer.parseInt(properties.getProperty(
+        TalosClientConfigKeys.GALAXY_TALOS_CLIENT_SCHEDULE_INFO_MAX_RETRY,
+        String.valueOf(TalosClientConfigKeys.GALAXY_TALOS_CLIENT_SCHEDULE_INFO_MAX_RETRY_DEFAULT)));
+    scheduleInfoInterval = Integer.parseInt(properties.getProperty(
+        TalosClientConfigKeys.GALAXY_TALOS_CLIENT_SCHEDULE_INFO_INTERVAL,
+        String.valueOf(TalosClientConfigKeys.GALAXY_TALOS_CLIENT_SCHEDULE_INFO_INTERVAL_DEFAULT)));
   }
 
   public int getMaxRetry() {
@@ -102,6 +114,12 @@ public class TalosClientConfig implements Serializable {
   public boolean isRetry() {
     return isRetry;
   }
+
+  public boolean isAutoLocation() { return isAutoLocation; }
+
+  public int getScheduleInfoMaxRetry() { return scheduleInfoMaxRetry; }
+
+  public int getScheduleInfoInterval() { return scheduleInfoInterval; }
 
   public static Properties loadProperties(String fileName) {
     Properties properties = new Properties();
@@ -153,4 +171,15 @@ public class TalosClientConfig implements Serializable {
     this.isRetry = isRetry;
   }
 
+  public void setAutoLocation(boolean isAutoLocation) {
+    this.isAutoLocation = isAutoLocation;
+  }
+
+  public void setScheduleInfoMaxRetry(int ScheduleInfoMaxRetry) {
+    this.scheduleInfoMaxRetry = ScheduleInfoMaxRetry;
+  }
+
+  public void setScheduleInfoInterval(int scheduleInfoInterval) {
+    this.scheduleInfoInterval = scheduleInfoInterval;
+  }
 }

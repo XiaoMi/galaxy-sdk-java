@@ -16,6 +16,7 @@ import libthrift091.TException;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Mock;
 import org.mockito.Mockito;
 
 import com.xiaomi.infra.galaxy.talos.admin.TalosAdmin;
@@ -104,7 +105,7 @@ public class TalosProducerTest {
       addFailureCounter(userMessageResult.getMessageList().size());
     }
   }
-
+  
   @Before
   public void setUp() throws TException {
     // set properties
@@ -152,6 +153,9 @@ public class TalosProducerTest {
     // mock putMessageResponse
     msgPutFailureCount = 0;
     msgPutSuccessCount = 0;
+
+    when(talosClientFactoryMock.newMessageClient()).thenReturn(messageClientMock);
+    when(messageClientMock.putMessage(any(PutMessageRequest.class))).thenReturn(new PutMessageResponse());
   }
 
   @After
@@ -165,7 +169,6 @@ public class TalosProducerTest {
         new TopicTalosResourceName(resourceName), talosAdminMock, talosClientFactoryMock,
         partitionSenderMock, new SimpleTopicAbnormalCallback(),
         new TestCallback());
-    doNothing().when(partitionSenderMock).addMessage(anyListOf(UserMessage.class));
 
     talosProducer.addUserMessage(messageList);
     // wait for execute finished
@@ -198,6 +201,7 @@ public class TalosProducerTest {
     doNothing().when(partitionSenderMock).addMessage(anyListOf(UserMessage.class));
     talosProducer.addUserMessage(messageList);
   }
+
 
   // addUserMessage check message validity
   @Test(expected = IllegalArgumentException.class)
@@ -314,15 +318,11 @@ public class TalosProducerTest {
     Thread.sleep(checkPartitionInterval * 2);
   }
 
-
   @Test
   public void testAddUserMessage() throws Exception {
     topic.getTopicAttribute().setPartitionNumber(1);
     when(talosAdminMock.describeTopic(new DescribeTopicRequest(topicName))).thenReturn(topic);
-
-    doReturn(messageClientMock).when(talosClientFactoryMock).newMessageClient();
-    doReturn(new PutMessageResponse()).when(messageClientMock).putMessage(any(PutMessageRequest.class));
-
+    when(messageClientMock.putMessage(any(PutMessageRequest.class))).thenReturn(new PutMessageResponse());
 
     talosProducer = new TalosProducer(talosProducerConfig,
         new TopicTalosResourceName(resourceName), talosAdminMock, talosClientFactoryMock,

@@ -20,6 +20,7 @@ import org.junit.Test;
 import org.mockito.InOrder;
 import org.mockito.Mockito;
 
+import com.xiaomi.infra.galaxy.talos.client.ScheduleInfoCache;
 import com.xiaomi.infra.galaxy.talos.thrift.GalaxyTalosException;
 import com.xiaomi.infra.galaxy.talos.thrift.Message;
 import com.xiaomi.infra.galaxy.talos.thrift.MessageService;
@@ -35,6 +36,7 @@ import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.when;
 
 public class SimpleProducerTest {
   private static final String topicName = "MyTopic";
@@ -43,6 +45,7 @@ public class SimpleProducerTest {
 
   private static TalosProducerConfig producerConfig;
   private static MessageService.Iface messageClientMock;
+  private static ScheduleInfoCache scheduleInfoCacheMock;
   private static TopicAndPartition topicAndPartition;
   private static List<Message> messageList;
   private static SimpleProducer simpleProducer;
@@ -53,13 +56,14 @@ public class SimpleProducerTest {
     properties.setProperty("galaxy.talos.service.endpoint", "testUrl");
     producerConfig = new TalosProducerConfig(properties);
     messageClientMock = Mockito.mock(MessageService.Iface.class);
+    scheduleInfoCacheMock = Mockito.mock(ScheduleInfoCache.class);
     topicAndPartition = new TopicAndPartition(topicName,
         new TopicTalosResourceName(resourceName), partitionId);
     Message message = new Message(ByteBuffer.wrap("hello world".getBytes()));
     messageList = new ArrayList<Message>();
     messageList.add(message);
-    simpleProducer = new SimpleProducer(producerConfig,
-        topicAndPartition, messageClientMock, new AtomicLong(1));
+    simpleProducer = new SimpleProducer(producerConfig, topicAndPartition,
+        messageClientMock, new AtomicLong(1), scheduleInfoCacheMock);
   }
 
   @After
@@ -82,6 +86,8 @@ public class SimpleProducerTest {
   public void testPutMessage() throws TException {
     doReturn(new PutMessageResponse()).when(messageClientMock).putMessage(
         any(PutMessageRequest.class));
+    when(scheduleInfoCacheMock.getOrCreateMessageClient(any(TopicAndPartition.class)))
+        .thenReturn(messageClientMock);
     boolean putSuccess = simpleProducer.putMessage(messageList);
     assertTrue(putSuccess);
     assertTrue(simpleProducer.putMessage(new ArrayList<Message>()));
@@ -106,6 +112,8 @@ public class SimpleProducerTest {
   public void testPutMessageException() throws TException {
     doThrow(new GalaxyTalosException()).doReturn(new PutMessageResponse())
         .when(messageClientMock).putMessage(any(PutMessageRequest.class));
+    when(scheduleInfoCacheMock.getOrCreateMessageClient(any(TopicAndPartition.class)))
+        .thenReturn(messageClientMock);
     boolean putSuccess = simpleProducer.putMessage(messageList);
     assertFalse(putSuccess);
     while (!putSuccess) {

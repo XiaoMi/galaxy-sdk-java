@@ -19,6 +19,7 @@ import org.junit.Test;
 import org.mockito.InOrder;
 import org.mockito.Mockito;
 
+import com.xiaomi.infra.galaxy.talos.client.ScheduleInfoCache;
 import com.xiaomi.infra.galaxy.talos.client.compression.Compression;
 import com.xiaomi.infra.galaxy.talos.producer.TalosProducerConfig;
 import com.xiaomi.infra.galaxy.talos.thrift.GetMessageRequest;
@@ -48,6 +49,7 @@ public class SimpleConsumerTest {
   private static TalosProducerConfig producerConfig;
   private static TalosConsumerConfig consumerConfig;
   private static MessageService.Iface messageClientMock;
+  private static ScheduleInfoCache scheduleInfoCacheMock;
   private static List<Message> messageList;
   private static List<MessageAndOffset> messageAndOffsetList;
 
@@ -62,8 +64,9 @@ public class SimpleConsumerTest {
     topicAndPartition = new TopicAndPartition(topicName,
         new TopicTalosResourceName(resourceName), partitionId);
     messageClientMock = Mockito.mock(MessageService.Iface.class);
+    scheduleInfoCacheMock = Mockito.mock(ScheduleInfoCache.class);
     simpleConsumer = new SimpleConsumer(consumerConfig,
-        topicAndPartition, messageClientMock);
+        topicAndPartition, messageClientMock, scheduleInfoCacheMock);
     messageList = new ArrayList<Message>();
     messageAndOffsetList = new ArrayList<MessageAndOffset>();
   }
@@ -125,6 +128,8 @@ public class SimpleConsumerTest {
         "testCheckStartOffset");
     when(messageClientMock.getMessage(any(GetMessageRequest.class)))
         .thenReturn(response);
+    when(scheduleInfoCacheMock.getOrCreateMessageClient(any(TopicAndPartition.class)))
+        .thenReturn(messageClientMock);
     simpleConsumer.fetchMessage(MessageOffset.START_OFFSET.getValue(), 100);
     simpleConsumer.fetchMessage(MessageOffset.LATEST_OFFSET.getValue(), 100);
     simpleConsumer.fetchMessage(0, 100);
@@ -170,6 +175,8 @@ public class SimpleConsumerTest {
         "testFetchMessageSequenceId").setUnHandledMessageNumber(unHandledNumber);
     when(messageClientMock.getMessage(any(GetMessageRequest.class)))
         .thenReturn(response);
+    when(scheduleInfoCacheMock.getOrCreateMessageClient(any(TopicAndPartition.class)))
+        .thenReturn(messageClientMock);
 
     List<MessageAndOffset> msgList = simpleConsumer.fetchMessage(startOffset);
     for (int i = 0; i < msgList.size(); ++i) {
@@ -218,6 +225,8 @@ public class SimpleConsumerTest {
         "testFetchMessageSequenceId").setUnHandledMessageNumber(unHandledNumber);
     when(messageClientMock.getMessage(any(GetMessageRequest.class)))
         .thenReturn(response);
+    when(scheduleInfoCacheMock.getOrCreateMessageClient(any(TopicAndPartition.class)))
+        .thenReturn(messageClientMock);
 
     List<MessageAndOffset> msgList = simpleConsumer.fetchMessage(startOffset + 1);
 
