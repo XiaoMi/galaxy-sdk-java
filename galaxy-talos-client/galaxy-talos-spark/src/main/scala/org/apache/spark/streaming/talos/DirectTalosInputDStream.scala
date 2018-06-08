@@ -47,6 +47,7 @@ class DirectTalosInputDStream[R: ClassTag](
     if (_offsetDao == null) {
       _offsetDao = offsetDirOpt.map(offsetDir =>
         new HDFSOffsetDAO(
+          tc,
           offsetDir,
           ssc.sparkContext.hadoopConfiguration))
     }
@@ -103,7 +104,7 @@ class DirectTalosInputDStream[R: ClassTag](
   private val maxRateLimitPerPartition: Int = context.sparkContext.getConf.getInt(
     "spark.streaming.talos.maxRatePerPartition", 0)
 
-  private val fatalTalosErr = Set(ErrorCode.TOPIC_NOT_EXIST, ErrorCode.PARTITION_NOT_EXIST,
+  private val fatalTalosErr = Set(ErrorCode.PARTITION_NOT_EXIST,
     ErrorCode.INVALID_AUTH_INFO, ErrorCode.PERMISSION_DENIED_ERROR)
 
   protected final def partitionOffsetRanges(retries: Int): Map[TopicPartition, (Long, Long)] = {

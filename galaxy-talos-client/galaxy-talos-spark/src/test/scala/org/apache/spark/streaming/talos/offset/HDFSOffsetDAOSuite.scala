@@ -2,19 +2,28 @@ package org.apache.spark.streaming.talos.offset
 
 import java.io.{File, FileOutputStream}
 
+import scala.collection.mutable
+
 import org.apache.commons.io.{FileUtils, IOUtils}
 import org.apache.hadoop.conf.Configuration
 import org.apache.spark.streaming.Time
-import org.apache.spark.streaming.talos.TopicPartition
+import org.apache.spark.streaming.talos.{TalosCluster, TopicPartition}
 import org.apache.spark.util.Utils
 import org.scalatest.{BeforeAndAfter, FunSuite}
 
+import com.xiaomi.infra.galaxy.rpc.thrift.Credential
+import com.xiaomi.infra.galaxy.talos.thrift.TopicTalosResourceName
+
 class HDFSOffsetDAOSuite extends FunSuite with BeforeAndAfter {
   private val dir = "/tmp/galaxy-talos-spark-test/"
+  private val topic = "test"
+  private val topicTalosResourceName = s"CL123#$topic#abc"
   private var dao: HDFSOffsetDAO = _
 
   before {
-    dao = new HDFSOffsetDAO(dir, new Configuration())
+    val tc = new TalosCluster(Map.empty[String, String], new Credential())
+    tc._topicResourceNames = mutable.Map(topic -> new TopicTalosResourceName(topicTalosResourceName))
+    dao = new HDFSOffsetDAO(tc, dir, new Configuration())
     FileUtils.deleteDirectory(new File(dir))
     new File(dir).mkdir()
   }
@@ -40,8 +49,8 @@ class HDFSOffsetDAOSuite extends FunSuite with BeforeAndAfter {
     (1 to 11).foreach { i =>
       val time = Time(i.toLong)
       val offsets = Map(
-        TopicPartition("test", 0) -> 1L,
-        TopicPartition("test", 1) -> 2L
+        TopicPartition(topic, 0) -> 1L,
+        TopicPartition(topic, 1) -> 2L
       )
       dao.doSave(time, offsets)
     }
@@ -54,13 +63,13 @@ class HDFSOffsetDAOSuite extends FunSuite with BeforeAndAfter {
     assert(files.last.getName == "offset-11")
   }
 
-  test("restore offsets") {
+  test("restore offsets from topic") {
     val emptyOffsets = dao.restore()
     assert(emptyOffsets.isEmpty)
 
     val offsets = Map(
-      ("test", 0) -> 1L,
-      ("test", 1) -> 2L
+      (topic, 0) -> 1L,
+      (topic, 1) -> 2L
     )
 
     val offsetFile = new File(dir + "offset-000")
@@ -69,6 +78,33 @@ class HDFSOffsetDAOSuite extends FunSuite with BeforeAndAfter {
     assert(restoredOffsets.get === offsets.map { case (key, value) =>
       TopicPartition(key._1, key._2) -> value
     })
+  }
+
+  test("restore offsets from topic talos resource name") {
+    val offsets = Map(
+      (topicTalosResourceName, 0) -> 1L,
+      (topicTalosResourceName, 1) -> 2L
+    )
+
+    val offsetFile = new File(dir + "offset-000")
+    IOUtils.write(Utils.serialize(offsets), new FileOutputStream(offsetFile))
+    val restoredOffsets = dao.restore()
+    assert(restoredOffsets.get === offsets.map { case (key, value) =>
+      TopicPartition(topic, key._2) -> value
+    })
+  }
+
+  test("restore offsets in case of topic recreation") {
+    val newTopicTalosResourceName = s"CL456#$topic#xxxx"
+    val offsets = Map(
+      (newTopicTalosResourceName, 0) -> 1L,
+      (newTopicTalosResourceName, 1) -> 2L
+    )
+
+    val offsetFile = new File(dir + "offset-000")
+    IOUtils.write(Utils.serialize(offsets), new FileOutputStream(offsetFile))
+    val restoredOffsets = dao.restore()
+    assert(restoredOffsets.isEmpty)
   }
 
 }

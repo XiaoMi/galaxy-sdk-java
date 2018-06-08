@@ -60,7 +60,7 @@ object TalosUtils extends Logging {
 
     val restoredOffsetsOpt = try {
       offsetDirOpt.map(offsetDir =>
-        new HDFSOffsetDAO(offsetDir, ssc.sparkContext.hadoopConfiguration)
+        new HDFSOffsetDAO(tc, offsetDir, ssc.sparkContext.hadoopConfiguration)
       ).flatMap(dao => dao.restore())
     } catch {
       case t: Throwable => {

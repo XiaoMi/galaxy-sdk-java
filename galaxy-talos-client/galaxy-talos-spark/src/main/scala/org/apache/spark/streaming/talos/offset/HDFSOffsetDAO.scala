@@ -3,17 +3,22 @@ package org.apache.spark.streaming.talos.offset
 import java.io._
 import java.util.concurrent.{Executors, RejectedExecutionException, TimeUnit}
 
+import scala.util.Try
+
 import org.apache.commons.io.IOUtils
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.{FileSystem, Path}
 import org.apache.spark.streaming.Time
-import org.apache.spark.streaming.talos.TopicPartition
+import org.apache.spark.streaming.talos.{TalosCluster, TopicPartition}
 import org.apache.spark.util.Utils
 import org.apache.spark.{Logging, SparkException}
 
+import com.xiaomi.infra.galaxy.talos.client.Constants
+
 private[talos] class HDFSOffsetDAO(
-  offsetDir: String,
-  hadoopConf: Configuration
+    tc: TalosCluster,
+    offsetDir: String,
+    hadoopConf: Configuration
 ) extends OffsetDAO with Logging {
   private val PREFIX = "offset-"
   private val REGEX = (PREFIX + """([\d]+)""").r
@@ -57,7 +62,11 @@ private[talos] class HDFSOffsetDAO(
         }
         val fos = fs.create(tempFile)
         Utils.tryWithSafeFinally {
-          val toSave = offsets.map { case (tp, offset) => (tp.asTuple, offset) }
+          val toSave = offsets.map { case (tp, offset) =>
+            val (topic, partition) = tp.asTuple
+            // use talos resource name because topic maybe recreated.
+            ((tc.topicResourceName(topic).getTopicTalosResourceName, partition), offset)
+          }
           fos.write(HDFSOffsetDAO.serialize(toSave))
         } {
           fos.close()
@@ -82,7 +91,7 @@ private[talos] class HDFSOffsetDAO(
 
         // All done, print success
         logInfo(s"Saved offsets for time ${time.milliseconds} to file ${offsetFile}:\n" +
-          s"${offsets.toSeq.sortBy(_._1.toString).mkString(",")}")
+            s"${offsets.toSeq.sortBy(_._1.toString).mkString(",")}")
         return
       } catch {
         case t: Throwable =>
@@ -124,11 +133,24 @@ private[talos] class HDFSOffsetDAO(
         val fis = fs.open(file)
         val bytes = IOUtils.toByteArray(fis)
         val offsetMap = HDFSOffsetDAO.deserialize[Map[(String, Int), Long]](bytes)
-        logInfo(s"Restored offsets successfully from file ${file}:\n" +
-          s"${offsetMap.toSeq.sortBy(_._1.toString).mkString(",")}")
-        val result = offsetMap.map { case ((topic, partition), offset) =>
-          (TopicPartition(topic, partition), offset)
+        val result = offsetMap.map { case ((topicResourceName, partition), offset) =>
+          if (!topicResourceName.contains(Constants.TALOS_IDENTIFIER_DELIMITER)) {
+            // for compatible to restore from topic name.
+            val topicName = topicResourceName
+            (TopicPartition(topicName, partition), offset)
+          } else {
+            val topicName = com.xiaomi.infra.galaxy.talos.client.Utils.getTopicNameByResourceName(topicResourceName)
+            val currentTopicResourceNameTry = Try(tc.topicResourceName(topicName).getTopicTalosResourceName)
+            if (currentTopicResourceNameTry.isSuccess && currentTopicResourceNameTry.get.equals(topicResourceName)) {
+              (TopicPartition(topicName, partition), offset)
+            } else {
+              logWarning(s"Topic resource name has changed (original is $topicResourceName), discard checkpointed offsets.")
+              return None
+            }
+          }
         }
+        logInfo(s"Restored offsets successfully from file ${file}:\n" +
+            s"${offsetMap.toSeq.sortBy(_._1.toString).mkString(",")}")
         return Some(result)
       } catch {
         case e: Exception =>

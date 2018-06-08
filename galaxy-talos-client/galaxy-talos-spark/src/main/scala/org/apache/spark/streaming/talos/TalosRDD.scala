@@ -170,7 +170,7 @@ R: ClassTag](
       }
     }
 
-    private val fatalTalosErr = Set(ErrorCode.TOPIC_NOT_EXIST, ErrorCode.PARTITION_NOT_EXIST,
+    private val fatalTalosErr = Set(ErrorCode.PARTITION_NOT_EXIST,
       ErrorCode.INVALID_AUTH_INFO, ErrorCode.PERMISSION_DENIED_ERROR)
 
     private def fetchBatch(retries: Int): Iterator[MessageAndOffset] = {
