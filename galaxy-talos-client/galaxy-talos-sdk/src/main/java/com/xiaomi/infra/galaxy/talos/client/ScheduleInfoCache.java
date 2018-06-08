@@ -85,6 +85,9 @@ public class ScheduleInfoCache {
         0L, TimeUnit.MILLISECONDS,
         new LinkedBlockingQueue<Runnable>(2), new DiscardPolicy());
 
+    LOG.info(this.isAutoLocation ? "Auto location is enabled for request of " + topicTalosResourceName
+        : "Auto location is forbidden for request of " + topicTalosResourceName);
+
     try {
       //get and update scheduleInfoMap
       getScheduleInfo(topicTalosResourceName);
@@ -113,9 +116,8 @@ public class ScheduleInfoCache {
         // this case should not exist normally, only when interface of simpleAPI improper used
         scheduleInfoCacheMap.put(topicTalosResourceName, new ScheduleInfoCache(topicTalosResourceName,
             talosClientConfig, messageClient));
-        if(LOG.isDebugEnabled()){
-          LOG.debug("SimpleProducer or SimpleConsumer was built using improperly constructed function");
-        }
+        LOG.warn("SimpleProducer or SimpleConsumer was built using improperly constructed function."
+            + "Auto location was forbidden");
       } else {
         scheduleInfoCacheMap.put(topicTalosResourceName, new ScheduleInfoCache(topicTalosResourceName,
             talosClientConfig, messageClient, talosClientFactory));
