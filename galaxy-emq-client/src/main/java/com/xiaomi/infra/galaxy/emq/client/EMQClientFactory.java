@@ -53,13 +53,13 @@ public class EMQClientFactory {
   }
 
   public static HttpClient generateHttpClient(final int maxTotalConnections,
-      final int maxTotalConnectionsPerRoute) {
+                                              final int maxTotalConnectionsPerRoute) {
     return generateHttpClient(maxTotalConnections, maxTotalConnectionsPerRoute,
-        EMQConstants.DEFAULT_CLIENT_CONN_TIMEOUT);
+            EMQConstants.DEFAULT_CLIENT_CONN_TIMEOUT);
   }
 
   public static HttpClient generateHttpClient(final int maxTotalConnections,
-      final int maxTotalConnectionsPerRoute, int connTimeout) {
+                                              final int maxTotalConnectionsPerRoute, int connTimeout) {
     HttpParams params = new BasicHttpParams();
     ConnManagerParams.setMaxTotalConnections(params, maxTotalConnections);
     ConnManagerParams.setMaxConnectionsPerRoute(params, new ConnPerRoute() {
@@ -69,16 +69,16 @@ public class EMQClientFactory {
       }
     });
     HttpConnectionParams
-        .setConnectionTimeout(params, connTimeout);
+            .setConnectionTimeout(params, connTimeout);
     SchemeRegistry schemeRegistry = new SchemeRegistry();
     schemeRegistry.register(
-        new Scheme("http", PlainSocketFactory.getSocketFactory(), 80));
+            new Scheme("http", PlainSocketFactory.getSocketFactory(), 80));
     SSLSocketFactory sslSocketFactory = SSLSocketFactory.getSocketFactory();
     sslSocketFactory.setHostnameVerifier(SSLSocketFactory.
-        ALLOW_ALL_HOSTNAME_VERIFIER);
+            ALLOW_ALL_HOSTNAME_VERIFIER);
     schemeRegistry.register(new Scheme("https", sslSocketFactory, 443));
     ClientConnectionManager conMgr = new ThreadSafeClientConnManager(params,
-        schemeRegistry);
+            schemeRegistry);
     return new DefaultHttpClient(conMgr, params);
   }
 
@@ -151,7 +151,7 @@ public class EMQClientFactory {
    *                   the client can be set here.
    */
   public EMQClientFactory(Credential credential, AdjustableClock clock,
-      HttpClient httpClient) {
+                          HttpClient httpClient) {
     this.credential = credential;
     this.clock = clock;
     this.httpClient = httpClient;
@@ -166,29 +166,36 @@ public class EMQClientFactory {
 
   public QueueService.Iface newQueueClient(String endpoint) {
     return newQueueClient(endpoint, EMQConstants.DEFAULT_CLIENT_TIMEOUT,
-        EMQConstants.DEFAULT_CLIENT_CONN_TIMEOUT);
+            EMQConstants.DEFAULT_CLIENT_CONN_TIMEOUT);
   }
 
   public QueueService.Iface newQueueClient(String endpoint, int socketTimeout,
-      int connTimeout) {
+                                           int connTimeout) {
     return createClient(QueueService.Iface.class, QueueService.Client.class,
-        endpoint + EMQConstants.QUEUE_SERVICE_PATH, socketTimeout, connTimeout,
-        false, CommonConstants.MAX_RETRY);
+            endpoint + EMQConstants.QUEUE_SERVICE_PATH, socketTimeout, connTimeout,
+            false, CommonConstants.MAX_RETRY, true);
   }
 
   public QueueService.Iface newQueueClient(String endpoint, boolean isRetry,
-      int maxRetry) {
+                                           int maxRetry) {
     return createClient(QueueService.Iface.class, QueueService.Client.class,
-        endpoint + EMQConstants.QUEUE_SERVICE_PATH,
-        EMQConstants.DEFAULT_CLIENT_TIMEOUT,
-        EMQConstants.DEFAULT_CLIENT_CONN_TIMEOUT, isRetry, maxRetry);
+            endpoint + EMQConstants.QUEUE_SERVICE_PATH,
+            EMQConstants.DEFAULT_CLIENT_TIMEOUT,
+            EMQConstants.DEFAULT_CLIENT_CONN_TIMEOUT, isRetry, maxRetry, true);
   }
 
   public QueueService.Iface newQueueClient(String endpoint, int socketTimeout,
-      int connTimeout, boolean isRetry, int maxRetry) {
+                                           int connTimeout, boolean isRetry, int maxRetry) {
     return createClient(QueueService.Iface.class, QueueService.Client.class,
-        endpoint + EMQConstants.QUEUE_SERVICE_PATH,
-        socketTimeout, connTimeout, isRetry, maxRetry);
+            endpoint + EMQConstants.QUEUE_SERVICE_PATH,
+            socketTimeout, connTimeout, isRetry, maxRetry, true);
+  }
+
+  public QueueService.Iface newQueueClient(String endpoint, int socketTimeout,
+                                           int connTimeout, boolean isRetry, int maxRetry, boolean checkParams) {
+    return createClient(QueueService.Iface.class, QueueService.Client.class,
+            endpoint + EMQConstants.QUEUE_SERVICE_PATH,
+            socketTimeout, connTimeout, isRetry, maxRetry, checkParams);
   }
 
   public MessageService.Iface newMessageClient() {
@@ -200,29 +207,36 @@ public class EMQClientFactory {
 
   public MessageService.Iface newMessageClient(String endpoint) {
     return newMessageClient(endpoint, EMQConstants.DEFAULT_CLIENT_TIMEOUT,
-        EMQConstants.DEFAULT_CLIENT_CONN_TIMEOUT);
+            EMQConstants.DEFAULT_CLIENT_CONN_TIMEOUT);
   }
 
   public MessageService.Iface newMessageClient(String endpoint, int socketTimeout,
-      int connTimeout) {
+                                               int connTimeout) {
     return createClient(MessageService.Iface.class, MessageService.Client.class,
-        endpoint + EMQConstants.MESSAGE_SERVICE_PATH, socketTimeout,
-        connTimeout, false, CommonConstants.MAX_RETRY);
+            endpoint + EMQConstants.MESSAGE_SERVICE_PATH, socketTimeout,
+            connTimeout, false, CommonConstants.MAX_RETRY, true);
   }
 
   public MessageService.Iface newMessageClient(String endpoint, boolean isRetry,
-      int maxRetry) {
+                                               int maxRetry) {
     return createClient(MessageService.Iface.class, MessageService.Client.class,
-        endpoint + EMQConstants.MESSAGE_SERVICE_PATH,
-        EMQConstants.DEFAULT_CLIENT_TIMEOUT,
-        EMQConstants.DEFAULT_CLIENT_CONN_TIMEOUT, isRetry, maxRetry);
+            endpoint + EMQConstants.MESSAGE_SERVICE_PATH,
+            EMQConstants.DEFAULT_CLIENT_TIMEOUT,
+            EMQConstants.DEFAULT_CLIENT_CONN_TIMEOUT, isRetry, maxRetry, true);
   }
 
   public MessageService.Iface newMessageClient(String endpoint, int socketTimeout,
-      int connTimeout, boolean isRetry, int maxRetry) {
+                                               int connTimeout, boolean isRetry, int maxRetry) {
     return createClient(MessageService.Iface.class, MessageService.Client.class,
-        endpoint + EMQConstants.MESSAGE_SERVICE_PATH, socketTimeout,
-        connTimeout, isRetry, maxRetry);
+            endpoint + EMQConstants.MESSAGE_SERVICE_PATH, socketTimeout,
+            connTimeout, isRetry, maxRetry, true);
+  }
+
+  public MessageService.Iface newMessageClient(String endpoint, int socketTimeout,
+                                               int connTimeout, boolean isRetry, int maxRetry, boolean checkParams) {
+    return createClient(MessageService.Iface.class, MessageService.Client.class,
+            endpoint + EMQConstants.MESSAGE_SERVICE_PATH, socketTimeout,
+            connTimeout, isRetry, maxRetry, checkParams);
   }
 
   public StatisticsService.Iface newStatisticsClient() {
@@ -234,35 +248,41 @@ public class EMQClientFactory {
 
   public StatisticsService.Iface newStatisticsClient(String endpoint) {
     return newStatisticsClient(endpoint, EMQConstants.DEFAULT_CLIENT_TIMEOUT,
-        EMQConstants.DEFAULT_CLIENT_CONN_TIMEOUT);
+            EMQConstants.DEFAULT_CLIENT_CONN_TIMEOUT);
   }
 
   public StatisticsService.Iface newStatisticsClient(String endpoint, int socketTimeout,
-      int connTimeout) {
+                                                     int connTimeout) {
     return createClient(StatisticsService.Iface.class, StatisticsService.Client.class,
-        endpoint + EMQConstants.STATISTICS_SERVICE_PATH, socketTimeout, connTimeout,
-        false, CommonConstants.MAX_RETRY);
+            endpoint + EMQConstants.STATISTICS_SERVICE_PATH, socketTimeout, connTimeout,
+            false, CommonConstants.MAX_RETRY, true);
   }
 
   public StatisticsService.Iface newStatisticsClient(String endpoint, boolean isRetry,
-      int maxRetry) {
+                                                     int maxRetry) {
     return createClient(StatisticsService.Iface.class, StatisticsService.Client.class,
-        endpoint + EMQConstants.STATISTICS_SERVICE_PATH,
-        EMQConstants.DEFAULT_CLIENT_TIMEOUT,
-        EMQConstants.DEFAULT_CLIENT_CONN_TIMEOUT, isRetry, maxRetry);
+            endpoint + EMQConstants.STATISTICS_SERVICE_PATH,
+            EMQConstants.DEFAULT_CLIENT_TIMEOUT,
+            EMQConstants.DEFAULT_CLIENT_CONN_TIMEOUT, isRetry, maxRetry, true);
   }
 
   public StatisticsService.Iface newStatisticsClient(String endpoint, int socketTimeout,
-      int connTimeout, boolean isRetry, int maxRetry) {
+                                                     int connTimeout, boolean isRetry, int maxRetry) {
     return createClient(StatisticsService.Iface.class, StatisticsService.Client.class,
-        endpoint + EMQConstants.STATISTICS_SERVICE_PATH,
-        socketTimeout, connTimeout, isRetry, maxRetry);
+            endpoint + EMQConstants.STATISTICS_SERVICE_PATH,
+            socketTimeout, connTimeout, isRetry, maxRetry, true);
   }
 
+  public StatisticsService.Iface newStatisticsClient(String endpoint, int socketTimeout,
+                                                     int connTimeout, boolean isRetry, int maxRetry, boolean checkParams) {
+    return createClient(StatisticsService.Iface.class, StatisticsService.Client.class,
+            endpoint + EMQConstants.STATISTICS_SERVICE_PATH,
+            socketTimeout, connTimeout, isRetry, maxRetry, checkParams);
+  }
 
   private <IFace, Impl> IFace createClient(Class<IFace> ifaceClass,
-      Class<Impl> implClass, String url, int socketTimeout, int connTimeout,
-      boolean isRetry, int maxRetry) {
+                                           Class<Impl> implClass, String url, int socketTimeout, int connTimeout,
+                                           boolean isRetry, int maxRetry, boolean checkParams) {
     Map<String, String> headers = new HashMap<String, String>();
     headers.put(USER_AGENT_HEADER, createUserAgentHeader());
     if (customHeaders != null) {
@@ -270,17 +290,15 @@ public class EMQClientFactory {
     }
 
     IFace client = ThreadSafeClient.getClient(httpClient, headers, credential,
-        clock, ifaceClass, implClass, url, socketTimeout, connTimeout, false);
+            clock, ifaceClass, implClass, url, socketTimeout, connTimeout, false);
     client = AutoRetryClient.getAutoRetryClient(ifaceClass, client, isRetry,
-        maxRetry);
-    return EMQClient.getClient(ifaceClass, client);
+            maxRetry);
+    return checkParams ? EMQClient.getClient(ifaceClass, client) : client;
   }
 
   protected String createUserAgentHeader() {
     return String.format("Java-SDK/%d.%d.%d Java/%s",
-        VERSION.major, VERSION.minor, VERSION.revision,
-        System.getProperty("java.version"));
+            VERSION.major, VERSION.minor, VERSION.revision,
+            System.getProperty("java.version"));
   }
 }
-
-
