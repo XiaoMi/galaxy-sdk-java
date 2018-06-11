@@ -16,6 +16,13 @@ public class TalosClientConfigKeys {
       "galaxy.talos.service.endpoint";
 
   /**
+   * The http client dns resolver timeout
+   */
+  public static final String GALAXY_TALOS_HTTP_DNS_RESOLVER_TIMEOUT_MILLIS =
+      "galaxy.talos.http.dns.resolver.timeout.millis";
+  public static final long GALAXY_TALOS_HTTP_DNS_RESOLVER_TIMEOUT_MILLIS_DEFAULT = 3000;
+
+  /**
    * The http client connection params
    */
   public static final String GALAXY_TALOS_HTTP_MAX_TOTAL_CONNECTION =

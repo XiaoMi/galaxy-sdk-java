@@ -18,6 +18,7 @@ import org.slf4j.LoggerFactory;
 public class TalosClientConfig implements Serializable {
   private static final Logger LOG = LoggerFactory.getLogger(TalosClientConfig.class);
   private int maxRetry;
+  private long dnsResolverTimeout;
   private int clientTimeout;
   private int clientConnTimeout;
   private int adminOperationTimeout;
@@ -52,6 +53,9 @@ public class TalosClientConfig implements Serializable {
     maxRetry = Integer.parseInt(properties.getProperty(
         TalosClientConfigKeys.GALAXY_TALOS_CLIENT_MAX_RETRY, String.valueOf(
             TalosClientConfigKeys.GALAXY_TALOS_CLIENT_MAX_RETRY_DEFAULT)));
+    dnsResolverTimeout = Long.parseLong(properties.getProperty(
+        TalosClientConfigKeys.GALAXY_TALOS_HTTP_DNS_RESOLVER_TIMEOUT_MILLIS, String.valueOf(
+            TalosClientConfigKeys.GALAXY_TALOS_HTTP_DNS_RESOLVER_TIMEOUT_MILLIS_DEFAULT)));
     clientTimeout = Integer.parseInt(properties.getProperty(
         TalosClientConfigKeys.GALAXY_TALOS_CLIENT_TIMEOUT_MILLI_SECS, String.valueOf(
             TalosClientConfigKeys.GALAXY_TALOS_CLIENT_TIMEOUT_MILLI_SECS_DEFAULT)));
@@ -177,6 +181,10 @@ public class TalosClientConfig implements Serializable {
 
   public void setScheduleInfoMaxRetry(int ScheduleInfoMaxRetry) {
     this.scheduleInfoMaxRetry = ScheduleInfoMaxRetry;
+  }
+
+  public long getDnsResolverTimeout() {
+    return dnsResolverTimeout;
   }
 
   public void setScheduleInfoInterval(int scheduleInfoInterval) {

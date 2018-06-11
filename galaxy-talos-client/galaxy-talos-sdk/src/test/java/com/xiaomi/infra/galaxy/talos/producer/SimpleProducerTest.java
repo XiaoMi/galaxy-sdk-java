@@ -20,6 +20,7 @@ import org.junit.Test;
 import org.mockito.InOrder;
 import org.mockito.Mockito;
 
+import com.xiaomi.infra.galaxy.rpc.thrift.Credential;
 import com.xiaomi.infra.galaxy.talos.client.ScheduleInfoCache;
 import com.xiaomi.infra.galaxy.talos.thrift.GalaxyTalosException;
 import com.xiaomi.infra.galaxy.talos.thrift.Message;
@@ -97,6 +98,24 @@ public class SimpleProducerTest {
     inOrder.verify(messageClientMock, times(1)).putMessage(
         any(PutMessageRequest.class));
     inOrder.verifyNoMoreInteractions();
+  }
+
+  @Test
+  public void testPutMessageDNSTimeout() {
+    Properties properties = new Properties();
+    properties.setProperty("galaxy.talos.service.endpoint", "http://www.testunknowhello.com");
+    properties.setProperty("galaxy.talos.http.dns.resolver.timeout.millis", "0");
+    TalosProducerConfig producerConfig = new TalosProducerConfig(properties);
+    SimpleProducer simpleProducer = new SimpleProducer(producerConfig,
+        topicAndPartition, new Credential());
+
+    try {
+      simpleProducer.putMessageList(messageList);
+    } catch (Exception e) {
+      System.out.println("testPutMessageDNSTimeout " + e.toString());
+      assertTrue(e.toString().contains("UnknownHostException"));
+      assertTrue(e.toString().contains("TimeoutException"));
+    }
   }
 
   @Test (expected = IllegalArgumentException.class)
