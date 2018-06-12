@@ -38,9 +38,15 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.when;
 
 public class PartitionSenderTest {
-  private static final String resourceName = "12345#TopicName#july777777000999";
+  private static final String resourceName0 = "12345#TopicName#july7777770009990";
+  private static final String resourceName1 = "12345#TopicName#july7777770009991";
+  private static final String resourceName2 = "12345#TopicName#july7777770009992";
+  private static final String resourceName3 = "12345#TopicName#july7777770009993";
   private static final String topicName = "TopicName";
-  private static TopicTalosResourceName talosResourceName;
+  private static TopicTalosResourceName talosResourceName0;
+  private static TopicTalosResourceName talosResourceName1;
+  private static TopicTalosResourceName talosResourceName2;
+  private static TopicTalosResourceName talosResourceName3;
   private static TalosProducerConfig talosProducerConfig;
   private static PartitionSender partitionSender;
   private static MessageService.Iface messageClientMock;
@@ -101,13 +107,15 @@ public class PartitionSenderTest {
         TalosClientConfigKeys.GALAXY_TALOS_SERVICE_ENDPOINT, "testURI");
     talosProducerConfig = new TalosProducerConfig(properties, false);
 
-    talosResourceName = new TopicTalosResourceName(resourceName);
+    talosResourceName0 = new TopicTalosResourceName(resourceName0);
+    talosResourceName1 = new TopicTalosResourceName(resourceName1);
+    talosResourceName2 = new TopicTalosResourceName(resourceName2);
+    talosResourceName3 = new TopicTalosResourceName(resourceName3);
     messageCallback = new MessageCallback();
     messageCallbackExecutors = Executors.newFixedThreadPool(
         talosProducerConfig.getThreadPoolsize());
     messageClientMock = Mockito.mock(MessageService.Iface.class);
     producerMock = Mockito.mock(TalosProducer.class);
-
 
     userMessageList = new ArrayList<UserMessage>();
     userMessage1 = new UserMessage(
@@ -134,7 +142,7 @@ public class PartitionSenderTest {
     doReturn(true).doReturn(false).when(producerMock).isActive();
 
     partitionSender = new PartitionSender(partitionId, topicName,
-        talosResourceName, requestId, Utils.generateClientId(),
+        talosResourceName1, requestId, Utils.generateClientId(),
         talosProducerConfig, messageClientMock, messageCallback,
         messageCallbackExecutors, globalLock, producerMock);
     int addCount = 50;
@@ -159,7 +167,7 @@ public class PartitionSenderTest {
     doReturn(true).doReturn(false).when(producerMock).isActive();
 
     partitionSender = new PartitionSender(partitionId, topicName,
-        talosResourceName, requestId, Utils.generateClientId(),
+        talosResourceName3, requestId, Utils.generateClientId(),
         talosProducerConfig, messageClientMock, messageCallback,
         messageCallbackExecutors, globalLock, producerMock);
     partitionSender.addMessage(userMessageList);
@@ -179,7 +187,7 @@ public class PartitionSenderTest {
     doReturn(true).doReturn(false).when(producerMock).isActive();
 
     partitionSender = new PartitionSender(partitionId, topicName,
-        talosResourceName, requestId, Utils.generateClientId(),
+        talosResourceName2, requestId, Utils.generateClientId(),
         talosProducerConfig, messageClientMock, messageCallback,
         messageCallbackExecutors, globalLock, producerMock);
     partitionSender.addMessage(userMessageList);
@@ -200,7 +208,7 @@ public class PartitionSenderTest {
     doReturn(true).doReturn(false).when(producerMock).isActive();
 
     partitionSender = new PartitionSender(partitionId, topicName,
-        talosResourceName, requestId, Utils.generateClientId(),
+        talosResourceName0, requestId, Utils.generateClientId(),
         talosProducerConfig, messageClientMock, messageCallback,
         messageCallbackExecutors, globalLock, producerMock);
 

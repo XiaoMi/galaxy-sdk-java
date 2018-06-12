@@ -106,6 +106,14 @@ public class ScheduleInfoCache {
     this.messageClient = messageClient;
     this.talosClientConfig = talosClientConfig;
     this.isAutoLocation = false;
+
+    GetScheduleInfoScheduleExecutor = Executors.newSingleThreadScheduledExecutor();
+    GetScheduleInfoExecutor = new ThreadPoolExecutor(1, 1,
+        0L, TimeUnit.MILLISECONDS,
+        new LinkedBlockingQueue<Runnable>(2), new DiscardPolicy());
+
+    LOG.warn("SimpleProducer or SimpleConsumer was built using improperly constructed function."
+        + "Auto location was forbidden");
   }
 
   public static synchronized ScheduleInfoCache getScheduleInfoCache(TopicTalosResourceName
@@ -116,8 +124,6 @@ public class ScheduleInfoCache {
         // this case should not exist normally, only when interface of simpleAPI improper used
         scheduleInfoCacheMap.put(topicTalosResourceName, new ScheduleInfoCache(topicTalosResourceName,
             talosClientConfig, messageClient));
-        LOG.warn("SimpleProducer or SimpleConsumer was built using improperly constructed function."
-            + "Auto location was forbidden");
       } else {
         scheduleInfoCacheMap.put(topicTalosResourceName, new ScheduleInfoCache(topicTalosResourceName,
             talosClientConfig, messageClient, talosClientFactory));

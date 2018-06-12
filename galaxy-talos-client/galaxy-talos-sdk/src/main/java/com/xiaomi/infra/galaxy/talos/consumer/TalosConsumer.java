@@ -377,6 +377,8 @@ public class TalosConsumer {
     consumerClient = consumerClientMock;
     topicAbnormalCallback = abnormalCallback;
     readWriteLock = new ReentrantReadWriteLock();
+    this.scheduleInfoCache = ScheduleInfoCache.getScheduleInfoCache(topicTalosResourceName,
+        consumerConfig, null, null);
 
     partitionScheduledExecutor = Executors.newSingleThreadScheduledExecutor();
     workerScheduleExecutor = Executors.newSingleThreadScheduledExecutor();
