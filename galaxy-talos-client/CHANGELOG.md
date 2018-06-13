@@ -1,3 +1,10 @@
+## 2.3.1
+  * D99490: edit unit test for talos auto location
+  * D99259: talos sdk add dns timeout
+  * D99045: add auto location log
+  * D98915: Discard checkpointed offsets when topic is recreated
+  * D97669: add log for talos auto location
+
 ## 2.3.0
   * D85787: add talos auto location feature
   * D95872: edit demos for eco account
