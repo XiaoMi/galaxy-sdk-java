@@ -137,20 +137,21 @@ public class SimpleConsumer {
       getMessageResponse = scheduleInfoCache.getOrCreateMessageClient(topicAndPartition)
           .getMessage(getMessageRequest);
     } catch(TTransportException tTransportException){
-      LOG.warn("can't connect to the host directly, refresh scheduleInfo and request using url. "
-          + "The exception message is :", tTransportException);
-      if (scheduleInfoCache != null) {
+      if (scheduleInfoCache != null && scheduleInfoCache.getIsAutoLocation()){
+        LOG.warn("can't connect to the host directly, refresh scheduleInfo and request using url. "
+            + "The exception message is :", tTransportException);
         scheduleInfoCache.updatescheduleInfoCache();
+        getMessageResponse = messageClient.getMessage(getMessageRequest);
+      } else {
+        throw tTransportException;
       }
-      getMessageResponse = messageClient.getMessage(getMessageRequest);
     }
 
-    //update scheduleInfocache when request have been transfered
-    if (getMessageResponse.isSetIsTransfer() && getMessageResponse.isIsTransfer()) {
+    //update scheduleInfocache when request have been transfered and talos auto location was set up
+    if (getMessageResponse.isSetIsTransfer() && getMessageResponse.isIsTransfer() && scheduleInfoCache != null
+        && scheduleInfoCache.getIsAutoLocation()) {
       LOG.info("request has been transfered when talos auto location set up, refresh scheduleInfo");
-      if (scheduleInfoCache != null) {
-        scheduleInfoCache.updatescheduleInfoCache();
-      }
+      scheduleInfoCache.updatescheduleInfoCache();
     }
 
     List<MessageAndOffset> messageAndOffsetList =

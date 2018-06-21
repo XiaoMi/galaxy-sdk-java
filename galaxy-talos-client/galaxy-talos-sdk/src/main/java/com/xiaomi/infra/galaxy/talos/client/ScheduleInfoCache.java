@@ -156,6 +156,10 @@ public class ScheduleInfoCache {
     }
   }
 
+  public boolean getIsAutoLocation() {
+    return this.isAutoLocation;
+  }
+
   public void shutDown() {
     LOG.info("scheduleInfoCache is shutting down...");
     for (Map.Entry<TopicTalosResourceName, ScheduleInfoCache> entry : scheduleInfoCacheMap.entrySet()) {

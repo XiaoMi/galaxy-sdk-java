@@ -144,20 +144,21 @@ public class SimpleProducer {
       putMessageResponse = scheduleInfoCache.getOrCreateMessageClient(topicAndPartition)
           .putMessage(putMessageRequest);
     } catch(TTransportException tTransportException){
-      LOG.warn("can't connect to the host directly, refresh scheduleInfo and request using url. "
-          + "The exception message is :", tTransportException);
-      if (scheduleInfoCache != null) {
+      if (scheduleInfoCache != null && scheduleInfoCache.getIsAutoLocation()) {
+        LOG.warn("can't connect to the host directly, refresh scheduleInfo and request using url. "
+                + "The exception message is :", tTransportException);
         scheduleInfoCache.updatescheduleInfoCache();
+        putMessageResponse = messageClient.putMessage(putMessageRequest);
+      } else {
+        throw tTransportException;
       }
-      putMessageResponse = messageClient.putMessage(putMessageRequest);
     }
 
-    //update scheduleInfocache when request have been transfered
-    if (putMessageResponse.isSetIsTransfer() && putMessageResponse.isIsTransfer()) {
+    //update scheduleInfocache when request have been transfered and talos auto location was set up
+    if (putMessageResponse.isSetIsTransfer() && putMessageResponse.isIsTransfer() && scheduleInfoCache != null
+        && scheduleInfoCache.getIsAutoLocation()) {
       LOG.info("request has been transfered when talos auto location set up, refresh scheduleInfo");
-      if (scheduleInfoCache != null) {
-        scheduleInfoCache.updatescheduleInfoCache();
-      }
+      scheduleInfoCache.updatescheduleInfoCache();
     }
   }
 
