@@ -203,6 +203,8 @@ R: ClassTag](
             } else if (gte.errorCode.equals(ErrorCode.MESSAGE_OFFSET_OUT_OF_RANGE)) {
               logWarning(s"Fetch messages failed, try to reset fetch offset.", e)
               resetRequestOffset(maxRetries)
+            } else {
+              logWarning("Fetch messages failed.", gte)
             }
           case _: Exception =>
             val sleepMs = Math.min(backOffMaxMs, round * backoffMs)

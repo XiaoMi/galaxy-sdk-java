@@ -5,7 +5,6 @@ import java.util.Properties
 import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
 
-import org.apache.spark.streaming.talos.TalosCluster.Err
 import org.apache.spark.{Logging, SparkException}
 
 import com.xiaomi.infra.galaxy.rpc.thrift.Credential
@@ -23,14 +22,13 @@ class TalosCluster(
     val talosParams: Map[String, String],
     val credential: Credential
 ) extends Serializable with Logging {
+
+  import TalosCluster._
+
   @transient
   private[talos] var _config: Properties = null
   @transient
   private[talos] var _talosAdmin: TalosAdmin = null
-  @transient
-  private[talos] var _cacheSimpleConsumer: mutable.Map[TopicPartition, SimpleConsumer] = null
-  @transient
-  private[talos] var _topicResourceNames: mutable.Map[String, TopicTalosResourceName] = null
 
   def config: Properties = this.synchronized {
     if (_config == null) {
@@ -69,13 +67,19 @@ class TalosCluster(
     if (_cacheSimpleConsumer == null) {
       _cacheSimpleConsumer = mutable.Map.empty[TopicPartition, SimpleConsumer]
     }
-    val topicPartition = new TopicPartition((topic, partition))
-    val consumer = new SimpleConsumer(
-      new TalosConsumerConfig(config),
-      new TopicAndPartition(topic, topicResourceName(topic), partition),
-      credential)
-    simpleConsumerIdOpt.foreach(consumer.setSimpleConsumerId)
-    _cacheSimpleConsumer.getOrElseUpdate(topicPartition, consumer)
+
+    val topicPartition = new TopicPartition(topic, partition)
+
+    def getConsumer(): SimpleConsumer = {
+      val consumer = new SimpleConsumer(
+        new TalosConsumerConfig(config),
+        new TopicAndPartition(topic, topicResourceName(topic), partition),
+        credential)
+      simpleConsumerIdOpt.foreach(consumer.setSimpleConsumerId)
+      consumer
+    }
+
+    _cacheSimpleConsumer.getOrElseUpdate(topicPartition, getConsumer)
   }
 
   def getLatestOffsets(topics: Set[String]): Either[Err, Map[TopicPartition, Long]] = {
@@ -128,6 +132,11 @@ class TalosCluster(
 private[spark]
 object TalosCluster {
   type Err = ArrayBuffer[Throwable]
+
+  @transient
+  private[talos] var _cacheSimpleConsumer: mutable.Map[TopicPartition, SimpleConsumer] = null
+  @transient
+  private[talos] var _topicResourceNames: mutable.Map[String, TopicTalosResourceName] = null
 
   object Offset extends Enumeration {
     type Offset = Value

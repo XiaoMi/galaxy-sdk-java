@@ -48,24 +48,27 @@ object TalosProducerSingleton {
   }
 
   private def getTalosResourceName(talosAdmin: TalosAdmin, topicName: String): TopicTalosResourceName = {
-    val maxRetry = 3
-    var topic: Topic = null
+    def doGetTalosResourceName(): TopicTalosResourceName = {
+      val maxRetry = 3
+      var topic: Topic = null
 
-    // Retry in case of failure caused by QPS throttle.
-    for (i <- 1 to maxRetry if topic == null) {
-      try {
-        topic = talosAdmin.describeTopic(new DescribeTopicRequest(topicName))
-      } catch {
-        case t: Throwable =>
-          if (i == maxRetry) {
-            throw t
-          }
-          LOG.warn(s"Describe topic failed, retry $i seconds later.", t)
-          Thread.sleep(i * 1000)
+      // Retry in case of failure caused by QPS throttle.
+      for (i <- 1 to maxRetry if topic == null) {
+        try {
+          topic = talosAdmin.describeTopic(new DescribeTopicRequest(topicName))
+        } catch {
+          case t: Throwable =>
+            if (i == maxRetry) {
+              throw t
+            }
+            LOG.warn(s"Describe topic failed, retry $i seconds later.", t)
+            Thread.sleep(i * 1000)
+        }
       }
+      topic.getTopicInfo.getTopicTalosResourceName
     }
 
-    talosResourceName.getOrElseUpdate(topicName, topic.getTopicInfo.getTopicTalosResourceName)
+    talosResourceName.getOrElseUpdate(topicName, doGetTalosResourceName)
   }
 
   // Simple UserMessageCallback which retries to put messages in case of failure.
