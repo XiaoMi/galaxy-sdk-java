@@ -58,7 +58,7 @@ private[talos] class HDFSOffsetDAO(
       try {
         // Write to temp file
         if (fs.exists(tempFile)) {
-          fs.delete(tempFile, true)
+          fs.delete(tempFile, true, true)
         }
         val fos = fs.create(tempFile)
         Utils.tryWithSafeFinally {
@@ -74,7 +74,7 @@ private[talos] class HDFSOffsetDAO(
 
         // Rename to offset file
         if (fs.exists(offsetFile)) {
-          fs.delete(offsetFile, true)
+          fs.delete(offsetFile, true, true)
         }
         if (!fs.rename(tempFile, offsetFile)) {
           logWarning(s"Could not rename ${tempFile} to ${offsetFile}")
@@ -85,7 +85,7 @@ private[talos] class HDFSOffsetDAO(
         if (allOffsetFiles.size > 10) {
           allOffsetFiles.take(allOffsetFiles.size - 10).foreach { file =>
             logInfo("Deleting " + file)
-            fs.delete(file, true)
+            fs.delete(file, true, true)
           }
         }
 
@@ -164,7 +164,7 @@ private[talos] class HDFSOffsetDAO(
 
   override def clear(): Unit = {
     try {
-      fs.delete(new Path(offsetDir), true)
+      fs.delete(new Path(offsetDir), true, true)
       logInfo("Cleared offset files under " + offsetDir)
     } catch {
       case e: Exception =>

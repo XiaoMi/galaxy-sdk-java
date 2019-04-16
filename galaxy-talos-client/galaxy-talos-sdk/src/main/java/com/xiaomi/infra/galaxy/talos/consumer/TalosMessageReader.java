@@ -85,6 +85,7 @@ public class TalosMessageReader extends MessageReader implements MessageCheckpoi
       lastFetchTime = System.currentTimeMillis();
       // return when no message got
       if (messageList == null || messageList.size() == 0) {
+        checkAndCommit(false);
         return;
       }
 
@@ -95,14 +96,7 @@ public class TalosMessageReader extends MessageReader implements MessageCheckpoi
       finishedOffset = messageList.get(messageList.size() - 1).getMessageOffset();
       messageProcessor.process(messageList, this);
       startOffset.set(finishedOffset + 1);
-      if (shoudCommit()) {
-        try {
-          innerCheckpoint();
-        } catch (TException e) {
-          // when commitOffset failed, we just do nothing;
-          LOG.error("commit offset error, we skip to it", e);
-        }
-      }
+      checkAndCommit(true);
     } catch (Throwable e) {
       LOG.error("Error when getting messages from topic: " +
           topicAndPartition.getTopicTalosResourceName() + " partition: " +
@@ -185,6 +179,17 @@ public class TalosMessageReader extends MessageReader implements MessageCheckpoi
       LOG.error("Worker: " + workerId + " commit offset: " +
           lastCommitOffset + " for partition: " +
           topicAndPartition.getPartitionId() + " failed");
+    }
+  }
+
+  private void checkAndCommit(boolean isContinuous){
+    if (shouldCommit(isContinuous)) {
+      try {
+        innerCheckpoint();
+      } catch (TException e) {
+        // when commitOffset failed, we just do nothing;
+        LOG.error("commit offset error, we skip to it", e);
+      }
     }
   }
 }

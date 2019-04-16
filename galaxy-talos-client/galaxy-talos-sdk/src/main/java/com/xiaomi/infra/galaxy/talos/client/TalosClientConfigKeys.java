@@ -16,13 +16,6 @@ public class TalosClientConfigKeys {
       "galaxy.talos.service.endpoint";
 
   /**
-   * The http client dns resolver timeout
-   */
-  public static final String GALAXY_TALOS_HTTP_DNS_RESOLVER_TIMEOUT_MILLIS =
-      "galaxy.talos.http.dns.resolver.timeout.millis";
-  public static final long GALAXY_TALOS_HTTP_DNS_RESOLVER_TIMEOUT_MILLIS_DEFAULT = 3000;
-
-  /**
    * The http client connection params
    */
   public static final String GALAXY_TALOS_HTTP_MAX_TOTAL_CONNECTION =
@@ -53,14 +46,7 @@ public class TalosClientConfigKeys {
    */
   public static final String GALAXY_TALOS_CLIENT_SCHEDULE_INFO_MAX_RETRY =
       "galaxy.talos.client.schedule.info.max.retry";
-  public static final int GALAXY_TALOS_CLIENT_SCHEDULE_INFO_MAX_RETRY_DEFAULT = 2;
-
-  /**
-   * interval for client update it's scheduleinfo cache
-   */
-  public static final String GALAXY_TALOS_CLIENT_SCHEDULE_INFO_INTERVAL =
-      "galaxy.talos.client.schedule.info.interval";
-  public static final int GALAXY_TALOS_CLIENT_SCHEDULE_INFO_INTERVAL_DEFAULT = 1000 * 10;
+  public static final int GALAXY_TALOS_CLIENT_SCHEDULE_INFO_MAX_RETRY_DEFAULT = 1;
 
   /**
    * The client max retry times before throw exception
@@ -254,7 +240,7 @@ public class TalosClientConfigKeys {
   public static final String GALAXY_TALOS_CONSUMER_FETCH_INTERVAL =
       "galaxy.talos.consumer.fetch.interval.ms";
   public static final int GALAXY_TALOS_CONSUMER_FETCH_INTERVAL_DEFAULT = 200;
-  public static final int GALAXY_TALOS_CONSUMER_FETCH_INTERVAL_MINIMUM = 200;
+  public static final int GALAXY_TALOS_CONSUMER_FETCH_INTERVAL_MINIMUM = 50;
   public static final int GALAXY_TALOS_CONSUMER_FETCH_INTERVAL_MAXIMUM = 800;
 
   /**
@@ -356,5 +342,36 @@ public class TalosClientConfigKeys {
   public static final String GALAXY_TALOS_CONSUMER_CHECKPOINT_AUTO_COMMIT =
       "galaxy.talos.consumer.checkpoint.auto.commit";
   public static final boolean GALAXY_TALOS_CONSUMER_CHECKPOINT_AUTO_COMMIT_DEFAULT = true;
+
+  /**
+   * Stress tests params
+   */
+  public static final String GALAXY_TALOS_ACCESSKEY =
+      "galaxy.talos.accessKey";
+
+  public static final String GALAXY_TALOS_ACCESSSECRET =
+      "galaxy.talos.accessSecret";
+
+  public static final String GALAXY_TALOS_TOPICNAME =
+      "galaxy.talos.topicName";
+
+  public static final String GALAXY_TALOS_PARTITIONID =
+      "galaxy.talos.partitionid";
+
+  public static final String GALAXY_TALOS_PUTINTERVAL =
+      "galaxy.talos.putInterval";
+
+  public static final String THREAD_NUM_PERPARTITION =
+      "thread.num.perpartition";
+
+  public static final String QPS_PERTHREAD = "qps.perthread";
+
+  public static final String MESSAGE_STR = "message.str";
+  public static final String MESSAGE_STR_DEFAULT = "this message is 1K. this message is 1K. this message is 1K. "
+      + "this message is 1K. this message is 1K. this message is 1K. this message is 1K. this message is 1K. "
+      + "this message is 1K. this message is 1K. this message is 1K. this message is 1K. this message is 1K. "
+      + "this message is 1K. this message is 1K. this message is 1K. this message is 1K. this message is 1K. "
+      + "this message is 1K. this message is 1K. this message is 1K. this message is 1K. this message is 1K. "
+      + "this message is 1K. this message is 1K. this message";
 
 }

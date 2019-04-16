@@ -130,7 +130,8 @@ public class SimpleConsumer {
         startOffset, requestSequenceId)
         .setMaxGetMessageNumber(maxFetchedNumber)
         .setMaxGetMessageBytes(TalosClientConfigKeys.GALAXY_TALOS_CONSUMER_MAX_FETCH_BYTES_DEFAULT);
-    getMessageRequest.setTimeoutTimestamp(System.currentTimeMillis() + consumerConfig.getClientTimeout());
+    int clientTimeout = consumerConfig.getClientTimeout();
+    getMessageRequest.setTimeoutTimestamp(System.currentTimeMillis() + clientTimeout);
 
     GetMessageResponse getMessageResponse = new GetMessageResponse();
     try {
@@ -138,9 +139,11 @@ public class SimpleConsumer {
           .getMessage(getMessageRequest);
     } catch(TTransportException tTransportException){
       if (scheduleInfoCache != null && scheduleInfoCache.getIsAutoLocation()){
-        LOG.warn("can't connect to the host directly, refresh scheduleInfo and request using url. "
-            + "The exception message is :", tTransportException);
+        LOG.warn("can't connect to the host directly, refresh scheduleInfo and retry using url. "
+            + "The exception message is :" + tTransportException.getMessage() +
+            ". Ignore this if not frequently.");
         scheduleInfoCache.updatescheduleInfoCache();
+        getMessageRequest.setTimeoutTimestamp(System.currentTimeMillis() + clientTimeout);
         getMessageResponse = messageClient.getMessage(getMessageRequest);
       } else {
         throw tTransportException;
@@ -176,6 +179,7 @@ public class SimpleConsumer {
   }
 
   public void shutDown() {
-    scheduleInfoCache.shutDown();
+    //onec called, all request of this topic in the process cannot auto location
+    scheduleInfoCache.shutDown(topicAndPartition.topicTalosResourceName);
   }
 }

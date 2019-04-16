@@ -34,9 +34,12 @@ public class ScheduleInfoCache {
         try {
           //get and update scheduleInfoMap
           getScheduleInfo(topicTalosResourceName);
+          //to prevent frequent ScheduleInfo call
+          Thread.sleep(10000);
+          return;
+        } catch (InterruptedException e) {
           return;
         } catch (Throwable throwable) {
-          LOG.error("Exception in GetScheduleInfoTask: ", throwable);
           // 1.if throwable instance of TopicNotExist, cancel all reading task
           // 2.if other throwable such as LockNotExist or HbaseOperationFailed, retry again
           // 3.if scheduleInfoMap didn't update success after maxRetry, just return and use
@@ -44,6 +47,7 @@ public class ScheduleInfoCache {
           if (Utils.isTopicNotExist(throwable)) {
             return;
           }
+          LOG.error("Exception in GetScheduleInfoTask: ", throwable);
         }
       }
     }
@@ -83,7 +87,7 @@ public class ScheduleInfoCache {
     GetScheduleInfoScheduleExecutor = Executors.newSingleThreadScheduledExecutor();
     GetScheduleInfoExecutor = new ThreadPoolExecutor(1, 1,
         0L, TimeUnit.MILLISECONDS,
-        new LinkedBlockingQueue<Runnable>(2), new DiscardPolicy());
+        new LinkedBlockingQueue<Runnable>(1), new DiscardPolicy());
 
     LOG.info(this.isAutoLocation ? "Auto location is enabled for request of " + topicTalosResourceName
         : "Auto location is forbidden for request of " + topicTalosResourceName);
@@ -97,7 +101,6 @@ public class ScheduleInfoCache {
         return;
       }
     }
-    initGetScheduleInfoTask();
   }
 
   private ScheduleInfoCache(TopicTalosResourceName topicTalosResourceName,
@@ -110,7 +113,7 @@ public class ScheduleInfoCache {
     GetScheduleInfoScheduleExecutor = Executors.newSingleThreadScheduledExecutor();
     GetScheduleInfoExecutor = new ThreadPoolExecutor(1, 1,
         0L, TimeUnit.MILLISECONDS,
-        new LinkedBlockingQueue<Runnable>(2), new DiscardPolicy());
+        new LinkedBlockingQueue<Runnable>(1), new DiscardPolicy());
 
     LOG.warn("SimpleProducer or SimpleConsumer was built using improperly constructed function."
         + "Auto location was forbidden");
@@ -152,7 +155,7 @@ public class ScheduleInfoCache {
 
   public void updatescheduleInfoCache() {
     if (isAutoLocation) {
-      GetScheduleInfoExecutor.submit(new GetScheduleInfoTask());
+      GetScheduleInfoExecutor.execute(new GetScheduleInfoTask());
     }
   }
 
@@ -160,7 +163,14 @@ public class ScheduleInfoCache {
     return this.isAutoLocation;
   }
 
-  public void shutDown() {
+  public void shutDown(TopicTalosResourceName topicTalosResourceName) {
+    LOG.info("scheduleInfoCache of " + topicTalosResourceName + " is shutting down...");
+    scheduleInfoCacheMap.get(topicTalosResourceName).GetScheduleInfoScheduleExecutor.shutdownNow();
+    scheduleInfoCacheMap.get(topicTalosResourceName).GetScheduleInfoExecutor.shutdownNow();
+    LOG.info("scheduleInfoCache of " + topicTalosResourceName + " shutdown.");
+  }
+
+  public void shutDownAll() {
     LOG.info("scheduleInfoCache is shutting down...");
     for (Map.Entry<TopicTalosResourceName, ScheduleInfoCache> entry : scheduleInfoCacheMap.entrySet()) {
       entry.getValue().GetScheduleInfoScheduleExecutor.shutdownNow();
@@ -187,11 +197,4 @@ public class ScheduleInfoCache {
     }
   }
 
-  private void initGetScheduleInfoTask() {
-    if (isAutoLocation) {
-      GetScheduleInfoScheduleExecutor.scheduleWithFixedDelay(new GetScheduleInfoTask(),
-          talosClientConfig.getScheduleInfoInterval(),
-          talosClientConfig.getScheduleInfoInterval(), TimeUnit.MILLISECONDS);
-    }
-  }
 }

@@ -138,16 +138,19 @@ public class SimpleProducer {
     PutMessageRequest putMessageRequest = new PutMessageRequest(
         topicAndPartition, messageBlockList,
         msgList.size(), requestSequenceId);
-    putMessageRequest.setTimeoutTimestamp(System.currentTimeMillis() + producerConfig.getClientTimeout());
+    int clientTimeout = producerConfig.getClientTimeout();
+    putMessageRequest.setTimeoutTimestamp(System.currentTimeMillis() + clientTimeout);
     PutMessageResponse putMessageResponse = new PutMessageResponse();
     try {
       putMessageResponse = scheduleInfoCache.getOrCreateMessageClient(topicAndPartition)
           .putMessage(putMessageRequest);
     } catch(TTransportException tTransportException){
       if (scheduleInfoCache != null && scheduleInfoCache.getIsAutoLocation()) {
-        LOG.warn("can't connect to the host directly, refresh scheduleInfo and request using url. "
-                + "The exception message is :", tTransportException);
+        LOG.warn("can't connect to the host directly, refresh scheduleInfo and retry using url. "
+            + "The exception message is :" + tTransportException.getMessage() +
+            ". Ignore this if not frequently.");
         scheduleInfoCache.updatescheduleInfoCache();
+        putMessageRequest.setTimeoutTimestamp(System.currentTimeMillis() + clientTimeout);
         putMessageResponse = messageClient.putMessage(putMessageRequest);
       } else {
         throw tTransportException;
@@ -168,6 +171,7 @@ public class SimpleProducer {
   }
 
   public void shutDown() {
-    scheduleInfoCache.shutDown();
+    //onec called, all request of this topic in the process cannot auto location
+    scheduleInfoCache.shutDown(topicAndPartition.topicTalosResourceName);
   }
 }

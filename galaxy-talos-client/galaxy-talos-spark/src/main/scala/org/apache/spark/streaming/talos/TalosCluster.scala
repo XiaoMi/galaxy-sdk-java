@@ -1,8 +1,8 @@
 package org.apache.spark.streaming.talos
 
 import java.util.Properties
+import java.util.concurrent.ConcurrentHashMap
 
-import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
 
 import org.apache.spark.{Logging, SparkException}
@@ -47,15 +47,35 @@ class TalosCluster(
     _talosAdmin
   }
 
-  def topicResourceName(topic: String): TopicTalosResourceName = this.synchronized {
-    if (_topicResourceNames == null) {
-      _topicResourceNames = mutable.Map.empty[String, TopicTalosResourceName]
+  def topicResourceName(topicName: String): TopicTalosResourceName = {
+
+    def doGetTalosResourceName(): TopicTalosResourceName = {
+      val maxRetry = 3
+      var topic: Topic = null
+
+      // Retry in case of failure caused by QPS throttle.
+      for (i <- 1 to maxRetry if topic == null) {
+        try {
+          topic = admin().describeTopic(new DescribeTopicRequest(topicName))
+        } catch {
+          case t: Throwable =>
+            if (i == maxRetry) {
+              throw t
+            }
+            logWarning(s"Describe topic failed, retry $i seconds later.", t)
+            Thread.sleep(i * 1000)
+        }
+      }
+      topic.getTopicInfo.getTopicTalosResourceName
     }
-    _topicResourceNames.getOrElseUpdate(topic,
-      admin().describeTopic(new DescribeTopicRequest(topic)).topicInfo.topicTalosResourceName)
+
+    if (!_topicResourceNames.containsKey(topicName)) {
+      _topicResourceNames.put(topicName, doGetTalosResourceName())
+    }
+    _topicResourceNames.get(topicName)
   }
 
-  def simpleConsumer(topic: String, partition: Int): SimpleConsumer = this.synchronized {
+  def simpleConsumer(topic: String, partition: Int): SimpleConsumer = {
     this.simpleConsumer(topic, partition, Option.empty[String])
   }
 
@@ -63,11 +83,7 @@ class TalosCluster(
       topic: String,
       partition: Int,
       simpleConsumerIdOpt: Option[String]
-  ): SimpleConsumer = this.synchronized {
-    if (_cacheSimpleConsumer == null) {
-      _cacheSimpleConsumer = mutable.Map.empty[TopicPartition, SimpleConsumer]
-    }
-
+  ): SimpleConsumer = {
     val topicPartition = new TopicPartition(topic, partition)
 
     def getConsumer(): SimpleConsumer = {
@@ -79,7 +95,11 @@ class TalosCluster(
       consumer
     }
 
-    _cacheSimpleConsumer.getOrElseUpdate(topicPartition, getConsumer)
+    if (!_cacheSimpleConsumer.containsKey(topicPartition)) {
+      _cacheSimpleConsumer.put(topicPartition, getConsumer())
+    }
+
+    _cacheSimpleConsumer.get(topicPartition)
   }
 
   def getLatestOffsets(topics: Set[String]): Either[Err, Map[TopicPartition, Long]] = {
@@ -133,10 +153,8 @@ private[spark]
 object TalosCluster {
   type Err = ArrayBuffer[Throwable]
 
-  @transient
-  private[talos] var _cacheSimpleConsumer: mutable.Map[TopicPartition, SimpleConsumer] = null
-  @transient
-  private[talos] var _topicResourceNames: mutable.Map[String, TopicTalosResourceName] = null
+  private[talos] val _cacheSimpleConsumer = new ConcurrentHashMap[TopicPartition, SimpleConsumer]()
+  private[talos] val _topicResourceNames = new ConcurrentHashMap[String, TopicTalosResourceName]()
 
   object Offset extends Enumeration {
     type Offset = Value

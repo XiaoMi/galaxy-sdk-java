@@ -46,26 +46,22 @@ public class TalosClientFactory {
   private HttpClient generateHttpClient() {
     return generateHttpClient(talosClientConfig.getMaxTotalConnections(),
         talosClientConfig.getMaxTotalConnectionsPerRoute(),
-        talosClientConfig.getClientConnTimeout(),
-        talosClientConfig.getDnsResolverTimeout());
+        talosClientConfig.getClientConnTimeout());
   }
 
   public static HttpClient generateHttpClient(final int maxTotalConnections,
-      final int maxTotalConnectionsPerRoute, long dnsTimeout) {
+      final int maxTotalConnectionsPerRoute) {
     return generateHttpClient(maxTotalConnections, maxTotalConnectionsPerRoute,
-        DEFAULT_CLIENT_CONN_TIMEOUT, dnsTimeout);
+        DEFAULT_CLIENT_CONN_TIMEOUT);
   }
 
   public static HttpClient generateHttpClient(final int maxTotalConnections,
-      final int maxTotalConnectionsPerRoute, int connTimeout, long dnsTimeout) {
+      final int maxTotalConnectionsPerRoute, int connTimeout) {
     SchemeRegistry schemeRegistry = new SchemeRegistry();
     schemeRegistry.register(new Scheme("http", 80, PlainSocketFactory.getSocketFactory()));
     schemeRegistry.register(new Scheme("https", 443, SSLSocketFactory.getSocketFactory()));
 
-    TalosDNSResolver dnsResolver = new TalosDNSResolver(dnsTimeout);
-
-    PoolingClientConnectionManager conMgr = new PoolingClientConnectionManager(
-        schemeRegistry, dnsResolver);
+    PoolingClientConnectionManager conMgr = new PoolingClientConnectionManager(schemeRegistry);
     conMgr.setMaxTotal(maxTotalConnections);
     conMgr.setDefaultMaxPerRoute(maxTotalConnectionsPerRoute);
 

@@ -23,6 +23,8 @@ import com.xiaomi.infra.galaxy.talos.thrift.ApplyQuotaRequest;
 import com.xiaomi.infra.galaxy.talos.thrift.ApproveQuotaRequest;
 import com.xiaomi.infra.galaxy.talos.thrift.ApproveQuotaResponse;
 import com.xiaomi.infra.galaxy.talos.thrift.ChangeTopicAttributeRequest;
+import com.xiaomi.infra.galaxy.talos.thrift.ConsumerGroupAndPartition;
+import com.xiaomi.infra.galaxy.talos.thrift.ConsumerService;
 import com.xiaomi.infra.galaxy.talos.thrift.CreateTopicRequest;
 import com.xiaomi.infra.galaxy.talos.thrift.CreateTopicResponse;
 import com.xiaomi.infra.galaxy.talos.thrift.DeleteTopicQuotaRequest;
@@ -48,6 +50,8 @@ import com.xiaomi.infra.galaxy.talos.thrift.ListTopicsResponse;
 import com.xiaomi.infra.galaxy.talos.thrift.MessageService;
 import com.xiaomi.infra.galaxy.talos.thrift.OffsetInfo;
 import com.xiaomi.infra.galaxy.talos.thrift.QueryTopicQuotaRequest;
+import com.xiaomi.infra.galaxy.talos.thrift.QueryOrgOffsetRequest;
+import com.xiaomi.infra.galaxy.talos.thrift.QueryOrgOffsetResponse;
 import com.xiaomi.infra.galaxy.talos.thrift.QuotaService;
 import com.xiaomi.infra.galaxy.talos.thrift.RevokePermissionRequest;
 import com.xiaomi.infra.galaxy.talos.thrift.RevokeQuotaRequest;
@@ -70,6 +74,7 @@ public class TalosAdmin {
   private static final Logger LOG = LoggerFactory.getLogger(TalosAdmin.class);
   private TopicService.Iface topicClient;
   private MessageService.Iface messageClient;
+  private ConsumerService.Iface consumerClient;
   private QuotaService.Iface quotaClient;
   private Credential credential;
 
@@ -87,6 +92,7 @@ public class TalosAdmin {
   public TalosAdmin(TalosClientFactory talosClientFactory) {
     topicClient = talosClientFactory.newTopicClient();
     messageClient = talosClientFactory.newMessageClient();
+    consumerClient = talosClientFactory.newConsumerClient();
     quotaClient = talosClientFactory.newQuotaClient();
     credential = talosClientFactory.getCredential();
   }
@@ -159,6 +165,12 @@ public class TalosAdmin {
       throws GalaxyTalosException, TException {
     GetTopicOffsetResponse response = messageClient.getTopicOffset(request);
     return response.getOffsetInfoList();
+  }
+
+  public Map<ConsumerGroupAndPartition, Long> getOrgOffsetMap(QueryOrgOffsetRequest request)
+      throws GalaxyTalosException, TException {
+    QueryOrgOffsetResponse response = consumerClient.queryOrgOffset(request);
+    return response.getConsumerGroupOffsetMap();
   }
 
   public OffsetInfo getPartitionOffset(GetPartitionOffsetRequest request)

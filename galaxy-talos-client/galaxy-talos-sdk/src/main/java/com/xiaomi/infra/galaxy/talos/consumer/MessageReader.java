@@ -105,9 +105,14 @@ public abstract class MessageReader {
     return lastCommitOffset + 1;
   }
 
-  protected boolean shoudCommit() {
-    return (System.currentTimeMillis() - lastCommitTime >= commitInterval) ||
-        (finishedOffset - lastCommitOffset >= commitThreshold);
+  protected boolean shouldCommit(boolean isContinuous) {
+    if (isContinuous) {
+      return (System.currentTimeMillis() - lastCommitTime >= commitInterval) ||
+          (finishedOffset - lastCommitOffset >= commitThreshold);
+    } else {
+      return (System.currentTimeMillis() - lastCommitTime >= commitInterval) &&
+          (finishedOffset > lastCommitOffset);
+    }
   }
 
   protected void cleanReader() {

@@ -440,7 +440,12 @@ public class TalosConsumer {
 
     int tryCount = talosConsumerConfig.getSelfRegisterMaxRetry() + 1;
     while (tryCount-- > 0) {
-      lockWorkerResponse = consumerClient.lockWorker(request);
+      try {
+        lockWorkerResponse = consumerClient.lockWorker(request);
+      } catch (Throwable e) {
+        LOG.error("The worker: " + workerId + "register self got error: ", e);
+        continue;
+      }
       if (lockWorkerResponse.isRegisterSuccess()) {
         LOG.info("The worker: " + workerId + " register self success");
         return;
@@ -705,7 +710,7 @@ public class TalosConsumer {
     workerScheduleExecutor.shutdownNow();
     renewScheduleExecutor.shutdownNow();
     reBalanceExecutor.shutdownNow();
-    scheduleInfoCache.shutDown();
+    scheduleInfoCache.shutDown(topicTalosResourceName);
     LOG.info("Worker: " + workerId + " shutdown.");
   }
 

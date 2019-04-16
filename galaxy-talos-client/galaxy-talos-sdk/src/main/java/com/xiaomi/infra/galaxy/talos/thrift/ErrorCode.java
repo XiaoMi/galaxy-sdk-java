@@ -47,7 +47,8 @@ public enum ErrorCode implements libthrift091.TEnum {
   SUB_RESOURCE_NAME_NOT_EXIST(32),
   REQUEST_PROCESS_TIMEOUT(33),
   QUOTA_EXCEEDED(34),
-  THROTTLE_REJECT_ERROR(35);
+  THROTTLE_REJECT_ERROR(35),
+  QUOTA_AUTO_APPROVE_FAILED(36);
 
   private final int value;
 
@@ -140,6 +141,8 @@ public enum ErrorCode implements libthrift091.TEnum {
         return QUOTA_EXCEEDED;
       case 35:
         return THROTTLE_REJECT_ERROR;
+      case 36:
+        return QUOTA_AUTO_APPROVE_FAILED;
       default:
         return null;
     }

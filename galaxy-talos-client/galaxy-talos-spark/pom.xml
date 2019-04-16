@@ -11,7 +11,7 @@
 
     <groupId>com.xiaomi.infra.galaxy</groupId>
     <artifactId>galaxy-talos-spark</artifactId>
-    <version>2.4-SNAPSHOT</version>
+    <version>2.3.6.1</version>
 
     <properties>
         <java.version>1.6</java.version>
@@ -40,7 +40,7 @@
         <dependency>
             <groupId>com.xiaomi.infra.galaxy</groupId>
             <artifactId>galaxy-talos-sdk</artifactId>
-            <version>${project.version}</version>
+            <version>${project.parent.version}</version>
             <exclusions>
                 <exclusion>
                     <groupId>com.xiaomi.infra.galaxy</groupId>
@@ -252,7 +252,7 @@
                 <version>0.7.0</version>
                 <configuration>
                     <verbose>false</verbose>
-                    <failOnViolation>true</failOnViolation>
+                    <failOnViolation>false</failOnViolation>
                     <includeTestSourceDirectory>false</includeTestSourceDirectory>
                     <failOnWarning>false</failOnWarning>
                     <sourceDirectory>${basedir}/src/main/scala</sourceDirectory>

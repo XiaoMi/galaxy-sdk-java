@@ -1,3 +1,34 @@
+## 2.3.9
+  * reduce consume interval
+
+## 2.3.8
+  * D141385: fix consume but not commit question 
+
+## 2.3.7 
+  * D139020: change oraclejdk1.6 to openjdk1.8
+
+## 2.3.6
+  * D134066: add queryConsumerOffsetLag function for talos admin 
+
+## 2.3.5
+  * D117528: update sdk by quota auto-apply
+
+## 2.3.4
+  * D114818: make lockWorker retry work
+  * D112899: fix bug: thrift error when GalaxyTalosException
+  * D108279: optimize scheduleinfo shutdown interface
+  * D108220: Revert "talos sdk add dns timeout"
+
+## 2.3.3
+  * D107012: to prevent frequent getScheduleInfo call
+
+## 2.3.2
+  * D104305: optimize spark talos producer demo
+  * D104122: retry to describe topic in case of throttle exception
+  * D101753: Optimize fetching talos messages
+  * D101666: Add scala talos producer demo
+  * D100865: fix bug for auto location log incorrect
+
 ## 2.3.1
   * D99490: edit unit test for talos auto location
   * D99259: talos sdk add dns timeout

@@ -22,7 +22,7 @@ class HDFSOffsetDAOSuite extends FunSuite with BeforeAndAfter {
 
   before {
     val tc = new TalosCluster(Map.empty[String, String], new Credential())
-    TalosCluster._topicResourceNames = mutable.Map(topic -> new TopicTalosResourceName(topicTalosResourceName))
+    TalosCluster._topicResourceNames.put(topic, new TopicTalosResourceName(topicTalosResourceName))
     dao = new HDFSOffsetDAO(tc, dir, new Configuration())
     FileUtils.deleteDirectory(new File(dir))
     new File(dir).mkdir()

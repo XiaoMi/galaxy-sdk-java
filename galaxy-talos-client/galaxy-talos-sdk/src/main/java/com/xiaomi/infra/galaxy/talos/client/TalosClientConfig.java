@@ -18,17 +18,23 @@ import org.slf4j.LoggerFactory;
 public class TalosClientConfig implements Serializable {
   private static final Logger LOG = LoggerFactory.getLogger(TalosClientConfig.class);
   private int maxRetry;
-  private long dnsResolverTimeout;
   private int clientTimeout;
   private int clientConnTimeout;
   private int adminOperationTimeout;
   private String serviceEndpoint;
+  private String accessKey;
+  private String accessSecret;
+  private String topicName;
+  private int partitionId;
+  private int threadNumPerPartition;
+  private int qpsPerThread;
+  private String messageStr;
+  private long putInterval;
   private int maxTotalConnections;
   private int maxTotalConnectionsPerRoute;
   private boolean isRetry;
   private boolean isAutoLocation;
   private int scheduleInfoMaxRetry;
-  private int scheduleInfoInterval;
 
   protected Properties properties;
 
@@ -53,9 +59,6 @@ public class TalosClientConfig implements Serializable {
     maxRetry = Integer.parseInt(properties.getProperty(
         TalosClientConfigKeys.GALAXY_TALOS_CLIENT_MAX_RETRY, String.valueOf(
             TalosClientConfigKeys.GALAXY_TALOS_CLIENT_MAX_RETRY_DEFAULT)));
-    dnsResolverTimeout = Long.parseLong(properties.getProperty(
-        TalosClientConfigKeys.GALAXY_TALOS_HTTP_DNS_RESOLVER_TIMEOUT_MILLIS, String.valueOf(
-            TalosClientConfigKeys.GALAXY_TALOS_HTTP_DNS_RESOLVER_TIMEOUT_MILLIS_DEFAULT)));
     clientTimeout = Integer.parseInt(properties.getProperty(
         TalosClientConfigKeys.GALAXY_TALOS_CLIENT_TIMEOUT_MILLI_SECS, String.valueOf(
             TalosClientConfigKeys.GALAXY_TALOS_CLIENT_TIMEOUT_MILLI_SECS_DEFAULT)));
@@ -67,6 +70,15 @@ public class TalosClientConfig implements Serializable {
         String.valueOf(TalosClientConfigKeys.GALAXY_TALOS_CLIENT_ADMIN_TIMEOUT_MILLI_SECS_DEFAULT)));
     serviceEndpoint = properties.getProperty(
         TalosClientConfigKeys.GALAXY_TALOS_SERVICE_ENDPOINT, null);
+    accessKey = properties.getProperty(TalosClientConfigKeys.GALAXY_TALOS_ACCESSKEY, null);
+    accessSecret = properties.getProperty(TalosClientConfigKeys.GALAXY_TALOS_ACCESSSECRET, null);
+    topicName = properties.getProperty(TalosClientConfigKeys.GALAXY_TALOS_TOPICNAME, null);
+    partitionId = Integer.parseInt(properties.getProperty(TalosClientConfigKeys.GALAXY_TALOS_PARTITIONID, "-1"));
+    threadNumPerPartition = Integer.parseInt(properties.getProperty(
+        TalosClientConfigKeys.THREAD_NUM_PERPARTITION, "1"));
+    qpsPerThread = Integer.parseInt(properties.getProperty(TalosClientConfigKeys.QPS_PERTHREAD, "-1"));
+    messageStr = properties.getProperty(TalosClientConfigKeys.MESSAGE_STR, TalosClientConfigKeys.MESSAGE_STR_DEFAULT);
+    putInterval = Integer.parseInt(properties.getProperty(TalosClientConfigKeys.GALAXY_TALOS_PUTINTERVAL, "5000"));
     maxTotalConnections = Integer.parseInt(properties.getProperty(
         TalosClientConfigKeys.GALAXY_TALOS_HTTP_MAX_TOTAL_CONNECTION,
         String.valueOf(TalosClientConfigKeys.GALAXY_TALOS_HTTP_MAX_TOTAL_CONNECTION_DEFAULT)));
@@ -82,9 +94,6 @@ public class TalosClientConfig implements Serializable {
     scheduleInfoMaxRetry = Integer.parseInt(properties.getProperty(
         TalosClientConfigKeys.GALAXY_TALOS_CLIENT_SCHEDULE_INFO_MAX_RETRY,
         String.valueOf(TalosClientConfigKeys.GALAXY_TALOS_CLIENT_SCHEDULE_INFO_MAX_RETRY_DEFAULT)));
-    scheduleInfoInterval = Integer.parseInt(properties.getProperty(
-        TalosClientConfigKeys.GALAXY_TALOS_CLIENT_SCHEDULE_INFO_INTERVAL,
-        String.valueOf(TalosClientConfigKeys.GALAXY_TALOS_CLIENT_SCHEDULE_INFO_INTERVAL_DEFAULT)));
   }
 
   public int getMaxRetry() {
@@ -107,6 +116,38 @@ public class TalosClientConfig implements Serializable {
     return serviceEndpoint;
   }
 
+  public String getAccessKey() {
+    return accessKey;
+  }
+
+  public String getAccessSecret() {
+    return accessSecret;
+  }
+
+  public String getTopicName() {
+    return topicName;
+  }
+
+  public int getPartitionId() {
+    return partitionId;
+  }
+
+  public int getThreadNumPerPartition() {
+    return threadNumPerPartition;
+  }
+
+  public int getQpsPerThread() {
+    return qpsPerThread;
+  }
+
+  public String getMessageStr() {
+    return messageStr;
+  }
+
+  public long getPutInterval() {
+    return putInterval;
+  }
+
   public int getMaxTotalConnections() {
     return maxTotalConnections;
   }
@@ -122,8 +163,6 @@ public class TalosClientConfig implements Serializable {
   public boolean isAutoLocation() { return isAutoLocation; }
 
   public int getScheduleInfoMaxRetry() { return scheduleInfoMaxRetry; }
-
-  public int getScheduleInfoInterval() { return scheduleInfoInterval; }
 
   public static Properties loadProperties(String fileName) {
     Properties properties = new Properties();
@@ -183,11 +222,4 @@ public class TalosClientConfig implements Serializable {
     this.scheduleInfoMaxRetry = ScheduleInfoMaxRetry;
   }
 
-  public long getDnsResolverTimeout() {
-    return dnsResolverTimeout;
-  }
-
-  public void setScheduleInfoInterval(int scheduleInfoInterval) {
-    this.scheduleInfoInterval = scheduleInfoInterval;
-  }
 }

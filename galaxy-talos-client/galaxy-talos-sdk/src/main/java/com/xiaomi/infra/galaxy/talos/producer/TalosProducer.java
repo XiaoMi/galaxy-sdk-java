@@ -343,7 +343,7 @@ public class TalosProducer {
     partitionCheckFuture.cancel(false);
     partitionCheckExecutor.shutdownNow();
     messageCallbackExecutors.shutdownNow();
-    scheduleInfoCache.shutDown();
+    scheduleInfoCache.shutDown(topicTalosResourceName);
   }
 
   public boolean isActive() {
