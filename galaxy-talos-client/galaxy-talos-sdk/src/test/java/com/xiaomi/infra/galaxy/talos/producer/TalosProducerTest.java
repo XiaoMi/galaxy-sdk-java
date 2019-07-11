@@ -27,6 +27,8 @@ import com.xiaomi.infra.galaxy.talos.client.TalosClientFactory;
 import com.xiaomi.infra.galaxy.talos.thrift.DescribeTopicRequest;
 import com.xiaomi.infra.galaxy.talos.thrift.ErrorCode;
 import com.xiaomi.infra.galaxy.talos.thrift.GalaxyTalosException;
+import com.xiaomi.infra.galaxy.talos.thrift.GetDescribeInfoRequest;
+import com.xiaomi.infra.galaxy.talos.thrift.GetDescribeInfoResponse;
 import com.xiaomi.infra.galaxy.talos.thrift.Message;
 import com.xiaomi.infra.galaxy.talos.thrift.MessageService;
 import com.xiaomi.infra.galaxy.talos.thrift.PutMessageRequest;
@@ -60,6 +62,8 @@ public class TalosProducerTest {
   private static final int producerMaxPutMsgNumber = 10;
   private static final int producerMaxPutMsgBytes = 100;
   private static final int checkPartitionInterval = 200;
+  private static final TopicTalosResourceName talosResourceName =
+      new TopicTalosResourceName(resourceName);
 
   private TalosProducerConfig talosProducerConfig;
   private TalosProducer talosProducer;
@@ -126,16 +130,9 @@ public class TalosProducerTest {
         TalosClientConfigKeys.GALAXY_TALOS_SERVICE_ENDPOINT, "testURI");
     talosProducerConfig = new TalosProducerConfig(properties, false);
 
-    // construct a topic
-    TopicInfo topicInfo = new TopicInfo(
-        topicName, new TopicTalosResourceName(resourceName), ownerId);
-    TopicAttribute topicAttribute = new TopicAttribute()
-        .setPartitionNumber(partitionNumber)
-        .setMessageRetentionSecs(messageRetentionMs);
-    TopicState topicState = new TopicState()
-        .setTopicStatus(TopicStatus.ACTIVE)
-        .setCreateTimestamp(System.currentTimeMillis());
-    topic = new Topic(topicInfo, topicAttribute, topicState);
+    // construct a getDescribeInfoResponse
+    GetDescribeInfoResponse getDescribeInfoResponse = new GetDescribeInfoResponse(
+        talosResourceName, partitionNumber);
 
     // mock some return value
     talosAdminMock = Mockito.mock(TalosAdmin.class);
@@ -156,6 +153,8 @@ public class TalosProducerTest {
 
     when(talosClientFactoryMock.newMessageClient()).thenReturn(messageClientMock);
     when(messageClientMock.putMessage(any(PutMessageRequest.class))).thenReturn(new PutMessageResponse());
+    when(talosAdminMock.getDescribeInfo(any(GetDescribeInfoRequest.class))).thenReturn(
+        getDescribeInfoResponse);
   }
 
   @After
@@ -164,9 +163,8 @@ public class TalosProducerTest {
 
   @Test
   public void testAsynchronouslyAddUserMessage() throws Exception {
-    when(talosAdminMock.describeTopic(new DescribeTopicRequest(topicName))).thenReturn(topic);
     talosProducer = new TalosProducer(talosProducerConfig,
-        new TopicTalosResourceName(resourceName), talosAdminMock, talosClientFactoryMock,
+        talosResourceName, talosAdminMock, talosClientFactoryMock,
         partitionSenderMock, new SimpleTopicAbnormalCallback(),
         new TestCallback());
 
@@ -177,21 +175,15 @@ public class TalosProducerTest {
 
   @Test(expected = ProducerNotActiveException.class)
   public void testProducerNotActiveError() throws Exception {
-    TopicInfo topicInfo = new TopicInfo(
-        topicName, new TopicTalosResourceName(anotherResourceName), ownerId);
-    TopicAttribute topicAttribute = new TopicAttribute()
-        .setPartitionNumber(partitionNumber)
-        .setMessageRetentionSecs(messageRetentionMs);
-    TopicState topicState = new TopicState()
-        .setTopicStatus(TopicStatus.ACTIVE)
-        .setCreateTimestamp(System.currentTimeMillis());
-    Topic another = new Topic(topicInfo, topicAttribute, topicState);
-
-    when(talosAdminMock.describeTopic(new DescribeTopicRequest(topicName)))
-        .thenReturn(topic).thenReturn(another);
+    GetDescribeInfoResponse getDescribeInfoResponse = new GetDescribeInfoResponse(
+        talosResourceName, partitionNumber);
+    GetDescribeInfoResponse getDescribeInfoResponse2 = new GetDescribeInfoResponse(
+        new TopicTalosResourceName(anotherResourceName), partitionNumber);
+    when(talosAdminMock.getDescribeInfo(new GetDescribeInfoRequest(topicName)))
+        .thenReturn(getDescribeInfoResponse).thenReturn(getDescribeInfoResponse2);
     doNothing().when(partitionSenderMock).shutdown();
     talosProducer = new TalosProducer(talosProducerConfig,
-        new TopicTalosResourceName(resourceName), talosAdminMock, talosClientFactoryMock,
+        talosResourceName, talosAdminMock, talosClientFactoryMock,
         partitionSenderMock, new SimpleTopicAbnormalCallback(),
         new TestCallback());
 
@@ -206,9 +198,8 @@ public class TalosProducerTest {
   // addUserMessage check message validity
   @Test(expected = IllegalArgumentException.class)
   public void testAddUserMessageValidity() throws Exception {
-    when(talosAdminMock.describeTopic(new DescribeTopicRequest(topicName))).thenReturn(topic);
     talosProducer = new TalosProducer(talosProducerConfig,
-        new TopicTalosResourceName(resourceName), talosAdminMock, talosClientFactoryMock,
+        talosResourceName, talosAdminMock, talosClientFactoryMock,
         partitionSenderMock, new SimpleTopicAbnormalCallback(),
         new TestCallback());
 
@@ -222,9 +213,8 @@ public class TalosProducerTest {
 
   @Test(expected = NullPointerException.class)
   public void testAddUserMessageValidity2() throws Exception {
-    when(talosAdminMock.describeTopic(new DescribeTopicRequest(topicName))).thenReturn(topic);
     talosProducer = new TalosProducer(talosProducerConfig,
-        new TopicTalosResourceName(resourceName), talosAdminMock, talosClientFactoryMock,
+        talosResourceName, talosAdminMock, talosClientFactoryMock,
         partitionSenderMock, new SimpleTopicAbnormalCallback(),
         new TestCallback());
 
@@ -235,9 +225,8 @@ public class TalosProducerTest {
 
   @Test(expected = IllegalArgumentException.class)
   public void testAddUserMessageValidity3() throws Exception {
-    when(talosAdminMock.describeTopic(new DescribeTopicRequest(topicName))).thenReturn(topic);
     talosProducer = new TalosProducer(talosProducerConfig,
-        new TopicTalosResourceName(resourceName), talosAdminMock, talosClientFactoryMock,
+        talosResourceName, talosAdminMock, talosClientFactoryMock,
         partitionSenderMock, new SimpleTopicAbnormalCallback(),
         new TestCallback());
 
@@ -252,16 +241,15 @@ public class TalosProducerTest {
   @Test(expected = GalaxyTalosException.class)
   public void testTopicNotExist() throws Exception {
     doThrow(new GalaxyTalosException().setErrorCode(ErrorCode.TOPIC_NOT_EXIST))
-        .when(talosAdminMock).describeTopic(new DescribeTopicRequest(topicName));
+        .when(talosAdminMock).getDescribeInfo(new GetDescribeInfoRequest(topicName));
     talosProducer = new TalosProducer(talosProducerConfig,
-        new TopicTalosResourceName(resourceName), talosAdminMock, talosClientFactoryMock,
+        talosResourceName, talosAdminMock, talosClientFactoryMock,
         partitionSenderMock, new SimpleTopicAbnormalCallback(),
         new TestCallback());
   }
 
   @Test(expected = IllegalArgumentException.class)
   public void testTopicNotExistForDifferentResourceName() throws Exception {
-    when(talosAdminMock.describeTopic(new DescribeTopicRequest(topicName))).thenReturn(topic);
     talosProducer = new TalosProducer(talosProducerConfig,
         new TopicTalosResourceName(anotherResourceName), talosAdminMock, talosClientFactoryMock,
         partitionSenderMock, new SimpleTopicAbnormalCallback(),
@@ -271,20 +259,15 @@ public class TalosProducerTest {
   // check partition change when producer running
   @Test
   public void testPartitionChangeDuringProducerRunning() throws Exception {
-    TopicInfo topicInfo = new TopicInfo(
-        topicName, new TopicTalosResourceName(resourceName), ownerId);
-    TopicAttribute topicAttribute = new TopicAttribute()
-        .setPartitionNumber(partitionNumber2)
-        .setMessageRetentionSecs(messageRetentionMs);
-    TopicState topicState = new TopicState()
-        .setTopicStatus(TopicStatus.ACTIVE)
-        .setCreateTimestamp(System.currentTimeMillis());
-    Topic another = new Topic(topicInfo, topicAttribute, topicState);
+    GetDescribeInfoResponse getDescribeInfoResponse = new GetDescribeInfoResponse(
+        talosResourceName, partitionNumber);
+    GetDescribeInfoResponse getDescribeInfoResponse2 = new GetDescribeInfoResponse(
+        new TopicTalosResourceName(anotherResourceName), partitionNumber);
+    when(talosAdminMock.getDescribeInfo(new GetDescribeInfoRequest(topicName)))
+        .thenReturn(getDescribeInfoResponse).thenReturn(getDescribeInfoResponse2);
 
-    when(talosAdminMock.describeTopic(new DescribeTopicRequest(topicName)))
-        .thenReturn(topic).thenReturn(another);
     talosProducer = new TalosProducer(talosProducerConfig,
-        new TopicTalosResourceName(resourceName), talosAdminMock, talosClientFactoryMock,
+        talosResourceName, talosAdminMock, talosClientFactoryMock,
         partitionSenderMock, new SimpleTopicAbnormalCallback(),
         new TestCallback());
 
@@ -296,21 +279,16 @@ public class TalosProducerTest {
   // check topic be deleted when producer running
   @Test
   public void testTopicBeDeletedDuringProducerRunning() throws Exception {
-    TopicInfo topicInfo = new TopicInfo(
-        topicName, new TopicTalosResourceName(anotherResourceName), ownerId);
-    TopicAttribute topicAttribute = new TopicAttribute()
-        .setPartitionNumber(partitionNumber)
-        .setMessageRetentionSecs(messageRetentionMs);
-    TopicState topicState = new TopicState()
-        .setTopicStatus(TopicStatus.ACTIVE)
-        .setCreateTimestamp(System.currentTimeMillis());
-    Topic another = new Topic(topicInfo, topicAttribute, topicState);
+    GetDescribeInfoResponse getDescribeInfoResponse = new GetDescribeInfoResponse(
+        talosResourceName, partitionNumber);
+    GetDescribeInfoResponse getDescribeInfoResponse2 = new GetDescribeInfoResponse(
+        new TopicTalosResourceName(anotherResourceName), partitionNumber);
+    when(talosAdminMock.getDescribeInfo(new GetDescribeInfoRequest(topicName)))
+        .thenReturn(getDescribeInfoResponse).thenReturn(getDescribeInfoResponse2);
 
-    when(talosAdminMock.describeTopic(new DescribeTopicRequest(topicName)))
-        .thenReturn(topic).thenReturn(another);
     doNothing().when(partitionSenderMock).shutdown();
     talosProducer = new TalosProducer(talosProducerConfig,
-        new TopicTalosResourceName(resourceName), talosAdminMock, talosClientFactoryMock,
+        talosResourceName, talosAdminMock, talosClientFactoryMock,
         partitionSenderMock, new SimpleTopicAbnormalCallback(),
         new TestCallback());
 
@@ -320,12 +298,10 @@ public class TalosProducerTest {
 
   @Test
   public void testAddUserMessage() throws Exception {
-    topic.getTopicAttribute().setPartitionNumber(1);
-    when(talosAdminMock.describeTopic(new DescribeTopicRequest(topicName))).thenReturn(topic);
     when(messageClientMock.putMessage(any(PutMessageRequest.class))).thenReturn(new PutMessageResponse());
 
     talosProducer = new TalosProducer(talosProducerConfig,
-        new TopicTalosResourceName(resourceName), talosAdminMock, talosClientFactoryMock,
+        talosResourceName, talosAdminMock, talosClientFactoryMock,
         partitionSenderMock, new SimpleTopicAbnormalCallback(),
         new TestCallback());
 
@@ -342,14 +318,12 @@ public class TalosProducerTest {
   public void testAddUserMessageTimeout() throws Exception {
     talosProducerConfig.setMaxBufferedMsgBytes(0);
     talosProducerConfig.setMaxBufferedMsgNumber(0);
-    topic.getTopicAttribute().setPartitionNumber(1);
-    when(talosAdminMock.describeTopic(new DescribeTopicRequest(topicName))).thenReturn(topic);
 
     doReturn(messageClientMock).when(talosClientFactoryMock).newMessageClient();
     doReturn(new PutMessageResponse()).when(messageClientMock).putMessage(any(PutMessageRequest.class));
 
     talosProducer = new TalosProducer(talosProducerConfig,
-        new TopicTalosResourceName(resourceName), talosAdminMock, talosClientFactoryMock,
+        talosResourceName, talosAdminMock, talosClientFactoryMock,
         partitionSenderMock, new SimpleTopicAbnormalCallback(),
         new TestCallback());
 

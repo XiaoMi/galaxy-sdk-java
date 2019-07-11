@@ -64,23 +64,31 @@ public class GlobalIndexExample {
 
   private static TableSpec tableSpec() {
     EntityGroupSpec entityGroupSpec = new EntityGroupSpec().setAttributes(
-        Arrays.asList(new KeySpec().setAttribute("userId"))).setEnableHash(
+        Arrays.asList(new KeySpec().setAttribute("userId").setAsc(true))).setEnableHash(
         true);
-    List<KeySpec> primaryKey = Arrays.asList(new KeySpec().setAttribute("time"),
-        new KeySpec().setAttribute("deviceId"));
+    List<KeySpec> primaryKey = Arrays.asList(new KeySpec().setAttribute("time").setAsc(false),
+        new KeySpec().setAttribute("deviceId").setAsc(true));
     Map<String, GlobalSecondaryIndexSpec> indexes = new HashMap<String, GlobalSecondaryIndexSpec>();
     GlobalSecondaryIndexSpec didIndex = new GlobalSecondaryIndexSpec();
     didIndex.setIndexEntityGroup(
-        new EntityGroupSpec().setAttributes(Arrays.asList(new KeySpec().setAttribute("deviceId")))
+        new EntityGroupSpec().setAttributes(Arrays.asList(new KeySpec().setAttribute("deviceId").setAsc(true)))
             .setEnableHash(true));
     didIndex.setIndexPrimaryKey(Arrays.asList(new KeySpec().setAttribute("time").setAsc(false)));
     didIndex.setProjections(Arrays.asList("value"));
     didIndex.setThroughput(new ProvisionThroughput().setReadCapacity(20).setWriteCapacity(20));
+    didIndex.setSlaveThroughput(new ProvisionThroughput().setReadCapacity(20).setWriteCapacity(20));
+    didIndex.setExceededThroughput(new ProvisionThroughput().setReadCapacity(20).setWriteCapacity(20));
+    didIndex.setExceededSlaveThroughput(new ProvisionThroughput().setReadCapacity(20).setWriteCapacity(20));
 
     GlobalSecondaryIndexSpec timeIndex = new GlobalSecondaryIndexSpec();
     timeIndex.setIndexPrimaryKey(Arrays.asList(new KeySpec().setAttribute("time").setAsc(false)));
     timeIndex.setProjections(Arrays.asList("value"));
     timeIndex.setThroughput(new ProvisionThroughput().setReadCapacity(20).setWriteCapacity(20));
+    timeIndex.setSlaveThroughput(new ProvisionThroughput().setReadCapacity(20).setWriteCapacity(20));
+    timeIndex.setExceededThroughput(new ProvisionThroughput().setReadCapacity(20).setWriteCapacity(20));
+    timeIndex.setExceededSlaveThroughput(new ProvisionThroughput().setReadCapacity(20).setWriteCapacity(20));
+
+
     indexes.put("didIndex", didIndex);
     indexes.put("timeIndex", timeIndex);
 

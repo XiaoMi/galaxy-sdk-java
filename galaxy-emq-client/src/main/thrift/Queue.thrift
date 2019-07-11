@@ -58,6 +58,8 @@ struct QueueAttribute {
   **/
   8: optional map<string, string> userAttributes;
 
+
+  9: optional string owner;
 }
 
 struct QueueState {

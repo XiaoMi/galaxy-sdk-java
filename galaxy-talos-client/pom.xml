@@ -6,7 +6,7 @@
     <groupId>com.xiaomi.infra.galaxy</groupId>
     <artifactId>galaxy-talos-client</artifactId>
     <packaging>pom</packaging>
-    <version>2.4-SNAPSHOT</version>
+    <version>2.5-SNAPSHOT</version>
 
     <name>Galaxy Talos SDK</name>
     <description>Xiaomi Galaxy Talos Service SDK</description>
@@ -43,7 +43,7 @@
 
     <modules>
         <module>galaxy-talos-sdk</module>
-	<module>galaxy-talos-spark</module>
+        <module>galaxy-talos-spark</module>
         <module>galaxy-talos-example</module>
         <module>galaxy-talos-storm</module>
         <module>galaxy-talos-mapreduce</module>
@@ -110,6 +110,38 @@
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>2.16</version>
             </plugin>
+            <!--release to maven remote central repositories-->
+            <!-- Javadoc -->
+            <!--<plugin>-->
+                <!--<groupId>org.apache.maven.plugins</groupId>-->
+                <!--<artifactId>maven-javadoc-plugin</artifactId>-->
+                <!--<version>2.9.1</version>-->
+                <!--<executions>-->
+                    <!--<execution>-->
+                        <!--<phase>package</phase>-->
+                        <!--<goals>-->
+                            <!--<goal>jar</goal>-->
+                        <!--</goals>-->
+                        <!--<configuration>-->
+                            <!--<additionalparam>-Xdoclint:none</additionalparam>-->
+                        <!--</configuration>-->
+                    <!--</execution>-->
+                <!--</executions>-->
+            <!--</plugin>-->
+            <!-- GPG -->
+            <!--<plugin>-->
+                <!--<groupId>org.apache.maven.plugins</groupId>-->
+                <!--<artifactId>maven-gpg-plugin</artifactId>-->
+                <!--<version>1.5</version>-->
+                <!--<executions>-->
+                    <!--<execution>-->
+                        <!--<phase>verify</phase>-->
+                        <!--<goals>-->
+                            <!--<goal>sign</goal>-->
+                        <!--</goals>-->
+                    <!--</execution>-->
+                <!--</executions>-->
+            <!--</plugin>-->
         </plugins>
     </build>
     <profiles>
@@ -143,6 +175,7 @@
           </plugins>
         </build>
       </profile>
+      <!--When publishing to maven central repository, delete this distributionManagement. -->
       <profile>
         <id>nexus</id>
         <distributionManagement>

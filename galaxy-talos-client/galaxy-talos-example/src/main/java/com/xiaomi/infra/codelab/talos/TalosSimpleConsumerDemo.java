@@ -13,15 +13,9 @@ import org.slf4j.LoggerFactory;
 
 import com.xiaomi.infra.galaxy.rpc.thrift.Credential;
 import com.xiaomi.infra.galaxy.rpc.thrift.UserType;
-import com.xiaomi.infra.galaxy.talos.admin.TalosAdmin;
-import com.xiaomi.infra.galaxy.talos.client.TalosClientConfig;
 import com.xiaomi.infra.galaxy.talos.consumer.SimpleConsumer;
 import com.xiaomi.infra.galaxy.talos.consumer.TalosConsumerConfig;
-import com.xiaomi.infra.galaxy.talos.thrift.DescribeTopicRequest;
 import com.xiaomi.infra.galaxy.talos.thrift.MessageAndOffset;
-import com.xiaomi.infra.galaxy.talos.thrift.Topic;
-import com.xiaomi.infra.galaxy.talos.thrift.TopicAndPartition;
-import com.xiaomi.infra.galaxy.talos.thrift.TopicTalosResourceName;
 
 public class TalosSimpleConsumerDemo {
   private static final Logger LOG = LoggerFactory.getLogger(TalosSimpleConsumerDemo.class);
@@ -30,48 +24,32 @@ public class TalosSimpleConsumerDemo {
   private static final String accessKey = "$your_team_accessKey";
   private static final String accessSecret = "$your_team_accessSecret";
   private static final String topicName = "testTopic";
-  private static final int partitionId1 = 1;
+  private static final int partitionId = 0;
 
-  private TalosClientConfig clientConfig;
   private TalosConsumerConfig consumerConfig;
   private Credential credential;
-  private TalosAdmin talosAdmin;
 
-  private TopicTalosResourceName topicTalosResourceName;
   private static SimpleConsumer simpleConsumer;
   private long finishedOffset;
   private int maxFetchNum;
 
-  public TalosSimpleConsumerDemo() throws Exception {
+  public TalosSimpleConsumerDemo() {
     // init client config by put $your_propertyFile in your classpath
     // with the content of:
     /*
       galaxy.talos.service.endpoint=$talosServiceURI
     */
-    clientConfig = new TalosClientConfig(propertyFileName);
     consumerConfig = new TalosConsumerConfig(propertyFileName);
 
     // credential
     credential = new Credential();
     credential.setSecretKeyId(accessKey).setSecretKey(accessSecret)
         .setType(UserType.DEV_XIAOMI);
-
-    // init admin and try to get or create topic info
-    talosAdmin = new TalosAdmin(clientConfig, credential);
-    getTopicInfo();
-  }
-
-  private void getTopicInfo() throws Exception {
-    Topic topic = talosAdmin.describeTopic(new DescribeTopicRequest(topicName));
-    topicTalosResourceName = topic.getTopicInfo().getTopicTalosResourceName();
   }
 
   public void start() throws TException {
-    // init producer
-    TopicAndPartition topicAndPartition1 = new TopicAndPartition(
-        topicName, topicTalosResourceName, partitionId1);
-    simpleConsumer = new SimpleConsumer(consumerConfig,
-        topicAndPartition1, credential);
+    // init consumer
+    simpleConsumer = new SimpleConsumer(consumerConfig, topicName, partitionId, credential);
     finishedOffset = 0;
     maxFetchNum = 10;
 
@@ -81,12 +59,13 @@ public class TalosSimpleConsumerDemo {
     while (true) {
       try {
         messageList = simpleConsumer.fetchMessage(finishedOffset + 1, maxFetchNum);
-        finishedOffset = messageList.get(messageList.size() - 1).getMessageOffset();
         try {
           Thread.sleep(10);
         } catch (InterruptedException e) {
-            e.printStackTrace();
+          e.printStackTrace();
         }
+        if (messageList.size() == 0) {continue;}
+        finishedOffset = messageList.get(messageList.size() - 1).getMessageOffset();
         LOG.info("success get message count: " + messageList.size());
       } catch (IOException e) {
         LOG.warn("get message failed, try again");

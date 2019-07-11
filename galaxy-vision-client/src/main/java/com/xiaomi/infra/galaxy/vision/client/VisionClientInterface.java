@@ -13,5 +13,5 @@ public interface VisionClientInterface {
 
 	public DetectLabelsResult detectLabels(DetectLabelsRequest request) throws IOException;
 
-	public FaceMatchResult matchFaces(FaceMatchRequest request) throws IOException;
+	public FaceMatchResult matchFaces(FaceCompareRequest request) throws IOException;
 }

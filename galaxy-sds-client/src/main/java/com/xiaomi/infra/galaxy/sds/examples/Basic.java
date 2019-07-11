@@ -149,9 +149,9 @@ public class Basic {
         BatchRequestItem item = new BatchRequestItem().setAction(BatchOp.PUT);
         Map<String, Datum> record = new HashMap<String, Datum>();
         record.put("cityId", DatumUtil.toDatum(cities[i]));
-        putRequest.putToRecord("timestamp", DatumUtil.toDatum(now.getTime()));
-        putRequest.putToRecord("score", DatumUtil.toDatum((double) new Random().nextInt(100)));
-        putRequest.putToRecord("pm25", DatumUtil.toDatum((long) (new Random().nextInt(500))));
+        record.put("timestamp", DatumUtil.toDatum(now.getTime()));
+        record.put("score", DatumUtil.toDatum((double) new Random().nextInt(100)));
+        record.put("pm25", DatumUtil.toDatum((long) (new Random().nextInt(500))));
         item.setRequest(Request.putRequest(new PutRequest().setTableName(tableName).setRecord(record)));
         batch.add(item);
       }
@@ -190,6 +190,16 @@ public class Basic {
       scanRequest.setLimit(10);
       ScanResult scanResult = tableClient.scan(scanRequest);
       List<Map<String, Datum>> kvsList = scanResult.getRecords();
+      for (Map<String, Datum> kvs : kvsList) {
+        printResult(kvs);
+      }
+
+      // scan all data
+      scanRequest.clear();
+      scanRequest.setTableName(tableName);
+      scanRequest.setLimit(20);
+      scanResult = tableClient.scanAll(scanRequest);
+      kvsList = scanResult.getRecords();
       for (Map<String, Datum> kvs : kvsList) {
         printResult(kvs);
       }

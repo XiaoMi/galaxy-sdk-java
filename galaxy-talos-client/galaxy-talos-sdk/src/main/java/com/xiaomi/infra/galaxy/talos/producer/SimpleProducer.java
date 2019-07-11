@@ -21,6 +21,9 @@ import com.xiaomi.infra.galaxy.talos.client.ScheduleInfoCache;
 import com.xiaomi.infra.galaxy.talos.client.TalosClientFactory;
 import com.xiaomi.infra.galaxy.talos.client.Utils;
 import com.xiaomi.infra.galaxy.talos.client.compression.Compression;
+import com.xiaomi.infra.galaxy.talos.thrift.GalaxyTalosException;
+import com.xiaomi.infra.galaxy.talos.thrift.GetDescribeInfoRequest;
+import com.xiaomi.infra.galaxy.talos.thrift.GetDescribeInfoResponse;
 import com.xiaomi.infra.galaxy.talos.thrift.Message;
 import com.xiaomi.infra.galaxy.talos.thrift.MessageBlock;
 import com.xiaomi.infra.galaxy.talos.thrift.MessageService;
@@ -28,6 +31,7 @@ import com.xiaomi.infra.galaxy.talos.thrift.MessageType;
 import com.xiaomi.infra.galaxy.talos.thrift.PutMessageRequest;
 import com.xiaomi.infra.galaxy.talos.thrift.PutMessageResponse;
 import com.xiaomi.infra.galaxy.talos.thrift.TopicAndPartition;
+import com.xiaomi.infra.galaxy.talos.thrift.TopicService;
 
 public class SimpleProducer {
   private static final Logger LOG = LoggerFactory.getLogger(SimpleProducer.class);
@@ -62,11 +66,32 @@ public class SimpleProducer {
         Utils.generateClientId(SimpleProducer.class.getSimpleName()), requestId);
   }
 
+  public SimpleProducer(TalosProducerConfig producerConfig, String topicName,
+      int partitionId, Credential credential) throws GalaxyTalosException, TException{
+    this(producerConfig, topicName, partitionId, new TalosClientFactory(producerConfig,
+            credential), Utils.generateClientId(SimpleProducer.class.getSimpleName()),
+        new AtomicLong(1));
+  }
+
   // User need construct config, topicAndPartition, credential
+  @Deprecated
   public SimpleProducer(TalosProducerConfig producerConfig,
       TopicAndPartition topicAndPartition, Credential credential) {
     this(producerConfig, topicAndPartition, new TalosClientFactory(
         producerConfig, credential), new AtomicLong(1));
+  }
+
+  public SimpleProducer(TalosProducerConfig producerConfig,
+      String topicName, int partitionId, TalosClientFactory talosClientFactory,
+      String clientId, AtomicLong requestId) throws GalaxyTalosException, TException{
+    Utils.checkTopicName(topicName);
+    getTopicInfo(talosClientFactory.newTopicClient(), topicName, partitionId);
+    this.producerConfig = producerConfig;
+    this.messageClient = talosClientFactory.newMessageClient();
+    this.clientId = clientId;
+    this.requestId = requestId;
+    this.scheduleInfoCache = ScheduleInfoCache.getScheduleInfoCache(this.topicAndPartition.
+        topicTalosResourceName, producerConfig, messageClient, talosClientFactory);
   }
 
   public SimpleProducer(TalosProducerConfig producerConfig,
@@ -83,16 +108,25 @@ public class SimpleProducer {
   }
 
   // for test
-  public SimpleProducer(TalosProducerConfig producerConfig,
-      TopicAndPartition topicAndPartition, MessageService.Iface messageClientMock,
-      AtomicLong requestId, ScheduleInfoCache scheduleInfoCacheMock) {
-    Utils.checkTopicAndPartition(topicAndPartition);
+  public SimpleProducer(TalosProducerConfig producerConfig, String topicName,
+      int partitionId, MessageService.Iface messageClientMock,
+      TopicService.Iface topicClient, AtomicLong requestId,
+      ScheduleInfoCache scheduleInfoCacheMock) throws GalaxyTalosException, TException{
+    Utils.checkTopicName(topicName);
+    getTopicInfo(topicClient, topicName, partitionId);
     this.producerConfig = producerConfig;
-    this.topicAndPartition = topicAndPartition;
     this.messageClient = messageClientMock;
     this.clientId = Utils.generateClientId(SimpleProducer.class.getSimpleName());
     this.requestId = requestId;
     this.scheduleInfoCache = scheduleInfoCacheMock;
+  }
+
+  private void getTopicInfo(TopicService.Iface topicClient, String topicName,
+      int partitionId) throws GalaxyTalosException, TException{
+    GetDescribeInfoResponse response = topicClient.getDescribeInfo(
+        new GetDescribeInfoRequest(topicName));
+    this.topicAndPartition = new TopicAndPartition(topicName,
+        response.getTopicTalosResourceName(), partitionId);
   }
 
   @Deprecated

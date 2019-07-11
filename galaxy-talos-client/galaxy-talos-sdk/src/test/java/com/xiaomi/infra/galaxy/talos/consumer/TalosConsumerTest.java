@@ -27,6 +27,10 @@ import com.xiaomi.infra.galaxy.talos.thrift.ConsumerService;
 import com.xiaomi.infra.galaxy.talos.thrift.DescribeTopicRequest;
 import com.xiaomi.infra.galaxy.talos.thrift.ErrorCode;
 import com.xiaomi.infra.galaxy.talos.thrift.GalaxyTalosException;
+import com.xiaomi.infra.galaxy.talos.thrift.GetDescribeInfoRequest;
+import com.xiaomi.infra.galaxy.talos.thrift.GetDescribeInfoResponse;
+import com.xiaomi.infra.galaxy.talos.thrift.GetWorkerIdRequest;
+import com.xiaomi.infra.galaxy.talos.thrift.GetWorkerIdResponse;
 import com.xiaomi.infra.galaxy.talos.thrift.LockWorkerRequest;
 import com.xiaomi.infra.galaxy.talos.thrift.LockWorkerResponse;
 import com.xiaomi.infra.galaxy.talos.thrift.QueryWorkerRequest;
@@ -36,6 +40,7 @@ import com.xiaomi.infra.galaxy.talos.thrift.RenewResponse;
 import com.xiaomi.infra.galaxy.talos.thrift.Topic;
 import com.xiaomi.infra.galaxy.talos.thrift.TopicAttribute;
 import com.xiaomi.infra.galaxy.talos.thrift.TopicInfo;
+import com.xiaomi.infra.galaxy.talos.thrift.TopicService.AsyncProcessor.getDescribeInfo;
 import com.xiaomi.infra.galaxy.talos.thrift.TopicState;
 import com.xiaomi.infra.galaxy.talos.thrift.TopicTalosResourceName;
 
@@ -129,6 +134,13 @@ public class TalosConsumerTest {
     fetcherMap.put(3, partitionFetcher3);
     fetcherMap.put(4, partitionFetcher4);
     fetcherMap.put(5, partitionFetcher5);
+
+    // construct a getDescribeInfoResponse
+    GetDescribeInfoResponse getDescribeInfoResponse = new GetDescribeInfoResponse(
+        talosResourceName, partitionNum);
+
+    when(talosAdminMock.getDescribeInfo(any(GetDescribeInfoRequest.class))).thenReturn(
+        getDescribeInfoResponse);
   }
 
   @After
@@ -138,9 +150,11 @@ public class TalosConsumerTest {
   // 1) checkAndGetTopicInfoFailed
   @Test (expected = IllegalArgumentException.class)
   public void testCheckAndGetTopicInfoFailed() throws Exception {
-    // partition check
-    when(talosAdminMock.describeTopic(any(DescribeTopicRequest.class)))
-        .thenReturn(topic2);
+    // get describe info
+    GetDescribeInfoResponse getDescribeInfoResponse = new GetDescribeInfoResponse(
+        talosResourceName2, partitionNum);
+    when(talosAdminMock.getDescribeInfo(any(GetDescribeInfoRequest.class))).thenReturn(
+        getDescribeInfoResponse);
 
     TalosConsumer consumer = new TalosConsumer(consumerGroup, consumerConfig,
         talosResourceName, workerId, new SimpleTopicAbnormalCallback(),
@@ -150,9 +164,6 @@ public class TalosConsumerTest {
   // 2) registerSelf failed, init failed
   @Test (expected = RuntimeException.class)
   public void testRegisterSelfFailed() throws Exception {
-    // partition check
-    when(talosAdminMock.describeTopic(any(DescribeTopicRequest.class)))
-        .thenReturn(topic);
     // register self
     LockWorkerResponse lockWorkerResponse = new LockWorkerResponse(false);
     when(consumerClientMock.lockWorker(any(LockWorkerRequest.class)))
@@ -167,9 +178,6 @@ public class TalosConsumerTest {
   @Test
   public void testLockBalance() throws Exception {
     LOG.info("[testLockBalance] start");
-    // partition check
-    when(talosAdminMock.describeTopic(any(DescribeTopicRequest.class)))
-        .thenReturn(topic);
     // register self
     LockWorkerResponse lockWorkerResponse = new LockWorkerResponse(true);
     when(consumerClientMock.lockWorker(any(LockWorkerRequest.class)))
@@ -214,9 +222,6 @@ public class TalosConsumerTest {
   @Test
   public void testWorkerOnlineLockUnlock() throws Exception {
     LOG.info("[testWorkerOnlineLockUnlock] start");
-    // partition check
-    when(talosAdminMock.describeTopic(any(DescribeTopicRequest.class)))
-        .thenReturn(topic);
     // register self
     LockWorkerResponse lockWorkerResponse = new LockWorkerResponse(true);
     when(consumerClientMock.lockWorker(any(LockWorkerRequest.class)))
@@ -274,9 +279,6 @@ public class TalosConsumerTest {
   @Test
   public void testWorkerOfflineLockLock() throws Exception {
     LOG.info("[testWorkerOfflineLockLock] start");
-    // partition check
-    when(talosAdminMock.describeTopic(any(DescribeTopicRequest.class)))
-        .thenReturn(topic);
     // register self
     LockWorkerResponse lockWorkerResponse = new LockWorkerResponse(true);
     when(consumerClientMock.lockWorker(any(LockWorkerRequest.class)))
@@ -336,8 +338,12 @@ public class TalosConsumerTest {
   public void testPartitionChangedLockLock() throws Exception {
     LOG.info("[testPartitionChangedLockLock] start");
     // partition check, change from 5 to 6
-    when(talosAdminMock.describeTopic(any(DescribeTopicRequest.class)))
-        .thenReturn(topic).thenReturn(topic3);
+    GetDescribeInfoResponse getDescribeInfoResponse = new GetDescribeInfoResponse(
+        talosResourceName, partitionNum);
+    GetDescribeInfoResponse getDescribeInfoResponse3 = new GetDescribeInfoResponse(
+        talosResourceName, partitionNum2);
+    when(talosAdminMock.getDescribeInfo(any(GetDescribeInfoRequest.class))).thenReturn(
+        getDescribeInfoResponse).thenReturn(getDescribeInfoResponse3);
     // register self
     LockWorkerResponse lockWorkerResponse = new LockWorkerResponse(true);
     when(consumerClientMock.lockWorker(any(LockWorkerRequest.class)))
@@ -390,8 +396,6 @@ public class TalosConsumerTest {
   @Test
   public void testRenewFailedLockUnlock() throws Exception {
     LOG.info("[testRenewFailedLockUnlock] start");
-    when(talosAdminMock.describeTopic(any(DescribeTopicRequest.class)))
-        .thenReturn(topic);
     // register self
     LockWorkerResponse lockWorkerResponse = new LockWorkerResponse(true);
     when(consumerClientMock.lockWorker(any(LockWorkerRequest.class)))
@@ -438,9 +442,6 @@ public class TalosConsumerTest {
   @Test
   public void testRenewHeartbeatFailed() throws Exception {
     LOG.info("[testRenewHeartbeatFailed] start");
-    // partition check
-    when(talosAdminMock.describeTopic(any(DescribeTopicRequest.class)))
-        .thenReturn(topic);
     // register self
     LockWorkerResponse lockWorkerResponse = new LockWorkerResponse(true);
     when(consumerClientMock.lockWorker(any(LockWorkerRequest.class)))
@@ -481,10 +482,11 @@ public class TalosConsumerTest {
   @Test
   public void testDescribeTopicNotExist() throws Exception {
     LOG.info("[testDescribeTopicNotExist] start");
-    // partition check
-    doReturn(topic).doThrow(new GalaxyTalosException().setErrorCode(
-        ErrorCode.TOPIC_NOT_EXIST)).when(talosAdminMock).describeTopic(
-        any(DescribeTopicRequest.class));
+    GetDescribeInfoResponse getDescribeInfoResponse = new GetDescribeInfoResponse(
+        talosResourceName, partitionNum);
+    doReturn(getDescribeInfoResponse).doThrow(new GalaxyTalosException().setErrorCode(
+        ErrorCode.TOPIC_NOT_EXIST)).when(talosAdminMock).getDescribeInfo(
+            any(GetDescribeInfoRequest.class));
     // register self
     LockWorkerResponse lockWorkerResponse = new LockWorkerResponse(true);
     when(consumerClientMock.lockWorker(any(LockWorkerRequest.class)))
@@ -510,9 +512,12 @@ public class TalosConsumerTest {
   @Test
   public void testDescribeTopicResourceNameChanged() throws Exception {
     LOG.info("[testDescribeTopicResourceNameChanged] start");
-    // partition check
-    when(talosAdminMock.describeTopic(any(DescribeTopicRequest.class)))
-        .thenReturn(topic).thenReturn(topic2);
+    GetDescribeInfoResponse getDescribeInfoResponse = new GetDescribeInfoResponse(
+        talosResourceName, partitionNum);
+    GetDescribeInfoResponse getDescribeInfoResponse2 = new GetDescribeInfoResponse(
+        talosResourceName2, partitionNum);
+    when(talosAdminMock.getDescribeInfo(any(GetDescribeInfoRequest.class))).thenReturn(
+        getDescribeInfoResponse).thenReturn(getDescribeInfoResponse2);
     // register self
     LockWorkerResponse lockWorkerResponse = new LockWorkerResponse(true);
     when(consumerClientMock.lockWorker(any(LockWorkerRequest.class)))

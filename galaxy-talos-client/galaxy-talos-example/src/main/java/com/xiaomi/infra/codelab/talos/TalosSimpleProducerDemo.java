@@ -18,16 +18,9 @@ import org.slf4j.LoggerFactory;
 
 import com.xiaomi.infra.galaxy.rpc.thrift.Credential;
 import com.xiaomi.infra.galaxy.rpc.thrift.UserType;
-import com.xiaomi.infra.galaxy.talos.admin.TalosAdmin;
-import com.xiaomi.infra.galaxy.talos.client.TalosClientConfig;
 import com.xiaomi.infra.galaxy.talos.producer.SimpleProducer;
 import com.xiaomi.infra.galaxy.talos.producer.TalosProducerConfig;
-import com.xiaomi.infra.galaxy.talos.thrift.DescribeTopicRequest;
-import com.xiaomi.infra.galaxy.talos.thrift.GalaxyTalosException;
 import com.xiaomi.infra.galaxy.talos.thrift.Message;
-import com.xiaomi.infra.galaxy.talos.thrift.Topic;
-import com.xiaomi.infra.galaxy.talos.thrift.TopicAndPartition;
-import com.xiaomi.infra.galaxy.talos.thrift.TopicTalosResourceName;
 
 public class TalosSimpleProducerDemo {
   private static final Logger LOG = LoggerFactory.getLogger(TalosSimpleProducerDemo.class);
@@ -36,47 +29,32 @@ public class TalosSimpleProducerDemo {
   private static final String accessKey = "$your_team_accessKey";
   private static final String accessSecret = "$your_team_accessSecret";
   private static final String topicName = "testTopic";
-  private static final int partitionId = 7;
+  private static final int partitionId = 0;
   private static final AtomicLong successPutNumber = new AtomicLong(0);
 
-  private TalosClientConfig clientConfig;
   private TalosProducerConfig producerConfig;
   private Credential credential;
-  private TalosAdmin talosAdmin;
 
-  private TopicTalosResourceName topicTalosResourceName;
   private static SimpleProducer simpleProducer;
 
-  public TalosSimpleProducerDemo() throws Exception {
+  public TalosSimpleProducerDemo() {
     // init client config by put $your_propertyFile in your classpath
     // with the content of:
     /*
       galaxy.talos.service.endpoint=$talosServiceURI
     */
-    clientConfig = new TalosClientConfig(propertyFileName);
     producerConfig = new TalosProducerConfig(propertyFileName);
 
     // credential
     credential = new Credential();
     credential.setSecretKeyId(accessKey).setSecretKey(accessSecret)
         .setType(UserType.DEV_XIAOMI);
-
-    // init admin and try to get or create topic info
-    talosAdmin = new TalosAdmin(clientConfig, credential);
-    getTopicInfo();
-  }
-
-  private void getTopicInfo() throws Exception {
-    Topic topic = talosAdmin.describeTopic(new DescribeTopicRequest(topicName));
-    topicTalosResourceName = topic.getTopicInfo().getTopicTalosResourceName();
   }
 
   public void start() throws TException {
     // init producer
-    TopicAndPartition topicAndPartition = new TopicAndPartition(
-        topicName, topicTalosResourceName, partitionId);
     simpleProducer = new SimpleProducer(producerConfig,
-        topicAndPartition, credential);
+        topicName, partitionId, credential);
 
     String messageStr = "test message: this message is a text string.";
     Message message = new Message(ByteBuffer.wrap(messageStr.getBytes()));

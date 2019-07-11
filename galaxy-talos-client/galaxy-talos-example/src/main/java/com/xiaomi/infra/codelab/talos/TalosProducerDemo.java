@@ -17,18 +17,13 @@ import org.slf4j.LoggerFactory;
 
 import com.xiaomi.infra.galaxy.rpc.thrift.Credential;
 import com.xiaomi.infra.galaxy.rpc.thrift.UserType;
-import com.xiaomi.infra.galaxy.talos.admin.TalosAdmin;
 import com.xiaomi.infra.galaxy.talos.client.SimpleTopicAbnormalCallback;
-import com.xiaomi.infra.galaxy.talos.client.TalosClientConfig;
 import com.xiaomi.infra.galaxy.talos.producer.ProducerNotActiveException;
 import com.xiaomi.infra.galaxy.talos.producer.TalosProducer;
 import com.xiaomi.infra.galaxy.talos.producer.TalosProducerConfig;
 import com.xiaomi.infra.galaxy.talos.producer.UserMessageCallback;
 import com.xiaomi.infra.galaxy.talos.producer.UserMessageResult;
-import com.xiaomi.infra.galaxy.talos.thrift.DescribeTopicRequest;
 import com.xiaomi.infra.galaxy.talos.thrift.Message;
-import com.xiaomi.infra.galaxy.talos.thrift.Topic;
-import com.xiaomi.infra.galaxy.talos.thrift.TopicTalosResourceName;
 
 public class TalosProducerDemo {
   private static final Logger LOG = LoggerFactory.getLogger(TalosProducerDemo.class);
@@ -68,21 +63,17 @@ public class TalosProducerDemo {
   private static final int toPutMsgNumber = 7;
   private static final AtomicLong successPutNumber = new AtomicLong(0);
 
-  private TalosClientConfig clientConfig;
   private TalosProducerConfig producerConfig;
   private Credential credential;
-  private TalosAdmin talosAdmin;
 
-  private TopicTalosResourceName topicTalosResourceName;
   private static TalosProducer talosProducer;
 
-  public TalosProducerDemo() throws Exception {
+  public TalosProducerDemo() {
     // init client config by put $your_propertyFile in your classpath
     // with the content of:
     /*
       galaxy.talos.service.endpoint=$talosServiceURI
     */
-    clientConfig = new TalosClientConfig(propertyFileName);
     producerConfig = new TalosProducerConfig(propertyFileName);
 
     // credential
@@ -91,20 +82,12 @@ public class TalosProducerDemo {
         .setSecretKey(accessSecret)
         .setType(UserType.DEV_XIAOMI);
 
-    // init admin and try to get or create topic info
-    talosAdmin = new TalosAdmin(clientConfig, credential);
-    getTopicInfo();
-  }
-
-  private void getTopicInfo() throws Exception {
-    Topic topic = talosAdmin.describeTopic(new DescribeTopicRequest(topicName));
-    topicTalosResourceName = topic.getTopicInfo().getTopicTalosResourceName();
   }
 
   public void start() throws TException {
     // init producer
     talosProducer = new TalosProducer(producerConfig, credential,
-        topicTalosResourceName, new SimpleTopicAbnormalCallback(),
+        topicName, new SimpleTopicAbnormalCallback(),
         new MyMessageCallback());
 
     List<Message> messageList = new ArrayList<Message>();

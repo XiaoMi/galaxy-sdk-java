@@ -53,7 +53,7 @@ public class CommonConstants {
     ERROR_BACKOFF.put(com.xiaomi.infra.galaxy.talos.thrift.ErrorCode.MESSAGE_INDEX_UNDESIRED_ERROR, 1000L);
     ERROR_BACKOFF.put(com.xiaomi.infra.galaxy.talos.thrift.ErrorCode.MESSAGE_INDEX_NOT_EXIST, 1000L);
     ERROR_BACKOFF.put(com.xiaomi.infra.galaxy.talos.thrift.ErrorCode.MESSAGE_OFFSET_OUT_OF_RANGE, 1000L);
-    ERROR_BACKOFF.put(com.xiaomi.infra.galaxy.talos.thrift.ErrorCode.INVALID_TOPIC_NAME, 1000L);
+    ERROR_BACKOFF.put(com.xiaomi.infra.galaxy.talos.thrift.ErrorCode.INVALID_NAME_ERROR, 1000L);
     ERROR_BACKOFF.put(com.xiaomi.infra.galaxy.talos.thrift.ErrorCode.INTERNAL_SERVER_ERROR, 1000L);
   }
 
@@ -73,7 +73,7 @@ public class CommonConstants {
     ERROR_RETRY_TYPE.put(com.xiaomi.infra.galaxy.talos.thrift.ErrorCode.MESSAGE_INDEX_UNDESIRED_ERROR, com.xiaomi.infra.galaxy.talos.thrift.RetryType.UNSAFE);
     ERROR_RETRY_TYPE.put(com.xiaomi.infra.galaxy.talos.thrift.ErrorCode.MESSAGE_INDEX_NOT_EXIST, com.xiaomi.infra.galaxy.talos.thrift.RetryType.UNSAFE);
     ERROR_RETRY_TYPE.put(com.xiaomi.infra.galaxy.talos.thrift.ErrorCode.MESSAGE_OFFSET_OUT_OF_RANGE, com.xiaomi.infra.galaxy.talos.thrift.RetryType.UNSAFE);
-    ERROR_RETRY_TYPE.put(com.xiaomi.infra.galaxy.talos.thrift.ErrorCode.INVALID_TOPIC_NAME, com.xiaomi.infra.galaxy.talos.thrift.RetryType.UNSAFE);
+    ERROR_RETRY_TYPE.put(com.xiaomi.infra.galaxy.talos.thrift.ErrorCode.INVALID_NAME_ERROR, com.xiaomi.infra.galaxy.talos.thrift.RetryType.UNSAFE);
     ERROR_RETRY_TYPE.put(com.xiaomi.infra.galaxy.talos.thrift.ErrorCode.INTERNAL_SERVER_ERROR, com.xiaomi.infra.galaxy.talos.thrift.RetryType.UNSAFE);
   }
 

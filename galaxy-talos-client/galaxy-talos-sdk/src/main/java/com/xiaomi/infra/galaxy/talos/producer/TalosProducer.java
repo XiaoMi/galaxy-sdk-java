@@ -29,14 +29,15 @@ import org.slf4j.LoggerFactory;
 import com.xiaomi.infra.galaxy.rpc.thrift.Credential;
 import com.xiaomi.infra.galaxy.talos.admin.TalosAdmin;
 import com.xiaomi.infra.galaxy.talos.client.Constants;
+import com.xiaomi.infra.galaxy.talos.client.NamedThreadFactory;
 import com.xiaomi.infra.galaxy.talos.client.ScheduleInfoCache;
 import com.xiaomi.infra.galaxy.talos.client.TalosClientFactory;
 import com.xiaomi.infra.galaxy.talos.client.TopicAbnormalCallback;
 import com.xiaomi.infra.galaxy.talos.client.Utils;
-import com.xiaomi.infra.galaxy.talos.thrift.DescribeTopicRequest;
+import com.xiaomi.infra.galaxy.talos.thrift.GetDescribeInfoRequest;
+import com.xiaomi.infra.galaxy.talos.thrift.GetDescribeInfoResponse;
 import com.xiaomi.infra.galaxy.talos.thrift.Message;
 import com.xiaomi.infra.galaxy.talos.thrift.MessageType;
-import com.xiaomi.infra.galaxy.talos.thrift.Topic;
 import com.xiaomi.infra.galaxy.talos.thrift.TopicTalosResourceName;
 
 public class TalosProducer {
@@ -44,9 +45,9 @@ public class TalosProducer {
   private class CheckPartitionTask implements Runnable {
     @Override
     public void run() {
-      Topic topic;
+      GetDescribeInfoResponse response;
       try {
-        topic = talosAdmin.describeTopic(new DescribeTopicRequest(topicName));
+        response = talosAdmin.getDescribeInfo(new GetDescribeInfoRequest(topicName));
       } catch (Throwable throwable) {
         LOG.error("Exception in CheckPartitionTask: ", throwable);
         if (Utils.isTopicNotExist(throwable)) {
@@ -56,7 +57,7 @@ public class TalosProducer {
       }
 
       if (!topicTalosResourceName.equals(
-          topic.getTopicInfo().getTopicTalosResourceName())) {
+          response.getTopicTalosResourceName())) {
         String errMsg = "The topic: " +
             topicTalosResourceName.getTopicTalosResourceName() +
             " not exist. It might have been deleted. " +
@@ -67,7 +68,7 @@ public class TalosProducer {
         return;
       }
 
-      int topicPartitionNum = topic.getTopicAttribute().getPartitionNumber();
+      int topicPartitionNum = response.getPartitionNumber();
       if (partitionNumber < topicPartitionNum) {
         // increase partitionSender (not allow decreasing)
         adjustPartitionSender(topicPartitionNum);
@@ -128,6 +129,7 @@ public class TalosProducer {
         topicAbnormalCallback, userMessageCallback);
   }
 
+  @Deprecated
   public TalosProducer(TalosProducerConfig producerConfig, Credential credential,
       TopicTalosResourceName topicTalosResourceName,
       TopicAbnormalCallback topicAbnormalCallback,
@@ -137,6 +139,53 @@ public class TalosProducer {
         topicAbnormalCallback, userMessageCallback);
   }
 
+  public TalosProducer(TalosProducerConfig producerConfig, Credential credential,
+      String topicName, TopicAbnormalCallback topicAbnormalCallback,
+      UserMessageCallback userMessageCallback) throws TException {
+    this(producerConfig, credential, topicName, new SimplePartitioner(),
+        topicAbnormalCallback, userMessageCallback);
+  }
+
+  public TalosProducer(TalosProducerConfig producerConfig, Credential credential,
+      String topicName, Partitioner partitioner,
+      TopicAbnormalCallback topicAbnormalCallback,
+      UserMessageCallback userMessageCallback) throws TException {
+    producerState = new AtomicReference<PRODUCER_STATE>(PRODUCER_STATE.ACTIVE);
+    this.topicName = topicName;
+    this.partitioner = partitioner;
+    this.topicAbnormalCallback = topicAbnormalCallback;
+    this.userMessageCallback = userMessageCallback;
+    talosProducerConfig = producerConfig;
+    updatePartitionIdInterval = talosProducerConfig.getUpdatePartitionIdInterval();
+    lastUpdatePartitionIdTime = System.currentTimeMillis();
+    updatePartitionIdMsgNumber = talosProducerConfig.getUpdatePartitionMsgNum();
+    lastAddMsgNumber = 0;
+    random = new Random();
+    maxBufferedMsgNumber = talosProducerConfig.getMaxBufferedMsgNumber();
+    maxBufferedMsgBytes = talosProducerConfig.getMaxBufferedMsgBytes();
+    bufferedCount = new BufferedMessageCount(maxBufferedMsgNumber, maxBufferedMsgBytes);
+    clientId = Utils.generateClientId();
+    talosClientFactory = new TalosClientFactory(talosProducerConfig, credential);
+    talosAdmin = new TalosAdmin(talosClientFactory);
+    this.topicTalosResourceName = talosAdmin.getDescribeInfo(new GetDescribeInfoRequest(
+        topicName)).getTopicTalosResourceName();
+    this.scheduleInfoCache = ScheduleInfoCache.getScheduleInfoCache(topicTalosResourceName,
+        producerConfig, talosClientFactory.newMessageClient(), talosClientFactory);
+    //getTopicTalosResourceName(producerConfig, credential);
+    checkAndGetTopicInfo(this.topicTalosResourceName);
+
+    messageCallbackExecutors = Executors.newFixedThreadPool(
+        talosProducerConfig.getThreadPoolsize());
+    partitionCheckExecutor = Executors.newSingleThreadScheduledExecutor(
+        new NamedThreadFactory("talos-producer-partitionCheck-" + topicName));
+    initPartitionSender();
+    initCheckPartitionTask();
+    LOG.info("Init a producer for topic: " +
+        topicTalosResourceName.getTopicTalosResourceName() +
+        ", partitions: " + partitionNumber);
+  }
+
+  @Deprecated
   public TalosProducer(TalosProducerConfig producerConfig, Credential credential,
       TopicTalosResourceName topicTalosResourceName, Partitioner partitioner,
       TopicAbnormalCallback topicAbnormalCallback,
@@ -163,7 +212,8 @@ public class TalosProducer {
 
     messageCallbackExecutors = Executors.newFixedThreadPool(
         talosProducerConfig.getThreadPoolsize());
-    partitionCheckExecutor = Executors.newSingleThreadScheduledExecutor();
+    partitionCheckExecutor = Executors.newSingleThreadScheduledExecutor(
+        new NamedThreadFactory("talos-producer-partitionCheck-" + topicName));
     initPartitionSender();
     initCheckPartitionTask();
     LOG.info("Init a producer for topic: " +
@@ -200,7 +250,8 @@ public class TalosProducer {
     checkAndGetTopicInfo(topicTalosResourceName);
     messageCallbackExecutors = Executors.newFixedThreadPool(
         talosProducerConfig.getThreadPoolsize());
-    partitionCheckExecutor = Executors.newSingleThreadScheduledExecutor();
+    partitionCheckExecutor = Executors.newSingleThreadScheduledExecutor(
+        new NamedThreadFactory("talos-producer-partitionCheck-" + topicName));
     initPartitionSender();
     initCheckPartitionTask();
     LOG.info("Init a producer for topic: " +
@@ -238,6 +289,42 @@ public class TalosProducer {
     }
 
     doAddUserMessage(msgList);
+  }
+
+  public synchronized void addUserMessage(int partitionId, List<Message> msgList)
+      throws ProducerNotActiveException {
+    // check producer state
+    if (!isActive()) {
+      throw new ProducerNotActiveException("Producer is not active, " +
+          "current state: " + producerState);
+    }
+
+    // check total buffered message number
+    while (bufferedCount.isFull()) {
+      synchronized (globalLock) {
+        try {
+          LOG.info("too many buffered messages, globalLock is active." +
+              " message number: " + bufferedCount.getBufferedMsgNumber() +
+              ", message bytes:  " + bufferedCount.getBufferedMsgBytes());
+          globalLock.wait();
+        } catch (InterruptedException e) {
+          LOG.error("addUserMessage global lock wait is interrupt.", e);
+        }
+      } // release global lock but no notify
+    } // while
+
+    List<UserMessage> userMessageList = new ArrayList<UserMessage>();
+
+    for (Message message : msgList) {
+      // set timestamp and messageType if not set;
+      Utils.updateMessage(message, MessageType.BINARY);
+      // check data validity
+      Utils.checkMessageValidity(message);
+      userMessageList.add(new UserMessage(message));
+    }
+
+    Preconditions.checkArgument(partitionSenderMap.containsKey(partitionId));
+    partitionSenderMap.get(partitionId).addMessage(userMessageList);
   }
 
   public synchronized void addUserMessage(List<Message> msgList)
@@ -286,7 +373,6 @@ public class TalosProducer {
 
     for (Message message : msgList) {
       // set timestamp and messageType if not set;
-      Utils.updateMessage(message, MessageType.BINARY);
       Utils.updateMessage(message, MessageType.BINARY);
       // check data validity
       Utils.checkMessageValidity(message);
@@ -368,14 +454,14 @@ public class TalosProducer {
       TopicTalosResourceName topicTalosResourceName) throws TException {
     topicName = Utils.getTopicNameByResourceName(
         topicTalosResourceName.getTopicTalosResourceName());
-    Topic topic = talosAdmin.describeTopic(new DescribeTopicRequest(topicName));
+    GetDescribeInfoResponse response = talosAdmin.getDescribeInfo(new GetDescribeInfoRequest(topicName));
 
     if (!topicTalosResourceName.equals(
-        topic.getTopicInfo().getTopicTalosResourceName())) {
+        response.getTopicTalosResourceName())) {
       throw new IllegalArgumentException("The topic: " +
           topicTalosResourceName.getTopicTalosResourceName() + " not found");
     }
-    partitionNumber = topic.getTopicAttribute().getPartitionNumber();
+    partitionNumber = response.getPartitionNumber();
     curPartitionId = random.nextInt(partitionNumber);
     this.topicTalosResourceName = topicTalosResourceName;
   }

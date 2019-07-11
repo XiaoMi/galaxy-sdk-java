@@ -44,12 +44,15 @@ public class TalosAdminShell {
     options.addOption("listQuota", false, "Get all visible Quota information");
     options.addOption("listPendingQuota", false, "Get all visible unallocated " +
         "Quota information");
+    options.addOption("getWorkerId", false, "Get consumer client workerId, " +
+        "Need to add parameters: -n -i -g");
 
     options.addOption("n", "topicName", true, "topic name");
     options.addOption("i", "partitionId", true, "partition id");
     options.addOption("p", "partitionNumber", true, "partition number");
     options.addOption("o", "orgId", true, "orgId");
     options.addOption("q", "totalQuota", true, "total quota");
+    options.addOption("g", "consumerGroupName", true, "consumer group name");
 
     CommandLineParser parser = new DefaultParser();
     CommandLine cmd;
@@ -164,6 +167,16 @@ public class TalosAdminShell {
       adminOperator.listQuota();
     } else if (cmd.hasOption("listPendingQuota")) {
       adminOperator.listPendingQuota();
+    } else if (cmd.hasOption("getWorkerId")) {
+      if (cmd.hasOption("n") && cmd.hasOption("i") && cmd.hasOption("g")) {
+        String topicName = cmd.getOptionValue("n");
+        int partitionId = Integer.parseInt(cmd.getOptionValue("i"));
+        String consumerGroup = cmd.getOptionValue("g");
+        adminOperator.getWorkerId(topicName, partitionId, consumerGroup);
+      } else {
+        System.out.println("getWorkerId must have parameters: " +
+            "-n(topicName), -i(partitionId), -g(consumerGroupName)");
+      }
     } else {
       System.out.println("input error, please check the input interface");
     }

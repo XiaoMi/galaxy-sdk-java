@@ -79,6 +79,13 @@ public class Utils {
     }
   }
 
+  public static void checkTopicName(String topicName) {
+    if (topicName.contains(TALOS_CLOUD_TOPIC_NAME_DELIMITER)) {
+      throw new IllegalArgumentException(
+          "The topic name format in TopicAndPartition should not be: orgId/topicName");
+    }
+  }
+
   // The format of cloud topicName is: orgId/topicName
   public static void checkCloudTopicNameValidity(String topicName) {
     if (topicName == null || topicName.length() == 0) {

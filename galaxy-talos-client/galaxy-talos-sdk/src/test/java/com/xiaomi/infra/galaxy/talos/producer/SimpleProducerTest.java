@@ -6,7 +6,6 @@
 
 package com.xiaomi.infra.galaxy.talos.producer;
 
-import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
@@ -22,11 +21,14 @@ import org.mockito.Mockito;
 
 import com.xiaomi.infra.galaxy.talos.client.ScheduleInfoCache;
 import com.xiaomi.infra.galaxy.talos.thrift.GalaxyTalosException;
+import com.xiaomi.infra.galaxy.talos.thrift.GetDescribeInfoRequest;
+import com.xiaomi.infra.galaxy.talos.thrift.GetDescribeInfoResponse;
 import com.xiaomi.infra.galaxy.talos.thrift.Message;
 import com.xiaomi.infra.galaxy.talos.thrift.MessageService;
 import com.xiaomi.infra.galaxy.talos.thrift.PutMessageRequest;
 import com.xiaomi.infra.galaxy.talos.thrift.PutMessageResponse;
 import com.xiaomi.infra.galaxy.talos.thrift.TopicAndPartition;
+import com.xiaomi.infra.galaxy.talos.thrift.TopicService;
 import com.xiaomi.infra.galaxy.talos.thrift.TopicTalosResourceName;
 
 import static org.junit.Assert.assertFalse;
@@ -41,29 +43,41 @@ import static org.mockito.Mockito.when;
 public class SimpleProducerTest {
   private static final String topicName = "MyTopic";
   private static final String resourceName = "12345#MyTopic#dfi34598dfj4";
+  private static final TopicTalosResourceName talosResourceName =
+      new TopicTalosResourceName(resourceName);
   private static final int partitionId = 7;
+  private static final int partitionNum = 10;
 
   private static TalosProducerConfig producerConfig;
   private static MessageService.Iface messageClientMock;
+  private static TopicService.Iface topicClientMock;
   private static ScheduleInfoCache scheduleInfoCacheMock;
   private static TopicAndPartition topicAndPartition;
   private static List<Message> messageList;
   private static SimpleProducer simpleProducer;
 
   @Before
-  public void setUp() throws IOException {
+  public void setUp() throws TException {
     Properties properties = new Properties();
     properties.setProperty("galaxy.talos.service.endpoint", "testUrl");
     producerConfig = new TalosProducerConfig(properties);
     messageClientMock = Mockito.mock(MessageService.Iface.class);
+    topicClientMock = Mockito.mock(TopicService.Iface.class);
     scheduleInfoCacheMock = Mockito.mock(ScheduleInfoCache.class);
     topicAndPartition = new TopicAndPartition(topicName,
         new TopicTalosResourceName(resourceName), partitionId);
     Message message = new Message(ByteBuffer.wrap("hello world".getBytes()));
     messageList = new ArrayList<Message>();
     messageList.add(message);
-    simpleProducer = new SimpleProducer(producerConfig, topicAndPartition,
-        messageClientMock, new AtomicLong(1), scheduleInfoCacheMock);
+    // construct a getDescribeInfoResponse
+    GetDescribeInfoResponse getDescribeInfoResponse = new GetDescribeInfoResponse(
+        talosResourceName, partitionNum);
+
+    when(topicClientMock.getDescribeInfo(any(GetDescribeInfoRequest.class))).thenReturn(
+        getDescribeInfoResponse);
+    simpleProducer = new SimpleProducer(producerConfig, topicName, partitionId,
+        messageClientMock, topicClientMock, new AtomicLong(1),
+        scheduleInfoCacheMock);
   }
 
   @After

@@ -27,7 +27,7 @@ public enum ErrorCode implements libthrift091.TEnum {
   MESSAGE_INDEX_UNDESIRED_ERROR(12),
   MESSAGE_INDEX_NOT_EXIST(13),
   MESSAGE_OFFSET_OUT_OF_RANGE(14),
-  INVALID_TOPIC_NAME(15),
+  INVALID_NAME_ERROR(15),
   INVALID_TOPIC_PARAMS(16),
   OPERATION_FAILED(17),
   HDFS_OPERATION_FAILED(18),
@@ -48,7 +48,8 @@ public enum ErrorCode implements libthrift091.TEnum {
   REQUEST_PROCESS_TIMEOUT(33),
   QUOTA_EXCEEDED(34),
   THROTTLE_REJECT_ERROR(35),
-  QUOTA_AUTO_APPROVE_FAILED(36);
+  QUOTA_AUTO_APPROVE_FAILED(36),
+  HBASE_OPERATION_BLOCKED(37);
 
   private final int value;
 
@@ -100,7 +101,7 @@ public enum ErrorCode implements libthrift091.TEnum {
       case 14:
         return MESSAGE_OFFSET_OUT_OF_RANGE;
       case 15:
-        return INVALID_TOPIC_NAME;
+        return INVALID_NAME_ERROR;
       case 16:
         return INVALID_TOPIC_PARAMS;
       case 17:
@@ -143,6 +144,8 @@ public enum ErrorCode implements libthrift091.TEnum {
         return THROTTLE_REJECT_ERROR;
       case 36:
         return QUOTA_AUTO_APPROVE_FAILED;
+      case 37:
+        return HBASE_OPERATION_BLOCKED;
       default:
         return null;
     }

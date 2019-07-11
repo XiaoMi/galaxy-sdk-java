@@ -7,6 +7,7 @@
 package com.xiaomi.infra.codelab.talos;
 
 import java.util.List;
+
 import java.util.concurrent.atomic.AtomicLong;
 
 import libthrift091.TException;
@@ -15,19 +16,14 @@ import org.slf4j.LoggerFactory;
 
 import com.xiaomi.infra.galaxy.rpc.thrift.Credential;
 import com.xiaomi.infra.galaxy.rpc.thrift.UserType;
-import com.xiaomi.infra.galaxy.talos.admin.TalosAdmin;
 import com.xiaomi.infra.galaxy.talos.client.SimpleTopicAbnormalCallback;
-import com.xiaomi.infra.galaxy.talos.client.TalosClientConfig;
 import com.xiaomi.infra.galaxy.talos.consumer.MessageCheckpointer;
 import com.xiaomi.infra.galaxy.talos.consumer.MessageProcessor;
 import com.xiaomi.infra.galaxy.talos.consumer.MessageProcessorFactory;
 import com.xiaomi.infra.galaxy.talos.consumer.TalosConsumer;
 import com.xiaomi.infra.galaxy.talos.consumer.TalosConsumerConfig;
-import com.xiaomi.infra.galaxy.talos.thrift.DescribeTopicRequest;
 import com.xiaomi.infra.galaxy.talos.thrift.MessageAndOffset;
-import com.xiaomi.infra.galaxy.talos.thrift.Topic;
 import com.xiaomi.infra.galaxy.talos.thrift.TopicAndPartition;
-import com.xiaomi.infra.galaxy.talos.thrift.TopicTalosResourceName;
 
 public class TalosConsumerDemo {
   private static final Logger LOG = LoggerFactory.getLogger(TalosConsumerDemo.class);
@@ -54,7 +50,7 @@ public class TalosConsumerDemo {
         /** if user has set 'galaxy.talos.consumer.checkpoint.auto.commit' to false,
          * then you can call the 'checkpoint' to commit the list of messages.
          */
-        // messageCheckpointer.checkpoint();
+        //messageCheckpointer.checkpoint();
       } catch (Throwable throwable) {
         LOG.error("process error, ", throwable);
       }
@@ -85,17 +81,14 @@ public class TalosConsumerDemo {
 
   private TalosConsumerConfig consumerConfig;
   private Credential credential;
-  private TalosAdmin talosAdmin;
   private TalosConsumer talosConsumer;
-  private TopicTalosResourceName topicTalosResourceName;
 
-  public TalosConsumerDemo() throws TException {
+  public TalosConsumerDemo() {
     // init client config by put $your_propertyFile in your classpath
     // with the content of:
     /*
       galaxy.talos.service.endpoint=$talosServiceURI
     */
-    TalosClientConfig clientConfig = new TalosClientConfig(propertyFileName);
     consumerConfig = new TalosConsumerConfig(propertyFileName);
 
     // credential
@@ -103,20 +96,11 @@ public class TalosConsumerDemo {
     credential.setSecretKeyId(accessKey)
         .setSecretKey(accessSecret)
         .setType(UserType.DEV_XIAOMI);
-
-    // get topic info
-    talosAdmin = new TalosAdmin(clientConfig, credential);
-    getTopicInfo();
-  }
-
-  private void getTopicInfo() throws TException {
-    Topic topic = talosAdmin.describeTopic(new DescribeTopicRequest(topicName));
-    topicTalosResourceName = topic.getTopicInfo().getTopicTalosResourceName();
   }
 
   public void start() throws TException {
     talosConsumer = new TalosConsumer(consumerGroup, consumerConfig,
-        credential, topicTalosResourceName, new MyMessageProcessorFactory(),
+        credential, topicName, new MyMessageProcessorFactory(),
         clientPrefix, new SimpleTopicAbnormalCallback());
   }
 

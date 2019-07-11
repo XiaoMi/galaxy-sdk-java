@@ -42,18 +42,18 @@ public class EMQExample {
 
   public static void main(String[] args) {
     Credential credential = new Credential().setSecretKeyId(secretKeyId).
-        setSecretKey(secretKey).setType(UserType.APP_SECRET);
+            setSecretKey(secretKey).setType(UserType.APP_SECRET);
     EMQClientFactory clientFactory = new EMQClientFactory(credential,
-        generateHttpClient(10, 10));
+            generateHttpClient(10, 10));
     QueueService.Iface queueClient = clientFactory.newQueueClient(
-        "http://awsbj0.emq.api.xiaomi.com");
+            "http://awsbj0.emq.api.xiaomi.com");
     MessageService.Iface messageClient = clientFactory.newMessageClient(
-        "http://awsbj0.emq.api.xiaomi.com");
+            "http://awsbj0.emq.api.xiaomi.com");
 
     try {
       CreateQueueRequest createQueueRequest = new CreateQueueRequest(name);
       CreateQueueResponse createQueueResponse = queueClient.createQueue(
-          createQueueRequest);
+              createQueueRequest);
       String queueName = createQueueResponse.getQueueName();
 
       String tagName = "tagTest";
@@ -62,31 +62,31 @@ public class EMQExample {
 
       String messageBody = "EMQExample";
       SendMessageRequest sendMessageRequest =
-          new SendMessageRequest(queueName, messageBody);
+              new SendMessageRequest(queueName, messageBody);
       SendMessageResponse sendMessageResponse =
-          messageClient.sendMessage(sendMessageRequest);
+              messageClient.sendMessage(sendMessageRequest);
       System.out.printf("Send:\n  MessageBody: %s  MessageId: %s\n\n",
-          messageBody, sendMessageResponse.getMessageID());
+              messageBody, sendMessageResponse.getMessageID());
 
       ReceiveMessageRequest receiveMessageRequest =
-          new ReceiveMessageRequest(queueName);
+              new ReceiveMessageRequest(queueName);
       List<ReceiveMessageResponse> receiveMessageResponse =
-          new ArrayList<ReceiveMessageResponse>();
+              new ArrayList<ReceiveMessageResponse>();
       while (receiveMessageResponse.isEmpty()) {
         receiveMessageResponse =
-            messageClient.receiveMessage(receiveMessageRequest);
+                messageClient.receiveMessage(receiveMessageRequest);
       }
       DeleteMessageBatchRequest deleteMessageBatchRequest =
-          new DeleteMessageBatchRequest();
+              new DeleteMessageBatchRequest();
       deleteMessageBatchRequest.setQueueName(queueName);
       for (ReceiveMessageResponse response : receiveMessageResponse) {
         System.out.printf(
-            "Receive from default:\n  MessageBody: %s  MessageId: %s " +
-                "ReceiptHandle: %s\n\n",
-            response.getMessageBody(), response.getMessageID(),
-            response.getReceiptHandle());
+                "Receive from default:\n  MessageBody: %s  MessageId: %s " +
+                        "ReceiptHandle: %s\n\n",
+                response.getMessageBody(), response.getMessageID(),
+                response.getReceiptHandle());
         deleteMessageBatchRequest.addToDeleteMessageBatchRequestEntryList(
-            new DeleteMessageBatchRequestEntry(response.getReceiptHandle()));
+                new DeleteMessageBatchRequestEntry(response.getReceiptHandle()));
       }
       messageClient.deleteMessageBatch(deleteMessageBatchRequest);
 
@@ -95,20 +95,20 @@ public class EMQExample {
       receiveMessageResponse.clear();
       while (receiveMessageResponse.isEmpty()) {
         receiveMessageResponse =
-            messageClient.receiveMessage(receiveMessageRequest);
+                messageClient.receiveMessage(receiveMessageRequest);
       }
       ChangeMessageVisibilityBatchRequest changeRequest =
-          new ChangeMessageVisibilityBatchRequest();
+              new ChangeMessageVisibilityBatchRequest();
       changeRequest.setQueueName(queueName);
       for (ReceiveMessageResponse response : receiveMessageResponse) {
         System.out.printf(
-            "Receive from tag:\n  MessageBody: %s  MessageId: %s " +
-                "ReceiptHandle: %s\n\n",
-            response.getMessageBody(), response.getMessageID(),
-            response.getReceiptHandle());
+                "Receive from tag:\n  MessageBody: %s  MessageId: %s " +
+                        "ReceiptHandle: %s\n\n",
+                response.getMessageBody(), response.getMessageID(),
+                response.getReceiptHandle());
         changeRequest.addToChangeMessageVisibilityRequestEntryList(
-            new ChangeMessageVisibilityBatchRequestEntry(
-                response.getReceiptHandle(), 0));
+                new ChangeMessageVisibilityBatchRequestEntry(
+                        response.getReceiptHandle(), 0));
       }
 
       messageClient.changeMessageVisibilitySecondsBatch(changeRequest);
@@ -118,9 +118,9 @@ public class EMQExample {
       receiveMessageResponse = messageClient.receiveMessage(receiveMessageRequest);
       for (ReceiveMessageResponse response : receiveMessageResponse) {
         System.out.printf(
-            "Receive from tag:\n  MessageBody: %s  MessageId: %s ReceiptHandle: %s\n\n",
-            response.getMessageBody(), response.getMessageID(),
-            response.getReceiptHandle());
+                "Receive from tag:\n  MessageBody: %s  MessageId: %s ReceiptHandle: %s\n\n",
+                response.getMessageBody(), response.getMessageID(),
+                response.getReceiptHandle());
       }
 
       if (!receiveMessageResponse.isEmpty()) {
@@ -128,7 +128,7 @@ public class EMQExample {
         deleteMessageBatchRequest.setQueueName(queueName);
         for (ReceiveMessageResponse response : receiveMessageResponse) {
           deleteMessageBatchRequest.addToDeleteMessageBatchRequestEntryList(
-              new DeleteMessageBatchRequestEntry(response.getReceiptHandle()));
+                  new DeleteMessageBatchRequestEntry(response.getReceiptHandle()));
         }
         messageClient.deleteMessageBatch(deleteMessageBatchRequest);
         System.out.print("Delete Messages.\n\n");
@@ -143,7 +143,7 @@ public class EMQExample {
       if (e instanceof GalaxyEmqServiceException) {
         GalaxyEmqServiceException ex = (GalaxyEmqServiceException) e;
         System.out.printf("Failed. Reason:" + ex.getErrMsg() + "\n" +
-            ex.getDetails() + " requestId=" + ex.getRequestId() + "\n\n");
+                ex.getDetails() + " requestId=" + ex.getRequestId() + "\n\n");
       } else {
         System.out.printf("Failed." + e.getMessage() + "\n\n");
       }

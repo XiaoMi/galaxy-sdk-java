@@ -3,7 +3,6 @@ package com.xiaomi.infra.galaxy.vision.model;
 public class FaceMatchResult {
     private boolean isMatch;
     private int score;
-
     public boolean getIsMatch() {
         return isMatch;
     }

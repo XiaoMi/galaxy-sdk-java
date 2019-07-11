@@ -27,22 +27,21 @@ import org.slf4j.LoggerFactory;
 
 import com.xiaomi.infra.galaxy.rpc.thrift.Credential;
 import com.xiaomi.infra.galaxy.talos.admin.TalosAdmin;
+import com.xiaomi.infra.galaxy.talos.client.NamedThreadFactory;
 import com.xiaomi.infra.galaxy.talos.client.ScheduleInfoCache;
 import com.xiaomi.infra.galaxy.talos.client.TalosClientFactory;
 import com.xiaomi.infra.galaxy.talos.client.TopicAbnormalCallback;
 import com.xiaomi.infra.galaxy.talos.client.Utils;
 import com.xiaomi.infra.galaxy.talos.thrift.ConsumeUnit;
 import com.xiaomi.infra.galaxy.talos.thrift.ConsumerService;
-import com.xiaomi.infra.galaxy.talos.thrift.DescribeTopicRequest;
-import com.xiaomi.infra.galaxy.talos.thrift.GetScheduleInfoRequest;
+import com.xiaomi.infra.galaxy.talos.thrift.GetDescribeInfoRequest;
+import com.xiaomi.infra.galaxy.talos.thrift.GetDescribeInfoResponse;
 import com.xiaomi.infra.galaxy.talos.thrift.LockWorkerRequest;
 import com.xiaomi.infra.galaxy.talos.thrift.LockWorkerResponse;
 import com.xiaomi.infra.galaxy.talos.thrift.QueryWorkerRequest;
 import com.xiaomi.infra.galaxy.talos.thrift.QueryWorkerResponse;
 import com.xiaomi.infra.galaxy.talos.thrift.RenewRequest;
 import com.xiaomi.infra.galaxy.talos.thrift.RenewResponse;
-import com.xiaomi.infra.galaxy.talos.thrift.Topic;
-import com.xiaomi.infra.galaxy.talos.thrift.TopicAndPartition;
 import com.xiaomi.infra.galaxy.talos.thrift.TopicTalosResourceName;
 
 public class TalosConsumer {
@@ -55,9 +54,9 @@ public class TalosConsumer {
 
     @Override
     public void run() {
-      Topic topic;
+      GetDescribeInfoResponse response;
       try {
-        topic = talosAdmin.describeTopic(new DescribeTopicRequest(topicName));
+        response = talosAdmin.getDescribeInfo(new GetDescribeInfoRequest(topicName));
       } catch (Throwable throwable) {
         LOG.error("Exception in CheckPartitionTask: ", throwable);
         // if throwable instance of HBaseOperationFailed, just return
@@ -70,7 +69,7 @@ public class TalosConsumer {
       }
 
       if (!topicTalosResourceName.equals(
-          topic.getTopicInfo().getTopicTalosResourceName())) {
+          response.getTopicTalosResourceName())) {
         String errMsg = "The topic: " +
             topicTalosResourceName.getTopicTalosResourceName() +
             " not exist. It might have been deleted. " +
@@ -82,7 +81,7 @@ public class TalosConsumer {
         return;
       }
 
-      int topicPartitionNum = topic.getTopicAttribute().getPartitionNumber();
+      int topicPartitionNum = response.getPartitionNumber();
       if (partitionNumber < topicPartitionNum) {
         LOG.info("partitionNumber changed from " + partitionNumber + " to " +
             topicPartitionNum + ", execute a re-balance task.");
@@ -276,6 +275,59 @@ public class TalosConsumer {
   private Map<Integer, Long> partitionCheckPoint;
 
   private TalosConsumer(String consumerGroupName, TalosConsumerConfig consumerConfig,
+      Credential credential, String topicName,
+      MessageReaderFactory messageReaderFactory,
+      MessageProcessorFactory messageProcessorFactory, String clientIdPrefix,
+      TopicAbnormalCallback abnormalCallback, Map<Integer, Long> partitionCheckPoint)
+      throws TException {
+    workerId = Utils.generateClientId(clientIdPrefix);
+    random = new Random();
+    Utils.checkNameValidity(consumerGroupName);
+    consumerGroup = consumerGroupName;
+    this.messageProcessorFactory = messageProcessorFactory;
+    this.messageReaderFactory = messageReaderFactory;
+    partitionFetcherMap = new ConcurrentHashMap<Integer, PartitionFetcher>();
+    talosConsumerConfig = consumerConfig;
+    talosClientFactory = new TalosClientFactory(talosConsumerConfig, credential);
+    talosAdmin = new TalosAdmin(talosClientFactory);
+    this.topicTalosResourceName = talosAdmin.getDescribeInfo(new GetDescribeInfoRequest(
+        topicName)).getTopicTalosResourceName();
+    consumerClient = talosClientFactory.newConsumerClient();
+    topicAbnormalCallback = abnormalCallback;
+    readWriteLock = new ReentrantReadWriteLock();
+    this.partitionCheckPoint = partitionCheckPoint == null ?
+        new HashMap<Integer, Long>() : partitionCheckPoint;
+    // get scheduleInfo
+    this.scheduleInfoCache = ScheduleInfoCache.getScheduleInfoCache(this.topicTalosResourceName,
+        consumerConfig, talosClientFactory.newMessageClient(), talosClientFactory);
+
+    partitionScheduledExecutor = Executors.newSingleThreadScheduledExecutor(
+        new NamedThreadFactory("talos-consumer-partitionCheck-" + topicName));
+    workerScheduleExecutor = Executors.newSingleThreadScheduledExecutor(
+        new NamedThreadFactory("talos-consumer-workerCheck-" + topicName));
+    renewScheduleExecutor = Executors.newSingleThreadScheduledExecutor(
+        new NamedThreadFactory("talos-consumer-renew-" + topicName));
+    reBalanceExecutor = Executors.newSingleThreadExecutor(
+        new NamedThreadFactory("talos-consumer-reBalance-" + topicName));
+
+    LOG.info("The worker: " + workerId + " is initializing...");
+    // check and get topic info such as partitionNumber
+    checkAndGetTopicInfo(this.topicTalosResourceName);
+    // register self workerId
+    registerSelf();
+    // get worker info
+    getWorkerInfo();
+    // do balance and init simple consumer
+    makeBalance();
+
+    // start CheckPartitionTask/CheckWorkerInfoTask/RenewTask
+    initCheckPartitionTask();
+    initCheckWorkerInfoTask();
+    initRenewTask();
+  }
+
+  @Deprecated
+  private TalosConsumer(String consumerGroupName, TalosConsumerConfig consumerConfig,
       Credential credential, TopicTalosResourceName topicTalosResourceName,
       MessageReaderFactory messageReaderFactory,
       MessageProcessorFactory messageProcessorFactory, String clientIdPrefix,
@@ -300,10 +352,14 @@ public class TalosConsumer {
     this.scheduleInfoCache = ScheduleInfoCache.getScheduleInfoCache(topicTalosResourceName,
         consumerConfig, talosClientFactory.newMessageClient(), talosClientFactory);
 
-    partitionScheduledExecutor = Executors.newSingleThreadScheduledExecutor();
-    workerScheduleExecutor = Executors.newSingleThreadScheduledExecutor();
-    renewScheduleExecutor = Executors.newSingleThreadScheduledExecutor();
-    reBalanceExecutor = Executors.newSingleThreadExecutor();
+    partitionScheduledExecutor = Executors.newSingleThreadScheduledExecutor(
+        new NamedThreadFactory("talos-consumer-partitionCheck-" + topicName));
+    workerScheduleExecutor = Executors.newSingleThreadScheduledExecutor(
+        new NamedThreadFactory("talos-consumer-workerCheck-" + topicName));
+    renewScheduleExecutor = Executors.newSingleThreadScheduledExecutor(
+        new NamedThreadFactory("talos-consumer-renew-" + topicName));
+    reBalanceExecutor = Executors.newSingleThreadExecutor(
+        new NamedThreadFactory("talos-consumer-reBalance-" + topicName));
 
     LOG.info("The worker: " + workerId + " is initializing...");
     // check and get topic info such as partitionNumber
@@ -321,7 +377,19 @@ public class TalosConsumer {
     initRenewTask();
   }
 
-  // general construct
+  // general construct by topicName
+  public TalosConsumer(String consumerGroupName, TalosConsumerConfig consumerConfig,
+      Credential credential, String topicName,
+      MessageProcessorFactory messageProcessorFactory, String clientIdPrefix,
+      TopicAbnormalCallback abnormalCallback)
+      throws TException {
+    this(consumerGroupName, consumerConfig, credential, topicName,
+        new TalosMessageReaderFactory(), messageProcessorFactory, clientIdPrefix,
+        abnormalCallback, new HashMap<Integer, Long>());
+  }
+
+  // general construct by topicTalosResourceName
+  @Deprecated
   public TalosConsumer(String consumerGroupName, TalosConsumerConfig consumerConfig,
       Credential credential, TopicTalosResourceName topicTalosResourceName,
       MessageProcessorFactory messageProcessorFactory, String clientIdPrefix,
@@ -380,10 +448,14 @@ public class TalosConsumer {
     this.scheduleInfoCache = ScheduleInfoCache.getScheduleInfoCache(topicTalosResourceName,
         consumerConfig, null, null);
 
-    partitionScheduledExecutor = Executors.newSingleThreadScheduledExecutor();
-    workerScheduleExecutor = Executors.newSingleThreadScheduledExecutor();
-    renewScheduleExecutor = Executors.newSingleThreadScheduledExecutor();
-    reBalanceExecutor = Executors.newSingleThreadExecutor();
+    partitionScheduledExecutor = Executors.newSingleThreadScheduledExecutor(
+        new NamedThreadFactory("talos-consumer-partitionCheck-" + topicName));
+    workerScheduleExecutor = Executors.newSingleThreadScheduledExecutor(
+        new NamedThreadFactory("talos-consumer-workerCheck-" + topicName));
+    renewScheduleExecutor = Executors.newSingleThreadScheduledExecutor(
+        new NamedThreadFactory("talos-consumer-renew-" + topicName));
+    reBalanceExecutor = Executors.newSingleThreadExecutor(
+        new NamedThreadFactory("talos-consumer-reBalance-" + topicName));
 
     LOG.info("The worker: " + workerId + " is initializing...");
     // check and get topic info such as partitionNumber
@@ -419,15 +491,16 @@ public class TalosConsumer {
       throws TException {
     topicName = Utils.getTopicNameByResourceName(
         topicTalosResourceName.getTopicTalosResourceName());
-    Topic topic = talosAdmin.describeTopic(new DescribeTopicRequest(topicName));
+    GetDescribeInfoResponse response = talosAdmin.getDescribeInfo(
+        new GetDescribeInfoRequest(topicName));
 
     if (!topicTalosResourceName.equals(
-        topic.getTopicInfo().getTopicTalosResourceName())) {
+        response.getTopicTalosResourceName())) {
       LOG.info("The consumer initialize failed by topic not found");
       throw new IllegalArgumentException("The topic: " +
           topicTalosResourceName.getTopicTalosResourceName() + " not found");
     }
-    setPartitionNumber(topic.getTopicAttribute().getPartitionNumber());
+    setPartitionNumber(response.getPartitionNumber());
     this.topicTalosResourceName = topicTalosResourceName;
     LOG.info("The worker: " + workerId + " check and get topic info done");
   }

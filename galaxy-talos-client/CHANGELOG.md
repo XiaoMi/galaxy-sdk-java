@@ -1,3 +1,16 @@
+## 2.4.0
+  * D153930: optimize describeTopic problem by use a new interface
+             change some log to debugLog to reduce client log
+             fix consumer thread exit problem and simpleConsumerDemo bug
+             add getWorkId interface and sdk threadName
+  * D156304: add hbase operation blocked exception to thrift
+
+## 2.3.11
+  * D150406: add new send message interface for flink-talos
+
+## 2.3.10
+  * D150019: change thrift INVALID_TOPIC_NAME to INVALID_NAME_ERROR
+
 ## 2.3.9
   * reduce consume interval
 

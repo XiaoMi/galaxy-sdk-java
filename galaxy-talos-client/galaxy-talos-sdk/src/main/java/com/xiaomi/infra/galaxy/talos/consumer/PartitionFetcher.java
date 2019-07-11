@@ -17,6 +17,7 @@ import com.google.common.base.Preconditions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.xiaomi.infra.galaxy.talos.client.NamedThreadFactory;
 import com.xiaomi.infra.galaxy.talos.thrift.ConsumeUnit;
 import com.xiaomi.infra.galaxy.talos.thrift.ConsumerService;
 import com.xiaomi.infra.galaxy.talos.thrift.LockPartitionRequest;
@@ -128,7 +129,8 @@ public class PartitionFetcher {
     this.workerId = workerId;
     this.consumerClient = consumerClient;
     curState = TASK_STATE.INIT;
-    singleExecutor = Executors.newSingleThreadExecutor();
+    singleExecutor = Executors.newSingleThreadExecutor(new NamedThreadFactory(
+        "talos-consumer-" + consumerGroup + "-" + topicName + ":" + partitionId));
     fetcherFuture = null;
 
     topicAndPartition = new TopicAndPartition(topicName,
@@ -162,7 +164,8 @@ public class PartitionFetcher {
     this.consumerClient = consumerClient;
     this.messageReader = messageReader;
     curState = TASK_STATE.INIT;
-    singleExecutor = Executors.newSingleThreadExecutor();
+    singleExecutor = Executors.newSingleThreadExecutor(new NamedThreadFactory(
+        "talos-consumer-" + consumerGroup + "-" + topicName + ":" + partitionId));
     fetcherFuture = null;
 
     topicAndPartition = new TopicAndPartition(topicName,

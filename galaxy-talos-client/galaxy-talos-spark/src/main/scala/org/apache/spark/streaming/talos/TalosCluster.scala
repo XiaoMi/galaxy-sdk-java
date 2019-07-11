@@ -4,14 +4,13 @@ import java.util.Properties
 import java.util.concurrent.ConcurrentHashMap
 
 import scala.collection.mutable.ArrayBuffer
-
 import org.apache.spark.{Logging, SparkException}
-
 import com.xiaomi.infra.galaxy.rpc.thrift.Credential
 import com.xiaomi.infra.galaxy.talos.admin.TalosAdmin
 import com.xiaomi.infra.galaxy.talos.client.TalosClientConfig
 import com.xiaomi.infra.galaxy.talos.consumer.{SimpleConsumer, TalosConsumerConfig}
 import com.xiaomi.infra.galaxy.talos.thrift._
+import org.apache.spark.streaming.talos.TalosCluster.logError
 
 /**
  * Created by jiasheng on 16-3-15.
@@ -150,7 +149,7 @@ class TalosCluster(
 }
 
 private[spark]
-object TalosCluster {
+object TalosCluster extends Logging {
   type Err = ArrayBuffer[Throwable]
 
   private[talos] val _cacheSimpleConsumer = new ConcurrentHashMap[TopicPartition, SimpleConsumer]()
@@ -164,7 +163,10 @@ object TalosCluster {
   /** If the result is right, return it, otherwise throw SparkException */
   def checkErrors[T](result: Either[Err, T]): T = {
     result.fold(
-      errs => throw new SparkException(errs.mkString("\n")),
+      errs => {
+        errs.foreach(logError("", _))
+        throw new SparkException("Create Talos DStream failed.")
+      },
       ok => ok
     )
   }

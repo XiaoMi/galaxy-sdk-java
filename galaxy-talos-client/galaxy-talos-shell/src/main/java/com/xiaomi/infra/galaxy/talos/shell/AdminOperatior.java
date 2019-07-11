@@ -28,9 +28,13 @@ import com.xiaomi.infra.galaxy.talos.thrift.CreateTopicRequest;
 import com.xiaomi.infra.galaxy.talos.thrift.DeleteTopicRequest;
 import com.xiaomi.infra.galaxy.talos.thrift.DescribeTopicRequest;
 import com.xiaomi.infra.galaxy.talos.thrift.GalaxyTalosException;
+import com.xiaomi.infra.galaxy.talos.thrift.GetDescribeInfoRequest;
+import com.xiaomi.infra.galaxy.talos.thrift.GetDescribeInfoResponse;
 import com.xiaomi.infra.galaxy.talos.thrift.GetPartitionOffsetRequest;
 import com.xiaomi.infra.galaxy.talos.thrift.GetScheduleInfoRequest;
 import com.xiaomi.infra.galaxy.talos.thrift.GetTopicOffsetRequest;
+import com.xiaomi.infra.galaxy.talos.thrift.GetWorkerIdRequest;
+import com.xiaomi.infra.galaxy.talos.thrift.GetWorkerIdResponse;
 import com.xiaomi.infra.galaxy.talos.thrift.ListPendingQuotaResponse;
 import com.xiaomi.infra.galaxy.talos.thrift.ListQuotaResponse;
 import com.xiaomi.infra.galaxy.talos.thrift.OffsetInfo;
@@ -394,11 +398,12 @@ public class AdminOperatior {
       talosAdmin.applyQuota(request);
       System.out.println("applyQuota OK!");
     } catch (GalaxyTalosException e) {
-      LOG.error("Exception in createTopic:", e);
+      LOG.error("Exception in applyQuota:", e);
       System.out.println("input error: " + e.getDetails());
     } catch (Exception e) {
       System.out.println("An error occurred, please check if the configuration" +
-          " file is correct");
+          " file is correct"+ e);
+      LOG.error("Exception in applyQuota:", e);
       return;
     }
   }
@@ -571,5 +576,19 @@ public class AdminOperatior {
     bufferWriter.flush();
     bufferWriter.close();
     System.out.println(str);
+  }
+
+  public void getWorkerId(String topicName, int partitionId, String consumerGroupName) throws Exception {
+    GetDescribeInfoResponse response = talosAdmin.getDescribeInfo(new GetDescribeInfoRequest(topicName));
+    TopicTalosResourceName resouceName = response.getTopicTalosResourceName();
+    TopicAndPartition topicAndPartition = new TopicAndPartition(topicName, resouceName, partitionId);
+    GetWorkerIdRequest request = new GetWorkerIdRequest(topicAndPartition, consumerGroupName);
+    String workerId = talosAdmin.getWorkerId(request);
+    if (workerId == null || workerId.equals("")) {
+      System.out.println("Not exist consumer client currently.");
+      return;
+    }
+    System.out.println("ConsumerGroup: " + consumerGroupName + ", Topic: " +
+        topicName + ", partitionId: " + partitionId + ", has consumer client: " + workerId);
   }
 }

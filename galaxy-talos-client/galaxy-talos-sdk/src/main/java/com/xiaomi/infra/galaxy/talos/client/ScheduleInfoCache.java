@@ -47,7 +47,9 @@ public class ScheduleInfoCache {
           if (Utils.isTopicNotExist(throwable)) {
             return;
           }
-          LOG.error("Exception in GetScheduleInfoTask: ", throwable);
+          if (LOG.isDebugEnabled()) {
+            LOG.debug("Exception in GetScheduleInfoTask: " + throwable);
+          }
         }
       }
     }
@@ -84,7 +86,8 @@ public class ScheduleInfoCache {
     // GetScheduleInfoScheduleExecutor for Schedule get work, cause ScheduledExecutorService
     // use DelayedWorkQueue storage its task, which is unbounded. To private OOM, use
     // GetScheduleInfoExecutor execute task when transfered, setting Queue size as 2.
-    GetScheduleInfoScheduleExecutor = Executors.newSingleThreadScheduledExecutor();
+    GetScheduleInfoScheduleExecutor = Executors.newSingleThreadScheduledExecutor(
+        new NamedThreadFactory("talos-ScheduleInfoCache"));
     GetScheduleInfoExecutor = new ThreadPoolExecutor(1, 1,
         0L, TimeUnit.MILLISECONDS,
         new LinkedBlockingQueue<Runnable>(1), new DiscardPolicy());
@@ -110,7 +113,8 @@ public class ScheduleInfoCache {
     this.talosClientConfig = talosClientConfig;
     this.isAutoLocation = false;
 
-    GetScheduleInfoScheduleExecutor = Executors.newSingleThreadScheduledExecutor();
+    GetScheduleInfoScheduleExecutor = Executors.newSingleThreadScheduledExecutor(
+        new NamedThreadFactory("talos-ScheduleInfoCache"));
     GetScheduleInfoExecutor = new ThreadPoolExecutor(1, 1,
         0L, TimeUnit.MILLISECONDS,
         new LinkedBlockingQueue<Runnable>(1), new DiscardPolicy());

@@ -22,12 +22,16 @@ import com.xiaomi.infra.galaxy.talos.client.TalosClientConfigKeys;
 import com.xiaomi.infra.galaxy.talos.client.TalosClientFactory;
 import com.xiaomi.infra.galaxy.talos.client.Utils;
 import com.xiaomi.infra.galaxy.talos.client.compression.Compression;
+import com.xiaomi.infra.galaxy.talos.thrift.GalaxyTalosException;
+import com.xiaomi.infra.galaxy.talos.thrift.GetDescribeInfoRequest;
+import com.xiaomi.infra.galaxy.talos.thrift.GetDescribeInfoResponse;
 import com.xiaomi.infra.galaxy.talos.thrift.GetMessageRequest;
 import com.xiaomi.infra.galaxy.talos.thrift.GetMessageResponse;
 import com.xiaomi.infra.galaxy.talos.thrift.MessageAndOffset;
 import com.xiaomi.infra.galaxy.talos.thrift.MessageOffset;
 import com.xiaomi.infra.galaxy.talos.thrift.MessageService;
 import com.xiaomi.infra.galaxy.talos.thrift.TopicAndPartition;
+import com.xiaomi.infra.galaxy.talos.thrift.TopicService;
 import com.xiaomi.infra.galaxy.talos.thrift.TopicTalosResourceName;
 
 public class SimpleConsumer {
@@ -54,10 +58,29 @@ public class SimpleConsumer {
     this(consumerConfig, topicAndPartition, messageClient, "");
   }
 
+  public SimpleConsumer(TalosConsumerConfig consumerConfig, String topicName,
+      int partitionId, Credential credential) throws GalaxyTalosException, TException{
+    this(consumerConfig, topicName, partitionId, new TalosClientFactory(
+        consumerConfig, credential), "");
+  }
+
+  @Deprecated
   public SimpleConsumer(TalosConsumerConfig consumerConfig,
       TopicAndPartition topicAndPartition, Credential credential) {
     this(consumerConfig, topicAndPartition, new TalosClientFactory(
         consumerConfig, credential));
+  }
+
+  public SimpleConsumer(TalosConsumerConfig consumerConfig,
+      String topicName, int partitionId, TalosClientFactory talosClientFactory,
+      String consumerIdPrefix) throws GalaxyTalosException, TException{
+    Utils.checkTopicName(topicName);
+    getTopicInfo(talosClientFactory.newTopicClient(), topicName, partitionId);
+    this.consumerConfig = consumerConfig;
+    this.messageClient = talosClientFactory.newMessageClient();
+    simpleConsumerId = Utils.generateClientId(consumerIdPrefix);
+    this.scheduleInfoCache = ScheduleInfoCache.getScheduleInfoCache(this.topicAndPartition.
+        topicTalosResourceName, consumerConfig, this.messageClient, talosClientFactory);
   }
 
   public SimpleConsumer(TalosConsumerConfig consumerConfig,
@@ -79,15 +102,24 @@ public class SimpleConsumer {
   }
 
   // for test
-  public SimpleConsumer(TalosConsumerConfig consumerConfig,
-      TopicAndPartition topicAndPartition, MessageService.Iface messageClientMock,
-      ScheduleInfoCache scheduleInfoCacheMock) {
-    Utils.checkTopicAndPartition(topicAndPartition);
+  public SimpleConsumer(TalosConsumerConfig consumerConfig, String topicName,
+      int partitionId, MessageService.Iface messageClient,
+      TopicService.Iface topicClient,
+      ScheduleInfoCache scheduleInfoCacheMock) throws GalaxyTalosException, TException {
+    Utils.checkTopicName(topicName);
+    getTopicInfo(topicClient, topicName, partitionId);
     this.consumerConfig = consumerConfig;
-    this.topicAndPartition = topicAndPartition;
-    this.messageClient = messageClientMock;
+    this.messageClient = messageClient;
     simpleConsumerId = Utils.generateClientId("");
     this.scheduleInfoCache = scheduleInfoCacheMock;
+  }
+
+  private void getTopicInfo(TopicService.Iface topicClient, String topicName,
+      int partitionId) throws GalaxyTalosException, TException{
+    GetDescribeInfoResponse response = topicClient.getDescribeInfo(
+        new GetDescribeInfoRequest(topicName));
+    this.topicAndPartition = new TopicAndPartition(topicName,
+        response.getTopicTalosResourceName(), partitionId);
   }
 
   public TopicTalosResourceName getTopicTalosResourceName() {
@@ -166,6 +198,7 @@ public class SimpleConsumer {
     }
 
     long actualStartOffset = messageAndOffsetList.get(0).getMessageOffset();
+
     if (messageAndOffsetList.get(0).getMessageOffset() == startOffset ||
         startOffset == MessageOffset.START_OFFSET.getValue() ||
         startOffset == MessageOffset.LATEST_OFFSET.getValue()) {

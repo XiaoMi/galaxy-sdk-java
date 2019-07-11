@@ -24,6 +24,10 @@ import com.xiaomi.infra.galaxy.talos.thrift.CreateTopicRequest;
 import com.xiaomi.infra.galaxy.talos.thrift.CreateTopicResponse;
 import com.xiaomi.infra.galaxy.talos.thrift.DeleteTopicRequest;
 import com.xiaomi.infra.galaxy.talos.thrift.DescribeTopicRequest;
+import com.xiaomi.infra.galaxy.talos.thrift.GetDescribeInfoRequest;
+import com.xiaomi.infra.galaxy.talos.thrift.GetDescribeInfoResponse;
+import com.xiaomi.infra.galaxy.talos.thrift.GetWorkerIdRequest;
+import com.xiaomi.infra.galaxy.talos.thrift.GetWorkerIdResponse;
 import com.xiaomi.infra.galaxy.talos.thrift.Permission;
 import com.xiaomi.infra.galaxy.talos.thrift.Topic;
 import com.xiaomi.infra.galaxy.talos.thrift.TopicAndPartition;
@@ -45,6 +49,7 @@ public class TalosAdminDemo {
   // attention that the topic name to be created is 'orgId/topicName'
   private static final String cloudTopicName = orgId + "/" + topicName;
   private static final int partitionNumber = 8;
+  private static final String consumerGroup = "groupName";
 
   private TopicTalosResourceName resourceName;
   private Credential credential;
@@ -85,9 +90,10 @@ public class TalosAdminDemo {
 
   // get topicTalosResourceName by topicName
   public TopicTalosResourceName getTopicTalosResourceName() throws TException {
-    Topic topic = talosAdmin.describeTopic(new DescribeTopicRequest(topicName));
-    resourceName = topic.getTopicInfo().getTopicTalosResourceName();
-    LOG.info("Topic resourceName is: " + resourceName);
+    GetDescribeInfoResponse response = talosAdmin.getDescribeInfo(
+        new GetDescribeInfoRequest(topicName));
+    resourceName = response.getTopicTalosResourceName();
+    LOG.info("Topic resourceName is: " + resourceName.getTopicTalosResourceName());
     return resourceName;
   }
 
@@ -98,9 +104,17 @@ public class TalosAdminDemo {
     LOG.info("Topic success to delete: " + resourceName);
   }
 
+  public void getWorkerId() throws TException {
+    TopicAndPartition topicAndPartition = new TopicAndPartition(topicName, resourceName, 1);
+    GetWorkerIdRequest request = new GetWorkerIdRequest(topicAndPartition, consumerGroup);
+    String workerId = talosAdmin.getWorkerId(request);
+    LOG.info("workerId:" + workerId);
+  }
+
   public static void main(String[] args) throws Exception {
     TalosAdminDemo cloudAdminDemo = new TalosAdminDemo();
     cloudAdminDemo.createTopic();
     cloudAdminDemo.getTopicTalosResourceName();
+    //cloudAdminDemo.getWorkerId();
   }
 }

@@ -8,22 +8,22 @@ import java.util.List;
  * All rights reserved.
  */
 public class DetectFacesResult {
-  private List<FaceDetail> faceDetails;
+  private List<FaceInfo> faceInfo;
 
-  public List<FaceDetail> getFaceDetails() {
-    return faceDetails;
+  public List<FaceInfo> getFaceInfo() {
+    return faceInfo;
   }
 
-  public void setFaceDetails(List<FaceDetail> faceDetails) {
-    this.faceDetails = faceDetails;
+  public void setFaceInfo(List<FaceInfo> faceInfo) {
+    this.faceInfo = faceInfo;
   }
   
-  public void addFaceDetail(FaceDetail... faceDetails) {
-    if (this.faceDetails == null) {
-      this.faceDetails = new ArrayList<FaceDetail>();
+  public void addFaceInfo(FaceInfo... faceInfo) {
+    if (this.faceInfo == null) {
+      this.faceInfo = new ArrayList<FaceInfo>();
     }
-    for (FaceDetail faceDetail : faceDetails) {
-      this.faceDetails.add(faceDetail);
+    for (FaceInfo newfaceInfo : faceInfo) {
+      this.faceInfo.add(newfaceInfo);
     }
   }
 }

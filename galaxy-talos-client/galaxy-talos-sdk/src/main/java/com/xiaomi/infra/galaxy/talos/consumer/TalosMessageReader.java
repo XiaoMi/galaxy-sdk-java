@@ -66,9 +66,10 @@ public class TalosMessageReader extends MessageReader implements MessageCheckpoi
   @Override
   public void fetchData() {
     // control fetch qps
-    if (System.currentTimeMillis() - lastFetchTime < fetchInterval) {
+    long currentTime = System.currentTimeMillis();
+    if (currentTime - lastFetchTime < fetchInterval) {
       try {
-        Thread.sleep(lastFetchTime + fetchInterval - System.currentTimeMillis());
+        Thread.sleep(lastFetchTime + fetchInterval - currentTime);
       } catch (InterruptedException e) {
         // do nothing
       }

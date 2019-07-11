@@ -22,6 +22,8 @@ import org.mockito.Mockito;
 import com.xiaomi.infra.galaxy.talos.client.ScheduleInfoCache;
 import com.xiaomi.infra.galaxy.talos.client.compression.Compression;
 import com.xiaomi.infra.galaxy.talos.producer.TalosProducerConfig;
+import com.xiaomi.infra.galaxy.talos.thrift.GetDescribeInfoRequest;
+import com.xiaomi.infra.galaxy.talos.thrift.GetDescribeInfoResponse;
 import com.xiaomi.infra.galaxy.talos.thrift.GetMessageRequest;
 import com.xiaomi.infra.galaxy.talos.thrift.GetMessageResponse;
 import com.xiaomi.infra.galaxy.talos.thrift.Message;
@@ -31,6 +33,7 @@ import com.xiaomi.infra.galaxy.talos.thrift.MessageOffset;
 import com.xiaomi.infra.galaxy.talos.thrift.MessageService;
 import com.xiaomi.infra.galaxy.talos.thrift.MessageType;
 import com.xiaomi.infra.galaxy.talos.thrift.TopicAndPartition;
+import com.xiaomi.infra.galaxy.talos.thrift.TopicService;
 import com.xiaomi.infra.galaxy.talos.thrift.TopicTalosResourceName;
 
 import static org.junit.Assert.assertEquals;
@@ -42,13 +45,17 @@ import static org.mockito.Mockito.when;
 public class SimpleConsumerTest {
   private static final String topicName = "MyTopic";
   private static final String resourceName = "12345#MyTopic#34595fkdiso456i390";
+  private static final TopicTalosResourceName talosResourceName =
+      new TopicTalosResourceName(resourceName);
   private static final int partitionId = 7;
+  private static final int partitionNum = 10;
   private static final long startOffset = 0;
 
   private static TopicAndPartition topicAndPartition;
   private static TalosProducerConfig producerConfig;
   private static TalosConsumerConfig consumerConfig;
   private static MessageService.Iface messageClientMock;
+  private static TopicService.Iface topicClientMock;
   private static ScheduleInfoCache scheduleInfoCacheMock;
   private static List<Message> messageList;
   private static List<MessageAndOffset> messageAndOffsetList;
@@ -56,7 +63,7 @@ public class SimpleConsumerTest {
   private static SimpleConsumer simpleConsumer;
 
   @Before
-  public void setUp() {
+  public void setUp() throws TException {
     Properties properties = new Properties();
     properties.setProperty("galaxy.talos.service.endpoint", "testUrl");
     producerConfig = new TalosProducerConfig(properties);
@@ -64,11 +71,18 @@ public class SimpleConsumerTest {
     topicAndPartition = new TopicAndPartition(topicName,
         new TopicTalosResourceName(resourceName), partitionId);
     messageClientMock = Mockito.mock(MessageService.Iface.class);
+    topicClientMock = Mockito.mock(TopicService.Iface.class);
     scheduleInfoCacheMock = Mockito.mock(ScheduleInfoCache.class);
-    simpleConsumer = new SimpleConsumer(consumerConfig,
-        topicAndPartition, messageClientMock, scheduleInfoCacheMock);
     messageList = new ArrayList<Message>();
     messageAndOffsetList = new ArrayList<MessageAndOffset>();
+    // construct a getDescribeInfoResponse
+    GetDescribeInfoResponse getDescribeInfoResponse = new GetDescribeInfoResponse(
+        talosResourceName, partitionNum);
+
+    when(topicClientMock.getDescribeInfo(any(GetDescribeInfoRequest.class))).thenReturn(
+        getDescribeInfoResponse);
+    simpleConsumer = new SimpleConsumer(consumerConfig,
+        topicName, partitionId, messageClientMock, topicClientMock, scheduleInfoCacheMock);
   }
 
   @After

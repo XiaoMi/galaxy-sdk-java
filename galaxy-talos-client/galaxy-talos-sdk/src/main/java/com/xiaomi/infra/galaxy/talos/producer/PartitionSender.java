@@ -18,6 +18,7 @@ import java.util.concurrent.atomic.AtomicLong;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.xiaomi.infra.galaxy.talos.client.NamedThreadFactory;
 import com.xiaomi.infra.galaxy.talos.client.Utils;
 import com.xiaomi.infra.galaxy.talos.thrift.Message;
 import com.xiaomi.infra.galaxy.talos.thrift.MessageService;
@@ -175,7 +176,8 @@ public class PartitionSender {
         topicTalosResourceName, partitionId);
     partitionMessageQueue = new PartitionMessageQueue(talosProducerConfig,
         partitionId, producer);
-    singleExecutor = Executors.newSingleThreadScheduledExecutor();
+    singleExecutor = Executors.newSingleThreadScheduledExecutor(new NamedThreadFactory(
+        "talos-producer-" + topicName + ":" + partitionId));
     messageWriterFuture = singleExecutor.submit(new MessageWriter());
   }
 

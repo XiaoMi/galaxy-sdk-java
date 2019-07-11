@@ -100,7 +100,8 @@ import org.apache.spark.streaming.{Seconds, StreamingContext}
 import com.xiaomi.infra.galaxy.rpc.thrift.{Credential, UserType}
 import com.xiaomi.infra.galaxy.talos.client.TalosClientConfigKeys
 
-object TalosSparkDemo extends App {
+object TalosSparkDemo {
+ def main(args: Array[String]): Unit = {
   val batchSec = 5 // spark streaming batch interval;
   val appName = "SparkTalosTest" // spark streaming作业名称;
   val topic = "spark-talos-test" // 需要消费的talos topic名称；
@@ -137,8 +138,11 @@ object TalosSparkDemo extends App {
 
   ssc.start()
   ssc.awaitTermination()
+ }
 }
 ```
+
+**备注： [Spark官方文档](https://spark.apache.org/docs/latest/quick-start.html#self-contained-applications)建议不要继承scala.App类，否则可能会出现不正常初始化现象。**
 
 ### 高阶用法
 

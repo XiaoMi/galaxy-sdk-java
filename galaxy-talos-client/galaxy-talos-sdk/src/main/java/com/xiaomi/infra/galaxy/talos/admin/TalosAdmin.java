@@ -41,6 +41,9 @@ import com.xiaomi.infra.galaxy.talos.thrift.GetScheduleInfoRequest;
 import com.xiaomi.infra.galaxy.talos.thrift.GetScheduleInfoResponse;
 import com.xiaomi.infra.galaxy.talos.thrift.GetTopicOffsetRequest;
 import com.xiaomi.infra.galaxy.talos.thrift.GetTopicOffsetResponse;
+import com.xiaomi.infra.galaxy.talos.thrift.GetDescribeInfoRequest;
+import com.xiaomi.infra.galaxy.talos.thrift.GetDescribeInfoResponse;
+import com.xiaomi.infra.galaxy.talos.thrift.GetWorkerIdRequest;
 import com.xiaomi.infra.galaxy.talos.thrift.ListPendingQuotaResponse;
 import com.xiaomi.infra.galaxy.talos.thrift.ListPermissionRequest;
 import com.xiaomi.infra.galaxy.talos.thrift.ListPermissionResponse;
@@ -118,6 +121,11 @@ public class TalosAdmin {
         describeTopicResponse.getTopicState())
         .setTopicQuota(describeTopicResponse.getTopicQuota())
         .setTopicAcl(describeTopicResponse.getAclMap());
+  }
+
+  public GetDescribeInfoResponse getDescribeInfo(GetDescribeInfoRequest request)
+      throws GalaxyTalosException, TException {
+    return topicClient.getDescribeInfo(request);
   }
 
   public void deleteTopic(DeleteTopicRequest request)
@@ -273,5 +281,10 @@ public class TalosAdmin {
       throws GalaxyTalosException, TException {
     Utils.checkAddSubResourceNameRequest(credential, request);
     topicClient.addSubResourceName(request);
+  }
+
+  public String getWorkerId(GetWorkerIdRequest request)
+      throws GalaxyTalosException, TException {
+    return consumerClient.getWorkerId(request).getWorkerId();
   }
 }
