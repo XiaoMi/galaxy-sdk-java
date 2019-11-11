@@ -1,3 +1,24 @@
+## 2.4.6 
+  * D184109: fix TalosClientConfig construct npe bug & upgrade lcs-common to 2.1.13 & modify normalThreadManager to Executors
+
+## 2.4.5
+  * D182313: add GreedyConsumerDemo
+  * D182196: add greedy consumer metrics
+  * D177381: add GreedyConsumer add GreedyConsumerReader add GreedyPartitionFetcher
+
+## 2.4.4
+  * D181065: optimize the scheduleInfoCache shutdown
+
+## 2.4.3 
+  * D172044: add queryTopicConsumeUnit interface for consumer monitor
+
+## 2.4.2
+  * D172015: talos consumer report ip address
+
+## 2.4.1
+  * D171153: producer add failed backoff sleep
+  * D171453: add getTopicInfoList interface in metric service
+
 ## 2.4.0
   * D153930: optimize describeTopic problem by use a new interface
              change some log to debugLog to reduce client log
