@@ -15,6 +15,9 @@ import java.util.Properties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.xiaomi.infra.galaxy.lcs.common.utils.Address;
+import com.xiaomi.infra.galaxy.lcs.common.utils.LCSUtils;
+
 public class TalosClientConfig implements Serializable {
   private static final Logger LOG = LoggerFactory.getLogger(TalosClientConfig.class);
   private int maxRetry;
@@ -35,9 +38,20 @@ public class TalosClientConfig implements Serializable {
   private boolean isRetry;
   private boolean isAutoLocation;
   private int scheduleInfoMaxRetry;
+  private String clusterName;
+  private String falconUrl;
+  private int reportMetricIntervalMillis;
+  private String consumerMetricFalconEndpoint;
+  private String producerMetricFalconEndpoint;
+  private String greedyMetricFalconEndpoint;
+  private long metricFalconStep;
+  private String alertType;
+  private String clientIp;
+  private boolean clientMonitorSwitch;
 
   protected Properties properties;
 
+  @Deprecated
   public TalosClientConfig() {
     initClientConfig(new Properties());
   }
@@ -48,14 +62,11 @@ public class TalosClientConfig implements Serializable {
 
   public TalosClientConfig(Properties pro) {
     initClientConfig(pro);
-    if (serviceEndpoint == null) {
-      throw new RuntimeException(
-          "The property of 'galaxy.talos.service.endpoint' must be set");
-    }
   }
 
   private void initClientConfig(Properties pro) {
     this.properties = pro;
+    this.clientIp = Address.getIp();
     maxRetry = Integer.parseInt(properties.getProperty(
         TalosClientConfigKeys.GALAXY_TALOS_CLIENT_MAX_RETRY, String.valueOf(
             TalosClientConfigKeys.GALAXY_TALOS_CLIENT_MAX_RETRY_DEFAULT)));
@@ -70,6 +81,14 @@ public class TalosClientConfig implements Serializable {
         String.valueOf(TalosClientConfigKeys.GALAXY_TALOS_CLIENT_ADMIN_TIMEOUT_MILLI_SECS_DEFAULT)));
     serviceEndpoint = properties.getProperty(
         TalosClientConfigKeys.GALAXY_TALOS_SERVICE_ENDPOINT, null);
+    if (serviceEndpoint == null) {
+      throw new RuntimeException(
+          "The property of 'galaxy.talos.service.endpoint' must be set");
+    }
+    clusterName = serviceEndpoint.replace("http://", "")
+        .replace("https://", "")
+        .replace(".api.xiaomi.net", "")
+        .replace(".api.xiaomi.com", "");
     accessKey = properties.getProperty(TalosClientConfigKeys.GALAXY_TALOS_ACCESSKEY, null);
     accessSecret = properties.getProperty(TalosClientConfigKeys.GALAXY_TALOS_ACCESSSECRET, null);
     topicName = properties.getProperty(TalosClientConfigKeys.GALAXY_TALOS_TOPICNAME, null);
@@ -94,6 +113,29 @@ public class TalosClientConfig implements Serializable {
     scheduleInfoMaxRetry = Integer.parseInt(properties.getProperty(
         TalosClientConfigKeys.GALAXY_TALOS_CLIENT_SCHEDULE_INFO_MAX_RETRY,
         String.valueOf(TalosClientConfigKeys.GALAXY_TALOS_CLIENT_SCHEDULE_INFO_MAX_RETRY_DEFAULT)));
+    falconUrl = properties.getProperty(
+        TalosClientConfigKeys.GALAXY_TALOS_METRIC_FALCON_URL,
+        TalosClientConfigKeys.GALAXY_TALOS_METRIC_FALCON_URL_DEFAULT);
+    reportMetricIntervalMillis = Integer.parseInt(properties.getProperty(
+        TalosClientConfigKeys.GALAXY_TALOS_REPORT_METRIC_INTERVAL_MILLIS,
+        String.valueOf(TalosClientConfigKeys.GALAXY_TALOS_REPORT_METRIC_INTERVAL_MILLIS_DEFAULT)));
+    consumerMetricFalconEndpoint = properties.getProperty(
+        TalosClientConfigKeys.GALAXY_TALOS_CONSUMER_METRIC_FALCON_ENDPOINT,
+        TalosClientConfigKeys.GALAXY_TALOS_CONSUMER_METRIC_FALCON_ENDPOINT_DEFAULT);
+    producerMetricFalconEndpoint = properties.getProperty(
+        TalosClientConfigKeys.GALAXY_TALOS_PRODUCER_METRIC_FALCON_ENDPOINT,
+        TalosClientConfigKeys.GALAXY_TALOS_PRODUCER_METRIC_FALCON_ENDPOINT_DEFAULT);
+    greedyMetricFalconEndpoint = properties.getProperty(
+        TalosClientConfigKeys.GALAXY_TALOS_GREEDY_METRIC_FALCON_ENDPOINT,
+        TalosClientConfigKeys.GALAXY_TALOS_GREEDY_METRIC_FALCON_ENDPOINT_DEFAULT);
+    metricFalconStep = Integer.parseInt(properties.getProperty(
+        TalosClientConfigKeys.GALAXY_TALOS_CLIENT_FALCON_STEP,
+        String.valueOf(TalosClientConfigKeys.GALAXY_TALOS_CLIENT_FALCON_STEP_DEFAULT)));
+    alertType = properties.getProperty(TalosClientConfigKeys.GALAXY_TALOS_CLIENT_ALERT_TYPE,
+        TalosClientConfigKeys.GALAXY_TALOS_CLIENT_ALERT_TYPE_DEFAULT);
+    clientMonitorSwitch = Boolean.parseBoolean(properties.getProperty(
+        TalosClientConfigKeys.GALAXY_TALOS_CLIENT_FALCON_MONITOR_SWITCH,
+        String.valueOf(TalosClientConfigKeys.GALAXY_TALOS_CLIENT_FALCON_MONITOR_SWITCH_DEFAULT)));
   }
 
   public int getMaxRetry() {
@@ -163,6 +205,46 @@ public class TalosClientConfig implements Serializable {
   public boolean isAutoLocation() { return isAutoLocation; }
 
   public int getScheduleInfoMaxRetry() { return scheduleInfoMaxRetry; }
+
+  public String getClusterName() {
+    return clusterName;
+  }
+
+  public String getFalconUrl() {
+    return falconUrl;
+  }
+
+  public int getReportMetricIntervalMillis() {
+    return reportMetricIntervalMillis;
+  }
+
+  public String getConsumerMetricFalconEndpoint() {
+    return consumerMetricFalconEndpoint;
+  }
+
+  public String getProducerMetricFalconEndpoint() {
+    return producerMetricFalconEndpoint;
+  }
+
+  public String getGreedyMetricFalconEndpoint() {
+    return greedyMetricFalconEndpoint;
+  }
+
+  public long getMetricFalconStep() {
+    return metricFalconStep;
+  }
+
+  public String getAlertType() {
+    return alertType;
+  }
+
+  public String getClientIp() {
+    return clientIp;
+  }
+
+  public boolean isOpenClientMonitor() {
+    return clientMonitorSwitch;
+  }
 
   public static Properties loadProperties(String fileName) {
     Properties properties = new Properties();

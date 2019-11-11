@@ -187,6 +187,43 @@ public class TalosClientConfigKeys {
       "galaxy.talos.producer.compression.type";
   public static final String GALAXY_TALOS_PRODUCER_COMPRESSION_TYPE_DEFAULT = "SNAPPY";
 
+  /**
+   * The producer partitionSender sleep/delay time when continuous failure
+   */
+  public static final String GALAXY_TALOS_PRODUCER_PUT_MESSAGE_BASE_BACKOFF_TIME =
+      "galaxy.talos.producer.put.message.base.backoff.time.milli";
+  public static final long GALAXY_TALOS_PRODUCER_PUT_MESSAGE_BASE_BACKOFF_TIME_DEFAULT =
+      1000 * 10;
+
+  /**
+   * The producer partitionSender max sleep/delay time when continuous failure
+   */
+  public static final String GALAXY_TALOS_PRODUCER_PUT_MESSAGE_MAX_BACKOFF_TIME =
+      "galaxy.talos.producer.put.message.max.backoff.time.milli";
+  public static final long GALAXY_TALOS_PRODUCER_PUT_MESSAGE_MAX_BACKOFF_TIME_DEFAULT =
+      1000 * 300;
+
+  /**
+   * The producer partitionSender putMessage failed times if greater than n, sleep a while
+   */
+  public static final String GALAXY_TALOS_PRODUCER_PUT_MESSAGE_BASE_FAILED_TIMES =
+      "galaxy.talos.producer.put.message.base.failed.times";
+  public static final int GALAXY_TALOS_PRODUCER_PUT_MESSAGE_BASE_FAILED_TIMES_DEFAULT = 5;
+
+  /**
+   * The producer partitionSender putMessage max failed times
+   */
+  public static final String GALAXY_TALOS_PRODUCER_PUT_MESSAGE_MAX_FAILED_TIMES =
+      "galaxy.talos.producer.put.message.max.failed.times";
+  public static final int GALAXY_TALOS_PRODUCER_PUT_MESSAGE_MAX_FAILED_TIMES_DEFAULT = 10;
+
+  /**
+   * The producer messageQueue will be clear when buffered bytes > 10M
+   */
+  public static final String GALAXY_TALOS_PRODUCER_CLEAR_MESSAGE_QUEUE_BYTES_THRESHOLD =
+      "galaxy.talos.producer.clear.message.queue.bytes.threshold";
+  public static final int GALAXY_TALOS_PRODUCER_CLEAR_MESSAGE_QUEUE_BYTES_THRESHOLD_DEFAULT =
+      1024 * 1024 * 10;
 
   // consumer config
 
@@ -344,6 +381,34 @@ public class TalosClientConfigKeys {
   public static final boolean GALAXY_TALOS_CONSUMER_CHECKPOINT_AUTO_COMMIT_DEFAULT = true;
 
   /**
+   * The greedy consumer local offset stored path;
+   */
+  public static final String GALAXY_TALOS_GREEDYCONSUMER_LOCAL_OFFSET_PATH =
+      "galaxy.talos.greedyconsumer.local.offset.path";
+  public static final String GALAXY_TALOS_GREEDYCONSUMER_LOCAL_OFFSET_PATH_DEFUALT =
+      "/.talos/offset/";
+
+  /**
+   * The greedy consumer checkpoint interval(milli secs), default 10 seconds;
+   */
+  public static final String GALAXY_TALOS_GREEDYCONSUMER_CHECKPOINT_INTERVAL =
+      "galaxy.talos.greedyconsumer.checkpoint.interval";
+  public static final long GALAXY_TALOS_GREEDYCONSUMER_CHECKPOINT_INTERVAL_DEFAULT =
+      1000 * 10;
+  public static final long GALAXY_TALOS_GREEDYCONSUMER_CHECKPOINT_INTERVAL_MINIMUM =
+      1000 * 5;
+  public static final long GALAXY_TALOS_GREEDYCONSUMER_CHECKPOINT_INTERVAL_MAXIMUM =
+      1000 * 60 * 3;
+
+  /**
+   * The greedy consumer checkpoint mode,the default mode is asynchronous;
+   */
+  public static final String GALAXY_TALOS_GREEDYCONSUMER_SYNCHRONOUS_CHECKPOINT =
+      "galaxy.talos.greedyconsumer.synchronous.checkpoint";
+  public static final boolean GALAXY_TALOS_GREEDYCONSUMER_SYNCHRONOUS_CHECKPOINT_DEFAULT =
+      false;
+
+  /**
    * Stress tests params
    */
   public static final String GALAXY_TALOS_ACCESSKEY =
@@ -374,4 +439,38 @@ public class TalosClientConfigKeys {
       + "this message is 1K. this message is 1K. this message is 1K. this message is 1K. this message is 1K. "
       + "this message is 1K. this message is 1K. this message";
 
+  /**
+   * The TALOS client falcon monitor related;
+   */
+  public static String GALAXY_TALOS_METRIC_FALCON_URL = "galaxy.talos.metric.falcon.url";
+  public static String GALAXY_TALOS_METRIC_FALCON_URL_DEFAULT = "http://127.0.0.1:1988/v1/push";
+
+  public static final String GALAXY_TALOS_REPORT_METRIC_INTERVAL_MILLIS =
+      "galaxy.talos.client.report.metric.interval.millis";
+  public static final int GALAXY_TALOS_REPORT_METRIC_INTERVAL_MILLIS_DEFAULT = 60000;
+
+  public static final String GALAXY_TALOS_CLIENT_FALCON_STEP =
+      "galaxy.talos.sdk.falcon.step";
+  public static final long GALAXY_TALOS_CLIENT_FALCON_STEP_DEFAULT =
+      1000 * 60;
+
+  public static final String GALAXY_TALOS_CLIENT_ALERT_TYPE = "galaxy.talos.client.alert.type";
+  public static final String GALAXY_TALOS_CLIENT_ALERT_TYPE_DEFAULT = "srv";
+
+  public static final String GALAXY_TALOS_CONSUMER_METRIC_FALCON_ENDPOINT =
+      "galaxy.talos.consumer.metric.falcon.endpoint";
+  public static final String GALAXY_TALOS_CONSUMER_METRIC_FALCON_ENDPOINT_DEFAULT =
+      "talos.consumer.";
+  public static final String GALAXY_TALOS_PRODUCER_METRIC_FALCON_ENDPOINT =
+      "galaxy.talos.producer.metric.falcon.endpoint";
+  public static final String GALAXY_TALOS_PRODUCER_METRIC_FALCON_ENDPOINT_DEFAULT =
+      "talos.producer.";
+  public static final String GALAXY_TALOS_GREEDY_METRIC_FALCON_ENDPOINT =
+      "galaxy.talos.greedy.metric.falcon.endpoint";
+  public static final String GALAXY_TALOS_GREEDY_METRIC_FALCON_ENDPOINT_DEFAULT =
+      "talos.consumer.greedy.";
+
+  public static final String GALAXY_TALOS_CLIENT_FALCON_MONITOR_SWITCH =
+      "galaxy.talos.client.falcon.monitor.switch";
+  public static final boolean GALAXY_TALOS_CLIENT_FALCON_MONITOR_SWITCH_DEFAULT = true;
 }

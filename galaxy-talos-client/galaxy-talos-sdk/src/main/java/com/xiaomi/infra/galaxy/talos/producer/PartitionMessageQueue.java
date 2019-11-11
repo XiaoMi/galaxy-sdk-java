@@ -125,4 +125,28 @@ public class PartitionMessageQueue {
         System.currentTimeMillis();
     return (time > 0 ? time : 1);
   }
+
+  /**
+   * clean up MessageQueue, return all message list
+   */
+  public synchronized List<Message> getAllMessageList() {
+    List<Message> returnList = new ArrayList<Message>();
+    int returnMsgBytes = 0, returnMsgNumber = 0;
+
+    while (!userMessageList.isEmpty()) {
+      UserMessage userMessage = userMessageList.pollLast();
+      returnList.add(userMessage.getMessage());
+      curMessageBytes -= userMessage.getMessageSize();
+      returnMsgBytes += userMessage.getMessageSize();
+      returnMsgNumber++;
+    }
+
+    // update total buffered count when poll messageList
+    producer.decreaseBufferedCount(returnMsgNumber, returnMsgBytes);
+    return returnList;
+  }
+
+  public synchronized int getCurMessageBytes() {
+    return curMessageBytes;
+  }
 }

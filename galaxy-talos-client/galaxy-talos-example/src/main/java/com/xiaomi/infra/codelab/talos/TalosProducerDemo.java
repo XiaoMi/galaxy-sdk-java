@@ -9,6 +9,7 @@ package com.xiaomi.infra.codelab.talos;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Properties;
 import java.util.concurrent.atomic.AtomicLong;
 
 import libthrift091.TException;
@@ -56,7 +57,13 @@ public class TalosProducerDemo {
     }
   }
 
+  // you can init client config by put $your_propertyFile in your classpath
+  // with the content of:
+    /*
+      galaxy.talos.service.endpoint=$talosServiceURI
+    */
   private static final String propertyFileName = "$your_propertyFile";
+
   private static final String accessKey = "$your_team_accessKey";
   private static final String accessSecret = "$your_team_accessSecret";
   private static final String topicName = "testTopic";
@@ -69,12 +76,9 @@ public class TalosProducerDemo {
   private static TalosProducer talosProducer;
 
   public TalosProducerDemo() {
-    // init client config by put $your_propertyFile in your classpath
-    // with the content of:
-    /*
-      galaxy.talos.service.endpoint=$talosServiceURI
-    */
-    producerConfig = new TalosProducerConfig(propertyFileName);
+    Properties pros = new Properties();
+    pros.setProperty("galaxy.talos.service.endpoint", "$talosServiceURI");
+    producerConfig = new TalosProducerConfig(pros);
 
     // credential
     credential = new Credential();

@@ -26,6 +26,7 @@ import com.xiaomi.infra.galaxy.rpc.thrift.Credential;
 import com.xiaomi.infra.galaxy.rpc.util.clock.AdjustableClock;
 import com.xiaomi.infra.galaxy.talos.thrift.ConsumerService;
 import com.xiaomi.infra.galaxy.talos.thrift.MessageService;
+import com.xiaomi.infra.galaxy.talos.thrift.MetricService;
 import com.xiaomi.infra.galaxy.talos.thrift.QuotaService;
 import com.xiaomi.infra.galaxy.talos.thrift.TopicService;
 import com.xiaomi.infra.galaxy.talos.thrift.Version;
@@ -159,6 +160,23 @@ public class TalosClientFactory {
     return createClient(TopicService.Iface.class, TopicService.Client.class,
         endpoint + Constants.TALOS_TOPIC_SERVICE_PATH,
         socketTimeout, connTimeout, isRetry, maxRetry);
+  }
+
+  public MetricService.Iface newMetricServiceClient() {
+    checkCredential();
+    return newMetricServiceClient(talosClientConfig.getServiceEndpoint());
+  }
+
+  public MetricService.Iface newMetricServiceClient(String endpoint) {
+    return newMetricServiceClient(endpoint, talosClientConfig.getClientTimeout(),
+        talosClientConfig.getClientConnTimeout());
+  }
+
+  public MetricService.Iface newMetricServiceClient(String endpoint, int socketTimeout,
+      int connTimeout) {
+    return createClient(MetricService.Iface.class, MetricService.Client.class,
+        endpoint + Constants.TALOS_METRIC_SERVICE_PATH, socketTimeout, connTimeout,
+        talosClientConfig.isRetry(), talosClientConfig.getMaxRetry());
   }
 
   public MessageService.Iface newMessageClient() {

@@ -22,10 +22,13 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 
 import com.google.common.base.Preconditions;
+import com.google.gson.JsonArray;
 import libthrift091.TException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.xiaomi.infra.galaxy.lcs.common.logger.Slf4jLogger;
+import com.xiaomi.infra.galaxy.lcs.metric.lib.utils.FalconWriter;
 import com.xiaomi.infra.galaxy.rpc.thrift.Credential;
 import com.xiaomi.infra.galaxy.talos.admin.TalosAdmin;
 import com.xiaomi.infra.galaxy.talos.client.Constants;
@@ -79,6 +82,17 @@ public class TalosProducer {
 
   } // CheckPartitionTask
 
+  private class ProducerMonitorTask implements Runnable {
+    @Override
+    public void run() {
+      try {
+        pushMetricData();
+      } catch (Exception e) {
+        LOG.error("push metric data to falcon failed.", e);
+      }
+    }
+  } // ProducerMonitorTask
+
   private enum PRODUCER_STATE {
     ACTIVE,
     DISABLED,
@@ -119,6 +133,9 @@ public class TalosProducer {
   private Future partitionCheckFuture;
   private final Map<Integer, PartitionSender> partitionSenderMap =
       new ConcurrentHashMap<Integer, PartitionSender>();
+
+  private FalconWriter falconWriter;
+  private ScheduledExecutorService producerMonitorThread;
 
   public TalosProducer(TalosProducerConfig producerConfig,
       TopicTalosResourceName topicTalosResourceName,
@@ -171,6 +188,8 @@ public class TalosProducer {
         topicName)).getTopicTalosResourceName();
     this.scheduleInfoCache = ScheduleInfoCache.getScheduleInfoCache(topicTalosResourceName,
         producerConfig, talosClientFactory.newMessageClient(), talosClientFactory);
+    this.falconWriter = FalconWriter.getFalconWriter(
+        talosProducerConfig.getFalconUrl(), new Slf4jLogger(LOG));
     //getTopicTalosResourceName(producerConfig, credential);
     checkAndGetTopicInfo(this.topicTalosResourceName);
 
@@ -178,8 +197,12 @@ public class TalosProducer {
         talosProducerConfig.getThreadPoolsize());
     partitionCheckExecutor = Executors.newSingleThreadScheduledExecutor(
         new NamedThreadFactory("talos-producer-partitionCheck-" + topicName));
+    producerMonitorThread = Executors.newSingleThreadScheduledExecutor(
+        new NamedThreadFactory("talos-producer-monitor-" + topicName));
     initPartitionSender();
     initCheckPartitionTask();
+    initProducerMonitorTask();
+
     LOG.info("Init a producer for topic: " +
         topicTalosResourceName.getTopicTalosResourceName() +
         ", partitions: " + partitionNumber);
@@ -429,6 +452,7 @@ public class TalosProducer {
     partitionCheckFuture.cancel(false);
     partitionCheckExecutor.shutdownNow();
     messageCallbackExecutors.shutdownNow();
+    producerMonitorThread.shutdownNow();
     scheduleInfoCache.shutDown(topicTalosResourceName);
   }
 
@@ -527,6 +551,23 @@ public class TalosProducer {
   protected void decreaseBufferedCount(int decrementNumber,
       int decrementBytes) {
     bufferedCount.descrease(decrementNumber, decrementBytes);
+  }
+
+  private void initProducerMonitorTask() {
+    if (talosProducerConfig.isOpenClientMonitor()) {
+      // push metric data to falcon every minutes
+      producerMonitorThread.scheduleAtFixedRate(new ProducerMonitorTask(),
+          talosProducerConfig.getReportMetricIntervalMillis(),
+          talosProducerConfig.getReportMetricIntervalMillis(), TimeUnit.MILLISECONDS);
+    }
+  }
+
+  private void pushMetricData() {
+    JsonArray jsonArray = new JsonArray();
+    for (Map.Entry<Integer, PartitionSender> entry : partitionSenderMap.entrySet()) {
+      jsonArray.addAll(entry.getValue().getFalconData());
+    }
+    falconWriter.pushFaclonData(jsonArray.toString());
   }
 
 }

@@ -25,6 +25,11 @@
     <dependencies>
         <dependency>
             <groupId>com.xiaomi.infra.galaxy</groupId>
+            <artifactId>galaxy-lcs-common</artifactId>
+            <version>${galaxy-lcs-common.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.xiaomi.infra.galaxy</groupId>
             <artifactId>galaxy-talos-sdk</artifactId>
             <version>${project.version}</version>
         </dependency>

@@ -16,6 +16,16 @@
     <dependencies>
         <dependency>
             <groupId>com.xiaomi.infra.galaxy</groupId>
+            <artifactId>galaxy-lcs-common</artifactId>
+            <version>${galaxy-lcs-common.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.xiaomi.infra.galaxy</groupId>
+            <artifactId>galaxy-lcs-metric-lib</artifactId>
+            <version>${galaxy-lcs-common.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.xiaomi.infra.galaxy</groupId>
             <artifactId>galaxy-client-java</artifactId>
             <version>${galaxy-client-java.version}</version>
             <exclusions>

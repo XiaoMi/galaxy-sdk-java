@@ -21,10 +21,13 @@ import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import com.google.common.base.Preconditions;
+import com.google.gson.JsonArray;
 import libthrift091.TException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.xiaomi.infra.galaxy.lcs.common.logger.Slf4jLogger;
+import com.xiaomi.infra.galaxy.lcs.metric.lib.utils.FalconWriter;
 import com.xiaomi.infra.galaxy.rpc.thrift.Credential;
 import com.xiaomi.infra.galaxy.talos.admin.TalosAdmin;
 import com.xiaomi.infra.galaxy.talos.client.NamedThreadFactory;
@@ -216,6 +219,17 @@ public class TalosConsumer {
     }
   }
 
+  private class ConsumerMonitorTask implements Runnable {
+    @Override
+    public void run() {
+      try {
+        pushMetricData();
+      } catch (Exception e) {
+        LOG.error("push metric data to falcon failed.", e);
+      }
+    }
+  }
+
   private class WorkerPair implements Comparable<WorkerPair> {
     private String workerId;
     private int hasPartitionNum;
@@ -274,13 +288,16 @@ public class TalosConsumer {
   private Map<String, List<Integer>> workerInfoMap;
   private Map<Integer, Long> partitionCheckPoint;
 
+  private FalconWriter falconWriter;
+  private ScheduledExecutorService consumerMonitorThread;
+
   private TalosConsumer(String consumerGroupName, TalosConsumerConfig consumerConfig,
       Credential credential, String topicName,
       MessageReaderFactory messageReaderFactory,
       MessageProcessorFactory messageProcessorFactory, String clientIdPrefix,
       TopicAbnormalCallback abnormalCallback, Map<Integer, Long> partitionCheckPoint)
       throws TException {
-    workerId = Utils.generateClientId(clientIdPrefix);
+    workerId = Utils.generateClientId(consumerConfig.getClientIp(), clientIdPrefix);
     random = new Random();
     Utils.checkNameValidity(consumerGroupName);
     consumerGroup = consumerGroupName;
@@ -300,6 +317,8 @@ public class TalosConsumer {
     // get scheduleInfo
     this.scheduleInfoCache = ScheduleInfoCache.getScheduleInfoCache(this.topicTalosResourceName,
         consumerConfig, talosClientFactory.newMessageClient(), talosClientFactory);
+    this.falconWriter = FalconWriter.getFalconWriter(
+        consumerConfig.getFalconUrl(), new Slf4jLogger(LOG));
 
     partitionScheduledExecutor = Executors.newSingleThreadScheduledExecutor(
         new NamedThreadFactory("talos-consumer-partitionCheck-" + topicName));
@@ -309,6 +328,8 @@ public class TalosConsumer {
         new NamedThreadFactory("talos-consumer-renew-" + topicName));
     reBalanceExecutor = Executors.newSingleThreadExecutor(
         new NamedThreadFactory("talos-consumer-reBalance-" + topicName));
+    consumerMonitorThread = Executors.newSingleThreadScheduledExecutor(
+        new NamedThreadFactory("talos-consumer-monitor-" + topicName));
 
     LOG.info("The worker: " + workerId + " is initializing...");
     // check and get topic info such as partitionNumber
@@ -324,6 +345,8 @@ public class TalosConsumer {
     initCheckPartitionTask();
     initCheckWorkerInfoTask();
     initRenewTask();
+    initConsumerMonitorTask();
+
   }
 
   @Deprecated
@@ -333,7 +356,7 @@ public class TalosConsumer {
       MessageProcessorFactory messageProcessorFactory, String clientIdPrefix,
       TopicAbnormalCallback abnormalCallback, Map<Integer, Long> partitionCheckPoint)
       throws TException {
-    workerId = Utils.generateClientId(clientIdPrefix);
+    workerId = Utils.generateClientId(consumerConfig.getClientIp(), clientIdPrefix);
     random = new Random();
     Utils.checkNameValidity(consumerGroupName);
     consumerGroup = consumerGroupName;
@@ -783,6 +806,7 @@ public class TalosConsumer {
     workerScheduleExecutor.shutdownNow();
     renewScheduleExecutor.shutdownNow();
     reBalanceExecutor.shutdownNow();
+    consumerMonitorThread.shutdownNow();
     scheduleInfoCache.shutDown(topicTalosResourceName);
     LOG.info("Worker: " + workerId + " shutdown.");
   }
@@ -796,5 +820,22 @@ public class TalosConsumer {
     }
     readWriteLock.readLock().unlock();
     return copyMap;
+  }
+
+  private void initConsumerMonitorTask() {
+    if (talosConsumerConfig.isOpenClientMonitor()) {
+      // push metric data to falcon every minutes
+      consumerMonitorThread.scheduleAtFixedRate(new ConsumerMonitorTask(),
+          talosConsumerConfig.getReportMetricIntervalMillis(),
+          talosConsumerConfig.getReportMetricIntervalMillis(), TimeUnit.MILLISECONDS);
+    }
+  }
+
+  private void pushMetricData() {
+    JsonArray jsonArray = new JsonArray();
+    for (Map.Entry<Integer, PartitionFetcher> entry : partitionFetcherMap.entrySet()) {
+      jsonArray.addAll(entry.getValue().getFalconData());
+    }
+    falconWriter.pushFaclonData(jsonArray.toString());
   }
 }

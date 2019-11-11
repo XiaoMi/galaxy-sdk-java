@@ -27,7 +27,13 @@ public class TalosProducerConfig extends TalosClientConfig {
   private long waitPartitionWorkingTime;
   private long updatePartitionMsgNum;
   private String compressionType;
+  private long putMessageBaseBackoffTime;
+  private long putMessageMaxBackoffTime;
+  private int putMessageBaseFailedTimes;
+  private int putMessageMaxFailedTimes;
+  private int clearMsgQueueBytesThreshold;
 
+  @Deprecated
   public TalosProducerConfig() {
     super();
     init(); // parameterChecking will be done in set function
@@ -86,6 +92,21 @@ public class TalosProducerConfig extends TalosClientConfig {
     compressionType = properties.getProperty(
         TalosClientConfigKeys.GALAXY_TALOS_PRODUCER_COMPRESSION_TYPE,
         TalosClientConfigKeys.GALAXY_TALOS_PRODUCER_COMPRESSION_TYPE_DEFAULT);
+    putMessageBaseBackoffTime = Long.parseLong(properties.getProperty(
+        TalosClientConfigKeys.GALAXY_TALOS_PRODUCER_PUT_MESSAGE_BASE_BACKOFF_TIME,
+        String.valueOf(TalosClientConfigKeys.GALAXY_TALOS_PRODUCER_PUT_MESSAGE_BASE_BACKOFF_TIME_DEFAULT)));
+    putMessageMaxBackoffTime = Long.parseLong(properties.getProperty(
+        TalosClientConfigKeys.GALAXY_TALOS_PRODUCER_PUT_MESSAGE_MAX_BACKOFF_TIME,
+        String.valueOf(TalosClientConfigKeys.GALAXY_TALOS_PRODUCER_PUT_MESSAGE_MAX_BACKOFF_TIME_DEFAULT)));
+    putMessageBaseFailedTimes = Integer.parseInt(properties.getProperty(
+        TalosClientConfigKeys.GALAXY_TALOS_PRODUCER_PUT_MESSAGE_BASE_FAILED_TIMES,
+        String.valueOf(TalosClientConfigKeys.GALAXY_TALOS_PRODUCER_PUT_MESSAGE_BASE_FAILED_TIMES_DEFAULT)));
+    putMessageMaxFailedTimes = Integer.parseInt(properties.getProperty(
+        TalosClientConfigKeys.GALAXY_TALOS_PRODUCER_PUT_MESSAGE_MAX_FAILED_TIMES,
+        String.valueOf(TalosClientConfigKeys.GALAXY_TALOS_PRODUCER_PUT_MESSAGE_MAX_FAILED_TIMES_DEFAULT)));
+    clearMsgQueueBytesThreshold = Integer.parseInt(properties.getProperty(
+        TalosClientConfigKeys.GALAXY_TALOS_PRODUCER_CLEAR_MESSAGE_QUEUE_BYTES_THRESHOLD,
+        String.valueOf(TalosClientConfigKeys.GALAXY_TALOS_PRODUCER_CLEAR_MESSAGE_QUEUE_BYTES_THRESHOLD_DEFAULT)));
 
     if (!compressionType.equals("NONE") && !compressionType.equals("SNAPPY")
         && !compressionType.equals("GZIP")) {
@@ -165,6 +186,26 @@ public class TalosProducerConfig extends TalosClientConfig {
       Preconditions.checkArgument(compressionType.equals("GZIP"));
       return MessageCompressionType.GZIP;
     }
+  }
+
+  public long getPutMessageBaseBackoffTime() {
+    return putMessageBaseBackoffTime;
+  }
+
+  public long getPutMessageMaxBackoffTime() {
+    return putMessageMaxBackoffTime;
+  }
+
+  public int getPutMessageBaseFailedTimes() {
+    return putMessageBaseFailedTimes;
+  }
+
+  public int getPutMessageMaxFailedTimes() {
+    return putMessageMaxFailedTimes;
+  }
+
+  public int getClearMsgQueueBytesThreshold() {
+    return clearMsgQueueBytesThreshold;
   }
 
   public void setMaxBufferedMsgNumber(int maxBufferedMsgNumber) {

@@ -29,7 +29,11 @@ public class TalosConsumerConfig extends TalosClientConfig {
   private boolean checkpointAutoCommit;
   private boolean resetOffsetWhenStart;
   private long resetOffsetValueWhenStart;
+  private String localOffsetPath;
+  private long checkpointInterval;
+  private boolean synchronousCheckpoint;
 
+  @Deprecated
   public TalosConsumerConfig() {
     super();
     init(); // parameterChecking will be done in set function
@@ -100,6 +104,14 @@ public class TalosConsumerConfig extends TalosClientConfig {
     resetOffsetValueWhenStart = Long.parseLong(properties.getProperty(
         TalosClientConfigKeys.GALAXY_TALOS_CONSUMER_START_RESET_OFFSET_VALUE,
         String.valueOf(TalosClientConfigKeys.GALAXY_TALOS_CONSUMER_START_RESET_OFFSET_AS_START)));
+    localOffsetPath = properties.getProperty(TalosClientConfigKeys.GALAXY_TALOS_GREEDYCONSUMER_LOCAL_OFFSET_PATH,
+        TalosClientConfigKeys.GALAXY_TALOS_GREEDYCONSUMER_LOCAL_OFFSET_PATH_DEFUALT);
+    checkpointInterval = Integer.parseInt(properties.getProperty(
+        TalosClientConfigKeys.GALAXY_TALOS_GREEDYCONSUMER_CHECKPOINT_INTERVAL,
+        String.valueOf(TalosClientConfigKeys.GALAXY_TALOS_GREEDYCONSUMER_CHECKPOINT_INTERVAL_DEFAULT)));
+    synchronousCheckpoint = Boolean.parseBoolean(properties.getProperty(
+        TalosClientConfigKeys.GALAXY_TALOS_GREEDYCONSUMER_SYNCHRONOUS_CHECKPOINT,
+        String.valueOf(TalosClientConfigKeys.GALAXY_TALOS_GREEDYCONSUMER_SYNCHRONOUS_CHECKPOINT_DEFAULT)));
   }
 
   private void parameterChecking() {
@@ -148,6 +160,11 @@ public class TalosConsumerConfig extends TalosClientConfig {
         (int) resetOffsetValueWhenStart,
         (int) TalosClientConfigKeys.GALAXY_TALOS_CONSUMER_START_RESET_OFFSET_AS_END,
         (int) TalosClientConfigKeys.GALAXY_TALOS_CONSUMER_START_RESET_OFFSET_AS_START);
+    Utils.checkParameterRange(
+        TalosClientConfigKeys.GALAXY_TALOS_GREEDYCONSUMER_CHECKPOINT_INTERVAL,
+        (int) checkpointInterval,
+        (int) TalosClientConfigKeys.GALAXY_TALOS_GREEDYCONSUMER_CHECKPOINT_INTERVAL_MINIMUM,
+        (int) TalosClientConfigKeys.GALAXY_TALOS_GREEDYCONSUMER_CHECKPOINT_INTERVAL_MAXIMUM);
   }
 
   public int getPartitionCheckInterval() {
@@ -218,6 +235,12 @@ public class TalosConsumerConfig extends TalosClientConfig {
         TalosClientConfigKeys.GALAXY_TALOS_CONSUMER_CHECK_PARTITION_INTERVAL_MINIMUM,
         TalosClientConfigKeys.GALAXY_TALOS_CONSUMER_CHECK_PARTITION_INTERVAL_MAXIMUM);
   }
+
+  public String getLocalOffsetPath(){ return localOffsetPath; }
+
+  public long getCheckpointInterval() { return checkpointInterval; }
+
+  public boolean isSynchronousCheckpoint(){return synchronousCheckpoint; }
 
   public void setWorkerInfoCheckInterval(int workerInfoCheckInterval) {
     this.workerInfoCheckInterval = workerInfoCheckInterval;

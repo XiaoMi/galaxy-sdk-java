@@ -81,9 +81,12 @@ public class TalosMessageReader extends MessageReader implements MessageCheckpoi
         LOG.debug("Reading message from offset: " + startOffset.get() +
             " of partition: " + topicAndPartition.getPartitionId());
       }
+      long startFetchTime = System.currentTimeMillis();
       List<MessageAndOffset> messageList = simpleConsumer.fetchMessage(
           startOffset.get());
       lastFetchTime = System.currentTimeMillis();
+      consumerMetrics.markFetchDuration(lastFetchTime - startFetchTime);
+
       // return when no message got
       if (messageList == null || messageList.size() == 0) {
         checkAndCommit(false);
@@ -95,10 +98,14 @@ public class TalosMessageReader extends MessageReader implements MessageCheckpoi
        * have been processed by user's MessageProcessor;
        */
       finishedOffset = messageList.get(messageList.size() - 1).getMessageOffset();
+      long startProcessTime = System.currentTimeMillis();
       messageProcessor.process(messageList, this);
+      consumerMetrics.markProcessDuration(System.currentTimeMillis() -
+          startProcessTime);
       startOffset.set(finishedOffset + 1);
       checkAndCommit(true);
     } catch (Throwable e) {
+      consumerMetrics.markFetchOrProcessFailedTimes();
       LOG.error("Error when getting messages from topic: " +
           topicAndPartition.getTopicTalosResourceName() + " partition: " +
           topicAndPartition.getPartitionId(), e);

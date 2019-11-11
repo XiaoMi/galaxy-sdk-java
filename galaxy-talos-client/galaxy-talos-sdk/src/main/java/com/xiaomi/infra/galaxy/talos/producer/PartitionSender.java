@@ -7,17 +7,23 @@
 package com.xiaomi.infra.galaxy.talos.producer;
 
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.xiaomi.infra.galaxy.talos.client.Constants;
 import com.xiaomi.infra.galaxy.talos.client.NamedThreadFactory;
 import com.xiaomi.infra.galaxy.talos.client.Utils;
 import com.xiaomi.infra.galaxy.talos.thrift.Message;
@@ -46,10 +52,12 @@ public class PartitionSender {
 
   private class MessageWriter implements Runnable {
     private SimpleProducer simpleProducer;
+    private AtomicInteger failedCounter;
 
     private MessageWriter() {
       simpleProducer = new SimpleProducer(talosProducerConfig,
           topicAndPartition, messageClient, clientId, requestId);
+      failedCounter = new AtomicInteger(0);
     }
 
     @Override
@@ -99,7 +107,9 @@ public class PartitionSender {
               " TalosProducer again");
         }
 
+        long startPutMsgTime = System.currentTimeMillis();
         simpleProducer.doPut(messageList);
+        producerMetrics.markPutMsgDuration(System.currentTimeMillis() - startPutMsgTime);
         // putMessage success callback
         userMessageResult.setSuccessful(true);
         messageCallbackExecutors.execute(
@@ -108,9 +118,16 @@ public class PartitionSender {
           LOG.debug("put " + messageList.size() +
               " message success for partition: " + partitionId);
         }
+
+        if (failedCounter.get() > 0) {
+          failedCounter.set(0);
+        }
+
       } catch (Throwable e) {
-        LOG.error("Failed to put " + messageList.size() +
-            " messages for partition: " + partitionId, e);
+        producerMetrics.markPutMsgFailedTimes();
+        failedCounter.incrementAndGet();
+        LOG.error("Failed " + failedCounter.get() + " times to put " +
+            messageList.size() + " messages for partition: " + partitionId, e);
         if (LOG.isDebugEnabled()) {
           for (Message message : messageList) {
             LOG.error(message.getSequenceNumber() + ": " +
@@ -131,6 +148,33 @@ public class PartitionSender {
           } catch (InterruptedException e1) {
             e1.printStackTrace();
           }
+        }
+
+        // delay 10 * (n - 4) seconds when continuous failure >= 5 times
+        if (Utils.isContinuousPutMsgFailed(failedCounter.get(), talosProducerConfig)) {
+          LOG.warn("PutMessage failed " + failedCounter + " times for partition: " +
+              partitionId + ", sleep a while for avoid infinitely retry.");
+          long sleepTimeMS = Utils.getPutMsgFailedDelay(failedCounter.get(),
+              talosProducerConfig);
+          try {
+            Thread.sleep(sleepTimeMS);
+          } catch (InterruptedException e2) {
+            LOG.error(e2.toString());
+          }
+        }
+
+        // clear messageQueue and callback,
+        if (Utils.isLongTimePutMsgFailed(failedCounter.get(), talosProducerConfig) &&
+            isMsgQueueTooLarge(partitionMessageQueue.getCurMessageBytes())) {
+          LOG.warn("PutMessage failed too many times for partition: " + partitionId +
+              ", and already reach max put message limit, then will clear buffer.");
+
+          // clear MessageQueue, and execute onError callback
+          UserMessageResult bufferedUserMsgResult = new UserMessageResult(
+              partitionMessageQueue.getAllMessageList(), partitionId);
+          bufferedUserMsgResult.setSuccessful(false).setCause(e);
+          messageCallbackExecutors.execute(
+              new MessageCallbackTask(bufferedUserMsgResult));
         } // if
       } // catch
     }
@@ -149,6 +193,7 @@ public class PartitionSender {
 
   private TopicAndPartition topicAndPartition;
   private PartitionMessageQueue partitionMessageQueue;
+  private ProducerMetrics producerMetrics;
   private ScheduledExecutorService singleExecutor;
   private Future messageWriterFuture;
   private ExecutorService messageCallbackExecutors;
@@ -176,6 +221,7 @@ public class PartitionSender {
         topicTalosResourceName, partitionId);
     partitionMessageQueue = new PartitionMessageQueue(talosProducerConfig,
         partitionId, producer);
+    producerMetrics = new ProducerMetrics();
     singleExecutor = Executors.newSingleThreadScheduledExecutor(new NamedThreadFactory(
         "talos-producer-" + topicName + ":" + partitionId));
     messageWriterFuture = singleExecutor.submit(new MessageWriter());
@@ -203,6 +249,93 @@ public class PartitionSender {
     if (LOG.isDebugEnabled()) {
       LOG.debug("add " + userMessageList.size() +
           " messages to partition: " + partitionId);
+    }
+  }
+
+  private boolean isMsgQueueTooLarge(int messageBytes) {
+    return messageBytes >= talosProducerConfig.getClearMsgQueueBytesThreshold();
+  }
+
+  public JsonArray getFalconData() {
+    return producerMetrics.toJsonData();
+  }
+
+  public class ProducerMetrics {
+    private String falconEndpoint;
+    private long putMsgDuration;
+    private long maxPutMsgDuration;
+    private long minPutMsgDuration;
+    private int putMsgTimes;
+    private int putMsgFailedTimes;
+    private Map<String, Number> producerMetricsMap;
+
+    public ProducerMetrics() {
+      initMetrics();
+      this.falconEndpoint = talosProducerConfig.getProducerMetricFalconEndpoint() +
+          topicAndPartition.getTopicName();
+      this.producerMetricsMap = new LinkedHashMap<String, Number>();
+    }
+
+    public void initMetrics() {
+      this.putMsgDuration = 0;
+      this.maxPutMsgDuration = 0;
+      this.minPutMsgDuration = 0;
+      this.putMsgTimes = 0;
+      this.putMsgFailedTimes = 0;
+    }
+
+    public void markPutMsgDuration(long putMsgDuration) {
+      if (putMsgDuration > maxPutMsgDuration) {
+        this.maxPutMsgDuration = putMsgDuration;
+      }
+
+      if (minPutMsgDuration == 0 || putMsgDuration < minPutMsgDuration) {
+        this.minPutMsgDuration = putMsgDuration;
+      }
+
+      this.putMsgDuration = putMsgDuration;
+      this.putMsgTimes += 1;
+    }
+
+    public void markPutMsgFailedTimes() {
+      this.putMsgFailedTimes += 1;
+    }
+
+    public JsonArray toJsonData() {
+      updateMetricsMap();
+      JsonArray jsonArray = new JsonArray();
+      for (Map.Entry<String, Number> entry : producerMetricsMap.entrySet()) {
+        JsonObject jsonObject = getBasicData();
+        jsonObject.addProperty("metric", entry.getKey());
+        jsonObject.addProperty("value", entry.getValue().doubleValue());
+        jsonArray.add(jsonObject);
+      }
+      initMetrics();
+      return jsonArray;
+    }
+
+    public void updateMetricsMap() {
+      producerMetricsMap.put(Constants.PUT_MESSAGE_TIME, putMsgDuration);
+      producerMetricsMap.put(Constants.MAX_PUT_MESSAGE_TIME, maxPutMsgDuration);
+      producerMetricsMap.put(Constants.MIN_PUT_MESSAGE_TIME, minPutMsgDuration);
+      producerMetricsMap.put(Constants.PUT_MESSAGE_TIMES, putMsgTimes / 60.0);
+      producerMetricsMap.put(Constants.PUT_MESSAGE_FAILED_TIMES, putMsgFailedTimes/ 60.0);
+    }
+
+    private JsonObject getBasicData() {
+      String tag = "clusterName=" + talosProducerConfig.getClusterName();
+      tag += ",topicName=" + topicAndPartition.getTopicName();
+      tag += ",partitionId=" + topicAndPartition.getPartitionId();
+      tag += ",ip=" + talosProducerConfig.getClientIp();
+      tag += ",type=" + talosProducerConfig.getAlertType();
+
+      JsonObject basicData = new JsonObject();
+      basicData.addProperty("endpoint", falconEndpoint);
+      basicData.addProperty("timestamp", System.currentTimeMillis() / 1000);
+      basicData.addProperty("step", talosProducerConfig.getMetricFalconStep() / 1000);
+      basicData.addProperty("counterType", "GAUGE");
+      basicData.addProperty("tags", tag);
+      return basicData;
     }
   }
 }

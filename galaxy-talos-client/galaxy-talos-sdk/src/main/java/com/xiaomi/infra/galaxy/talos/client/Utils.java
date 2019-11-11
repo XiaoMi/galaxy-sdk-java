@@ -6,8 +6,14 @@
 
 package com.xiaomi.infra.galaxy.talos.client;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.regex.Pattern;
@@ -15,11 +21,13 @@ import java.util.regex.Pattern;
 import com.google.common.base.Preconditions;
 import libthrift091.TBase;
 import libthrift091.TDeserializer;
-import libthrift091.TException;
 import libthrift091.TSerializer;
 import libthrift091.protocol.TCompactProtocol;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.xiaomi.infra.galaxy.rpc.thrift.Credential;
+import com.xiaomi.infra.galaxy.talos.producer.TalosProducerConfig;
 import com.xiaomi.infra.galaxy.talos.thrift.AddSubResourceNameRequest;
 import com.xiaomi.infra.galaxy.talos.thrift.ErrorCode;
 import com.xiaomi.infra.galaxy.talos.thrift.GalaxyTalosException;
@@ -31,9 +39,11 @@ import com.xiaomi.infra.galaxy.talos.thrift.TopicAndPartition;
 import static com.xiaomi.infra.galaxy.talos.client.Constants.TALOS_CLOUD_AK_PREFIX;
 import static com.xiaomi.infra.galaxy.talos.client.Constants.TALOS_CLOUD_ORG_PREFIX;
 import static com.xiaomi.infra.galaxy.talos.client.Constants.TALOS_CLOUD_TEAM_PREFIX;
+import static com.xiaomi.infra.galaxy.talos.client.Constants.TALOS_CONNECTION_DELIMITER;
 import static com.xiaomi.infra.galaxy.talos.client.Constants.TALOS_IDENTIFIER_DELIMITER;
 import static com.xiaomi.infra.galaxy.talos.client.Constants.TALOS_NAME_REGEX;
 import static com.xiaomi.infra.galaxy.talos.client.Constants.TALOS_CLOUD_TOPIC_NAME_DELIMITER;
+import static com.xiaomi.infra.galaxy.talos.client.Constants.TALOS_TEMPORARY_FILE_SUFFIX;
 
 public class Utils {
   /**
@@ -44,6 +54,8 @@ public class Utils {
    * @param topicTalosResourceName
    * @return
    */
+  private static final Logger LOG = LoggerFactory.getLogger(Utils.class);
+
   public static String getTopicNameByResourceName(String topicTalosResourceName) {
     String[] itemList = topicTalosResourceName.split(TALOS_IDENTIFIER_DELIMITER);
     Preconditions.checkArgument(itemList.length >= 3);
@@ -118,6 +130,12 @@ public class Utils {
   public static String generateClientId(String prefix) {
     checkNameValidity(prefix);
     return prefix + generateClientId();
+  }
+
+  public static String generateClientId(String clientIp, String prefix) {
+    checkNameValidity(prefix);
+    return clientIp.replace(".", "_") +
+        TALOS_CONNECTION_DELIMITER + prefix + generateClientId();
   }
 
   public static String generateRequestSequenceId(String clientId,
@@ -257,5 +275,80 @@ public class Utils {
     } catch (Exception te) {
       throw new IOException("Failed to deserialize thrift object", te);
     }
+  }
+
+  public static boolean isContinuousPutMsgFailed(int failedCount,
+      TalosProducerConfig producerConfig) {
+    return failedCount >= producerConfig.getPutMessageBaseFailedTimes();
+  }
+
+  public static boolean isLongTimePutMsgFailed(int failedCount,
+      TalosProducerConfig producerConfig) {
+    return failedCount >= producerConfig.getPutMessageMaxFailedTimes();
+  }
+
+  // Delay when putMessage continuous failed 5 times
+  public static long getPutMsgFailedDelay(int failedCount,
+      TalosProducerConfig producerConfig) {
+    int delayTimes = (int) Math.pow(2, failedCount - producerConfig.
+        getPutMessageBaseFailedTimes());
+    return Math.min(delayTimes * producerConfig.getPutMessageBaseBackoffTime(),
+        producerConfig.getPutMessageMaxBackoffTime());
+  }
+
+  //fileName: filePath/workerId#topicName#partitionId
+  public static String getFileNameForPartition(String filePath, String workerId,
+      String topicName, int partitionId){
+    return  System.getProperty("user.home") + filePath + workerId + TALOS_IDENTIFIER_DELIMITER
+        + topicName + TALOS_IDENTIFIER_DELIMITER + partitionId;
+  }
+
+  //fileName: filePath/workerId#topicName
+  public static String getFileNameForTopic(String filePath, String workerId, String topicName){
+    return System.getProperty("user.home") + filePath + workerId + TALOS_IDENTIFIER_DELIMITER
+        + topicName;
+  }
+
+  //fileName: filePath/workerId#topicName.tmp
+  public static String getTempFileNameForTopic(String filePath, String workerId, String topicName){
+    return getFileNameForTopic(filePath, workerId, topicName) + TALOS_TEMPORARY_FILE_SUFFIX;
+  }
+
+  public static Map<Integer, Long> getOffsetMapFromFile(String fileName) throws IOException {
+    Map<Integer, Long> localCheckpoint = new HashMap<Integer, Long>();
+    File checkpointFile = new File(fileName);
+    if(!checkpointFile.exists()) {
+      return localCheckpoint;
+    }
+    BufferedReader br = null;
+    String lineContent ;
+    try {
+      br = new BufferedReader(new FileReader(checkpointFile));
+      while ((lineContent = br.readLine()) != null) {
+        String[] partitionOffset = lineContent.split(Constants.TALOS_IDENTIFIER_DELIMITER);
+        if (partitionOffset.length == 2) {
+          if (Long.parseLong(partitionOffset[1]) < -2) {
+            LOG.error("Offset from file less than -2, we will reset offset to -1");
+            continue;
+          }
+          localCheckpoint.put(Integer.parseInt(partitionOffset[0]),
+              Long.parseLong(partitionOffset[1]));
+        }
+      }
+    } catch (FileNotFoundException e) {
+      throw new IOException("Offset file: " + fileName + " not found!", e);
+    } catch (IOException e) {
+      throw  new IOException("Get offset from file: " + fileName + " failed!", e);
+    } finally {
+      try {
+        if (br != null) {
+          br.close();
+        }
+      } catch (IOException e) {
+        throw  new IOException("Close buffer reader for file: " + fileName + " failed!", e);
+      }
+    }
+
+    return localCheckpoint;
   }
 }

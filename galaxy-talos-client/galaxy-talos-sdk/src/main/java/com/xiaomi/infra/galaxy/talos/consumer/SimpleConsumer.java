@@ -212,7 +212,8 @@ public class SimpleConsumer {
   }
 
   public void shutDown() {
-    //onec called, all request of this topic in the process cannot auto location
+    LOG.info("consumer of " + topicAndPartition + " is shutting down.");
     scheduleInfoCache.shutDown(topicAndPartition.topicTalosResourceName);
+    LOG.info("consumer of " + topicAndPartition + " shutdown.");
   }
 }

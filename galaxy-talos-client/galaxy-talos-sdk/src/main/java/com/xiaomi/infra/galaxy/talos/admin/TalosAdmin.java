@@ -39,6 +39,8 @@ import com.xiaomi.infra.galaxy.talos.thrift.GetPermissionRequest;
 import com.xiaomi.infra.galaxy.talos.thrift.GetPermissionResponse;
 import com.xiaomi.infra.galaxy.talos.thrift.GetScheduleInfoRequest;
 import com.xiaomi.infra.galaxy.talos.thrift.GetScheduleInfoResponse;
+import com.xiaomi.infra.galaxy.talos.thrift.GetTopicConsumeUnitRequest;
+import com.xiaomi.infra.galaxy.talos.thrift.GetTopicConsumeUnitResponse;
 import com.xiaomi.infra.galaxy.talos.thrift.GetTopicOffsetRequest;
 import com.xiaomi.infra.galaxy.talos.thrift.GetTopicOffsetResponse;
 import com.xiaomi.infra.galaxy.talos.thrift.GetDescribeInfoRequest;
@@ -51,7 +53,12 @@ import com.xiaomi.infra.galaxy.talos.thrift.ListQuotaResponse;
 import com.xiaomi.infra.galaxy.talos.thrift.ListTopicsInfoResponse;
 import com.xiaomi.infra.galaxy.talos.thrift.ListTopicsResponse;
 import com.xiaomi.infra.galaxy.talos.thrift.MessageService;
+import com.xiaomi.infra.galaxy.talos.thrift.MetricService;
 import com.xiaomi.infra.galaxy.talos.thrift.OffsetInfo;
+import com.xiaomi.infra.galaxy.talos.thrift.QueryConsumerGroupRequest;
+import com.xiaomi.infra.galaxy.talos.thrift.QueryConsumerGroupResponse;
+import com.xiaomi.infra.galaxy.talos.thrift.QueryTopicConsumeUnitRequest;
+import com.xiaomi.infra.galaxy.talos.thrift.QueryTopicConsumeUnitResponse;
 import com.xiaomi.infra.galaxy.talos.thrift.QueryTopicQuotaRequest;
 import com.xiaomi.infra.galaxy.talos.thrift.QueryOrgOffsetRequest;
 import com.xiaomi.infra.galaxy.talos.thrift.QueryOrgOffsetResponse;
@@ -76,6 +83,7 @@ import static com.xiaomi.infra.galaxy.talos.client.Constants.TALOS_GALAXY_AK_PRE
 public class TalosAdmin {
   private static final Logger LOG = LoggerFactory.getLogger(TalosAdmin.class);
   private TopicService.Iface topicClient;
+  private MetricService.Iface metricClient;
   private MessageService.Iface messageClient;
   private ConsumerService.Iface consumerClient;
   private QuotaService.Iface quotaClient;
@@ -94,6 +102,7 @@ public class TalosAdmin {
   // used by producer/consumer
   public TalosAdmin(TalosClientFactory talosClientFactory) {
     topicClient = talosClientFactory.newTopicClient();
+    metricClient = talosClientFactory.newMetricServiceClient();
     messageClient = talosClientFactory.newMessageClient();
     consumerClient = talosClientFactory.newConsumerClient();
     quotaClient = talosClientFactory.newQuotaClient();
@@ -166,6 +175,11 @@ public class TalosAdmin {
 
   public List<Topic> listTopicsinfo() throws GalaxyTalosException, TException {
     ListTopicsInfoResponse listTopicsInfoResponse = topicClient.listTopicsInfo();
+    return listTopicsInfoResponse.getTopicList();
+  }
+
+  public List<Topic> getTopicList() throws GalaxyTalosException, TException {
+    ListTopicsInfoResponse listTopicsInfoResponse = metricClient.listTopics();
     return listTopicsInfoResponse.getTopicList();
   }
 
@@ -286,5 +300,23 @@ public class TalosAdmin {
   public String getWorkerId(GetWorkerIdRequest request)
       throws GalaxyTalosException, TException {
     return consumerClient.getWorkerId(request).getWorkerId();
+  }
+
+  public QueryTopicConsumeUnitResponse queryTopicConsumeUnit(
+      QueryTopicConsumeUnitRequest request)
+      throws GalaxyTalosException, TException {
+    return metricClient.queryTopicConsumeUnit(request);
+  }
+
+  public GetTopicConsumeUnitResponse getTopicConsumeUnit(
+      GetTopicConsumeUnitRequest request)
+      throws GalaxyTalosException, TException {
+    return metricClient.getTopicConsumeUnit(request);
+  }
+
+  public QueryConsumerGroupResponse queryConsumerGroup(
+      QueryConsumerGroupRequest request)
+      throws GalaxyTalosException, TException {
+    return metricClient.queryConsumerGroup(request);
   }
 }

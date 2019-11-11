@@ -49,7 +49,8 @@ public enum ErrorCode implements libthrift091.TEnum {
   QUOTA_EXCEEDED(34),
   THROTTLE_REJECT_ERROR(35),
   QUOTA_AUTO_APPROVE_FAILED(36),
-  HBASE_OPERATION_BLOCKED(37);
+  HBASE_OPERATION_BLOCKED(37),
+  CONSUMER_NOT_EXIST(38);
 
   private final int value;
 
@@ -146,6 +147,8 @@ public enum ErrorCode implements libthrift091.TEnum {
         return QUOTA_AUTO_APPROVE_FAILED;
       case 37:
         return HBASE_OPERATION_BLOCKED;
+      case 38:
+        return CONSUMER_NOT_EXIST;
       default:
         return null;
     }

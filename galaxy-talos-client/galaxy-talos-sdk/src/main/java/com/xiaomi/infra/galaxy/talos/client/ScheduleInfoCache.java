@@ -13,6 +13,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.ThreadPoolExecutor.DiscardPolicy;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
@@ -71,6 +72,7 @@ public class ScheduleInfoCache {
   private ExecutorService GetScheduleInfoExecutor;
   private static Map<TopicTalosResourceName, ScheduleInfoCache> scheduleInfoCacheMap =
       new HashMap<TopicTalosResourceName, ScheduleInfoCache>();
+  private AtomicInteger clientNum;
 
   private ScheduleInfoCache(TopicTalosResourceName topicTalosResourceName,
       TalosClientConfig talosClientConfig, MessageService.Iface messageClient,
@@ -82,6 +84,7 @@ public class ScheduleInfoCache {
     this.messageClient = messageClient;
     this.talosClientFactory = talosClientFactory;
     this.messageClientMap = new HashMap<String, MessageService.Iface>();
+    this.clientNum = new AtomicInteger(0);
 
     // GetScheduleInfoScheduleExecutor for Schedule get work, cause ScheduledExecutorService
     // use DelayedWorkQueue storage its task, which is unbounded. To private OOM, use
@@ -112,6 +115,7 @@ public class ScheduleInfoCache {
     this.messageClient = messageClient;
     this.talosClientConfig = talosClientConfig;
     this.isAutoLocation = false;
+    this.clientNum = new AtomicInteger(0);
 
     GetScheduleInfoScheduleExecutor = Executors.newSingleThreadScheduledExecutor(
         new NamedThreadFactory("talos-ScheduleInfoCache"));
@@ -136,6 +140,10 @@ public class ScheduleInfoCache {
             talosClientConfig, messageClient, talosClientFactory));
       }
     }
+
+    scheduleInfoCacheMap.get(topicTalosResourceName).clientNum.incrementAndGet();
+    LOG.info("there were " + scheduleInfoCacheMap.get(topicTalosResourceName).clientNum.get() +
+        " partitions of " + topicTalosResourceName + " use same scheduleInfoCache together.");
     return scheduleInfoCacheMap.get(topicTalosResourceName);
   }
 
@@ -167,11 +175,23 @@ public class ScheduleInfoCache {
     return this.isAutoLocation;
   }
 
-  public void shutDown(TopicTalosResourceName topicTalosResourceName) {
-    LOG.info("scheduleInfoCache of " + topicTalosResourceName + " is shutting down...");
-    scheduleInfoCacheMap.get(topicTalosResourceName).GetScheduleInfoScheduleExecutor.shutdownNow();
-    scheduleInfoCacheMap.get(topicTalosResourceName).GetScheduleInfoExecutor.shutdownNow();
-    LOG.info("scheduleInfoCache of " + topicTalosResourceName + " shutdown.");
+  public synchronized void shutDown(TopicTalosResourceName topicTalosResourceName) {
+    if (scheduleInfoCacheMap.get(topicTalosResourceName).clientNum.get() < 1) {
+      LOG.error("there was duplicate shutdown invoke, please renew your talos client of " + topicTalosResourceName);
+      return;
+    }
+
+    // shutdown the scheduleInfoCache when there were no client of this topic.
+    if (scheduleInfoCacheMap.get(topicTalosResourceName).clientNum.getAndDecrement() == 1) {
+      LOG.info("scheduleInfoCache of " + topicTalosResourceName + " is shutting down...");
+      scheduleInfoCacheMap.get(topicTalosResourceName).GetScheduleInfoScheduleExecutor.shutdownNow();
+      scheduleInfoCacheMap.get(topicTalosResourceName).GetScheduleInfoExecutor.shutdownNow();
+      scheduleInfoCacheMap.remove(topicTalosResourceName);
+      LOG.info("scheduleInfoCache of " + topicTalosResourceName + " shutdown.");
+    } else {
+      LOG.info("there were still " + scheduleInfoCacheMap.get(topicTalosResourceName).clientNum.get() +
+          " partitions of " + topicTalosResourceName + " use this scheduleInfoCache. skip it");
+    }
   }
 
   public void shutDownAll() {
