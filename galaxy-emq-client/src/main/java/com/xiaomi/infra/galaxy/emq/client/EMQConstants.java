@@ -8,16 +8,6 @@ package com.xiaomi.infra.galaxy.emq.client;
 
 public class EMQConstants {
   /**
-   * client端请求超时时间（ms）
-   */
-  public static final int DEFAULT_CLIENT_TIMEOUT = 60000;
-
-  /**
-   * client端连接超时时间（ms）
-   */
-  public static final int DEFAULT_CLIENT_CONN_TIMEOUT = 30000;
-
-  /**
    * HTTP RPC服务地址
    */
   public static final String DEFAULT_SERVICE_ENDPOINT = "http://emq.api.xiaomi.com";

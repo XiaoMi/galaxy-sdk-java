@@ -50,7 +50,6 @@ import com.xiaomi.infra.galaxy.emq.thrift.QueryPermissionForIdRequest;
 import com.xiaomi.infra.galaxy.emq.thrift.QueryPermissionRequest;
 import com.xiaomi.infra.galaxy.emq.thrift.QueueAttribute;
 import com.xiaomi.infra.galaxy.emq.thrift.QueueQuota;
-import com.xiaomi.infra.galaxy.emq.thrift.RangeConstants;
 import com.xiaomi.infra.galaxy.emq.thrift.ReceiveMessageRequest;
 import com.xiaomi.infra.galaxy.emq.thrift.RedrivePolicy;
 import com.xiaomi.infra.galaxy.emq.thrift.RemoveQueueRedrivePolicyRequest;
@@ -241,13 +240,13 @@ public class EMQRequestCheckUtils {
     checkNotEmpty(request.getMessageBody(), "message body");
     if (request.isSetDelaySeconds()) {
       checkParameterRange("delaySeconds", request.getDelaySeconds(),
-          RangeConstants.GALAXY_EMQ_MESSAGE_DELAY_SECONDS_MINIMAL,
-          RangeConstants.GALAXY_EMQ_MESSAGE_DELAY_SECONDS_MAXIMAL);
+          EMQClientConfigKeys.GALAXY_EMQ_MESSAGE_DELAY_SECONDS_MINIMAL,
+          EMQClientConfigKeys.GALAXY_EMQ_MESSAGE_DELAY_SECONDS_MAXIMAL);
     }
     if (request.isSetInvisibilitySeconds()) {
       checkParameterRange("invisibilitySeconds", request.getInvisibilitySeconds(),
-          RangeConstants.GALAXY_EMQ_MESSAGE_INVISIBILITY_SECONDS_MINIMAL,
-          RangeConstants.GALAXY_EMQ_MESSAGE_INVISIBILITY_SECONDS_MAXIMAL);
+          EMQClientConfigKeys.GALAXY_EMQ_MESSAGE_INVISIBILITY_SECONDS_MINIMAL,
+          EMQClientConfigKeys.GALAXY_EMQ_MESSAGE_INVISIBILITY_SECONDS_MAXIMAL);
     }
     if (request.isSetMessageAttributes()) {
       for (MessageAttribute messageAttribute :
@@ -263,13 +262,13 @@ public class EMQRequestCheckUtils {
     checkNotEmpty(request.getMessageBody(), "message body");
     if (request.isSetDelaySeconds()) {
       checkParameterRange("delaySeconds", request.getDelaySeconds(),
-          RangeConstants.GALAXY_EMQ_MESSAGE_DELAY_SECONDS_MINIMAL,
-          RangeConstants.GALAXY_EMQ_MESSAGE_DELAY_SECONDS_MAXIMAL);
+          EMQClientConfigKeys.GALAXY_EMQ_MESSAGE_DELAY_SECONDS_MINIMAL,
+          EMQClientConfigKeys.GALAXY_EMQ_MESSAGE_DELAY_SECONDS_MAXIMAL);
     }
     if (request.isSetInvisibilitySeconds()) {
       checkParameterRange("invisibilitySeconds", request.getInvisibilitySeconds(),
-          RangeConstants.GALAXY_EMQ_MESSAGE_INVISIBILITY_SECONDS_MINIMAL,
-          RangeConstants.GALAXY_EMQ_MESSAGE_INVISIBILITY_SECONDS_MAXIMAL);
+          EMQClientConfigKeys.GALAXY_EMQ_MESSAGE_INVISIBILITY_SECONDS_MINIMAL,
+          EMQClientConfigKeys.GALAXY_EMQ_MESSAGE_INVISIBILITY_SECONDS_MAXIMAL);
     }
     if (request.isSetMessageAttributes()) {
       for (MessageAttribute messageAttribute :
@@ -319,14 +318,14 @@ public class EMQRequestCheckUtils {
     if (request.isSetMaxReceiveMessageNumber()) {
       checkParameterRange("receiveMessageMaximumNumber",
           request.getMaxReceiveMessageNumber(),
-          RangeConstants.GALAXY_EMQ_QUEUE_RECEIVE_NUMBER_MINIMAL,
-          RangeConstants.GALAXY_EMQ_QUEUE_RECEIVE_NUMBER_MAXIMAL);
+          EMQClientConfigKeys.GALAXY_EMQ_QUEUE_RECEIVE_NUMBER_MINIMAL,
+          EMQClientConfigKeys.GALAXY_EMQ_QUEUE_RECEIVE_NUMBER_MAXIMAL);
     }
     if (request.isSetMaxReceiveMessageWaitSeconds()) {
       checkParameterRange("receiveMessageMaximumWaitSeconds",
           request.getMaxReceiveMessageWaitSeconds(),
-          RangeConstants.GALAXY_EMQ_QUEUE_RECEIVE_WAIT_SECONDS_MINIMAL,
-          RangeConstants.GALAXY_EMQ_QUEUE_RECEIVE_WAIT_SECONDS_MAXIMAL);
+          EMQClientConfigKeys.GALAXY_EMQ_QUEUE_RECEIVE_WAIT_SECONDS_MINIMAL,
+          EMQClientConfigKeys.GALAXY_EMQ_QUEUE_RECEIVE_WAIT_SECONDS_MAXIMAL);
     }
     if (request.isSetAttributeName()) {
       checkNotEmpty(request.getAttributeName(), "attribute name");
@@ -343,7 +342,7 @@ public class EMQRequestCheckUtils {
     validateQueueName(request.getQueueName());
     checkNotEmpty(request.getReceiptHandle(), "receipt handle");
     checkParameterRange("invisibilitySeconds", request.getInvisibilitySeconds(),
-        0, RangeConstants.GALAXY_EMQ_MESSAGE_INVISIBILITY_SECONDS_MAXIMAL);
+        0, EMQClientConfigKeys.GALAXY_EMQ_MESSAGE_INVISIBILITY_SECONDS_MAXIMAL);
   }
 
   public static void check(ChangeMessageVisibilityBatchRequest request)
@@ -362,7 +361,7 @@ public class EMQRequestCheckUtils {
             setDetails("Duplicate receiptHandle:" + receiptHandle);
       }
       checkParameterRange("invisibilitySeconds", entry.getInvisibilitySeconds(),
-          0, RangeConstants.GALAXY_EMQ_MESSAGE_INVISIBILITY_SECONDS_MAXIMAL);
+          0, EMQClientConfigKeys.GALAXY_EMQ_MESSAGE_INVISIBILITY_SECONDS_MAXIMAL);
     }
   }
 
@@ -448,8 +447,8 @@ public class EMQRequestCheckUtils {
     }
 
     checkParameterRange("tagReadQPS", request.getReadQPSQuota(),
-        RangeConstants.GALAXY_EMQ_QUEUE_READ_QPS_MINIMAL,
-        RangeConstants.GALAXY_EMQ_QUEUE_READ_QPS_MAXIMAL);
+        EMQClientConfigKeys.GALAXY_EMQ_QUEUE_READ_QPS_MINIMAL,
+        EMQClientConfigKeys.GALAXY_EMQ_QUEUE_READ_QPS_MAXIMAL);
   }
 
   public static void check(AddQueueAlertPolicyRequest request)
@@ -544,43 +543,43 @@ public class EMQRequestCheckUtils {
       throws GalaxyEmqServiceException {
     if (attribute.isSetDelaySeconds()) {
       checkParameterRange("delaySeconds", attribute.delaySeconds,
-          RangeConstants.GALAXY_EMQ_QUEUE_DELAY_SECONDS_MINIMAL,
-          RangeConstants.GALAXY_EMQ_QUEUE_DELAY_SECONDS_MAXIMAL);
+          EMQClientConfigKeys.GALAXY_EMQ_QUEUE_DELAY_SECONDS_MINIMAL,
+          EMQClientConfigKeys.GALAXY_EMQ_QUEUE_DELAY_SECONDS_MAXIMAL);
     }
     if (attribute.isSetInvisibilitySeconds()) {
       checkParameterRange("invisibilitySeconds", attribute.invisibilitySeconds,
-          RangeConstants.GALAXY_EMQ_QUEUE_INVISIBILITY_SECONDS_MINIMAL,
-          RangeConstants.GALAXY_EMQ_QUEUE_INVISIBILITY_SECONDS_MAXIMAL);
+          EMQClientConfigKeys.GALAXY_EMQ_QUEUE_INVISIBILITY_SECONDS_MINIMAL,
+          EMQClientConfigKeys.GALAXY_EMQ_QUEUE_INVISIBILITY_SECONDS_MAXIMAL);
     }
     if (attribute.isSetReceiveMessageWaitSeconds()) {
       checkParameterRange("receiveMessageWaitSeconds",
           attribute.receiveMessageWaitSeconds,
-          RangeConstants.GALAXY_EMQ_QUEUE_RECEIVE_WAIT_SECONDS_MINIMAL,
-          RangeConstants.GALAXY_EMQ_QUEUE_RECEIVE_WAIT_SECONDS_MAXIMAL);
+          EMQClientConfigKeys.GALAXY_EMQ_QUEUE_RECEIVE_WAIT_SECONDS_MINIMAL,
+          EMQClientConfigKeys.GALAXY_EMQ_QUEUE_RECEIVE_WAIT_SECONDS_MAXIMAL);
     }
     if (attribute.isSetReceiveMessageMaximumNumber()) {
       checkParameterRange("receiveMessageMaximumNumber",
           attribute.receiveMessageMaximumNumber,
-          RangeConstants.GALAXY_EMQ_QUEUE_RECEIVE_NUMBER_MINIMAL,
-          RangeConstants.GALAXY_EMQ_QUEUE_RECEIVE_NUMBER_MAXIMAL);
+          EMQClientConfigKeys.GALAXY_EMQ_QUEUE_RECEIVE_NUMBER_MINIMAL,
+          EMQClientConfigKeys.GALAXY_EMQ_QUEUE_RECEIVE_NUMBER_MAXIMAL);
     }
     if (attribute.isSetMessageRetentionSeconds()) {
       checkParameterRange("messageRetentionSeconds",
           attribute.messageRetentionSeconds,
-          RangeConstants.GALAXY_EMQ_QUEUE_RETENTION_SECONDS_MINIMAL,
-          RangeConstants.GALAXY_EMQ_QUEUE_RETENTION_SECONDS_MAXIMAL);
+          EMQClientConfigKeys.GALAXY_EMQ_QUEUE_RETENTION_SECONDS_MINIMAL,
+          EMQClientConfigKeys.GALAXY_EMQ_QUEUE_RETENTION_SECONDS_MAXIMAL);
     }
     if (attribute.isSetMessageMaximumBytes()) {
       checkParameterRange("messageMaximumBytes",
           attribute.messageMaximumBytes,
-          RangeConstants.GALAXY_EMQ_QUEUE_MAX_MESSAGE_BYTES_MINIMAL,
-          RangeConstants.GALAXY_EMQ_QUEUE_MAX_MESSAGE_BYTES_MAXIMAL);
+          EMQClientConfigKeys.GALAXY_EMQ_QUEUE_MAX_MESSAGE_BYTES_MINIMAL,
+          EMQClientConfigKeys.GALAXY_EMQ_QUEUE_MAX_MESSAGE_BYTES_MAXIMAL);
     }
     if (attribute.isSetPartitionNumber()) {
       checkParameterRange("partitionNumber",
           attribute.partitionNumber,
-          RangeConstants.GALAXY_EMQ_QUEUE_PARTITION_NUMBER_MINIMAL,
-          RangeConstants.GALAXY_EMQ_QUEUE_PARTITION_NUMBER_MAXIMAL);
+          EMQClientConfigKeys.GALAXY_EMQ_QUEUE_PARTITION_NUMBER_MINIMAL,
+          EMQClientConfigKeys.GALAXY_EMQ_QUEUE_PARTITION_NUMBER_MAXIMAL);
     }
 
     if (attribute.isSetUserAttributes()) {
@@ -593,8 +592,8 @@ public class EMQRequestCheckUtils {
     validateQueueName(redrivePolicy.getDlqName());
     checkParameterRange("redrivePolicy maxReceiveTime",
         redrivePolicy.getMaxReceiveTime(),
-        RangeConstants.GALAXY_EMQ_QUEUE_REDRIVE_POLICY_MAX_RECEIVE_TIME_MINIMAL,
-        RangeConstants.GALAXY_EMQ_QUEUE_REDRIVE_POLICY_MAX_RECEIVE_TIME_MAXIMAL);
+        EMQClientConfigKeys.GALAXY_EMQ_QUEUE_REDRIVE_POLICY_MAX_RECEIVE_TIME_MINIMAL,
+        EMQClientConfigKeys.GALAXY_EMQ_QUEUE_REDRIVE_POLICY_MAX_RECEIVE_TIME_MAXIMAL);
   }
 
   public static void validateQueueQuota(QueueQuota queueQuota)
@@ -602,13 +601,13 @@ public class EMQRequestCheckUtils {
     if (queueQuota.isSetThroughput()) {
       if (queueQuota.getThroughput().isSetReadQps()) {
         checkParameterRange("queueReadQps", queueQuota.getThroughput().getReadQps(),
-            RangeConstants.GALAXY_EMQ_QUEUE_READ_QPS_MINIMAL,
-            RangeConstants.GALAXY_EMQ_QUEUE_READ_QPS_MAXIMAL);
+            EMQClientConfigKeys.GALAXY_EMQ_QUEUE_READ_QPS_MINIMAL,
+            EMQClientConfigKeys.GALAXY_EMQ_QUEUE_READ_QPS_MAXIMAL);
       }
       if (queueQuota.getThroughput().isSetWriteQps()) {
         checkParameterRange("queueWriteQps", queueQuota.getThroughput().getWriteQps(),
-            RangeConstants.GALAXY_EMQ_QUEUE_WRITE_QPS_MINIMAL,
-            RangeConstants.GALAXY_EMQ_QUEUE_WRITE_QPS_MAXIMAL);
+            EMQClientConfigKeys.GALAXY_EMQ_QUEUE_WRITE_QPS_MINIMAL,
+            EMQClientConfigKeys.GALAXY_EMQ_QUEUE_WRITE_QPS_MAXIMAL);
       }
     }
 

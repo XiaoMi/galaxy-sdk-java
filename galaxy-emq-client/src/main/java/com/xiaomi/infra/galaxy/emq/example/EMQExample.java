@@ -2,8 +2,10 @@ package com.xiaomi.infra.galaxy.emq.example;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Properties;
 
 import com.xiaomi.infra.galaxy.emq.client.EMQClientFactory;
+import com.xiaomi.infra.galaxy.emq.client.EMQClientConfig;
 import com.xiaomi.infra.galaxy.emq.thrift.ChangeMessageVisibilityBatchRequest;
 import com.xiaomi.infra.galaxy.emq.thrift.ChangeMessageVisibilityBatchRequestEntry;
 import com.xiaomi.infra.galaxy.emq.thrift.CreateQueueRequest;
@@ -41,14 +43,18 @@ public class EMQExample {
   private static String name = "testClient";
 
   public static void main(String[] args) {
+    String endpoint = "http://staging.emq.api.xiaomi.com";
     Credential credential = new Credential().setSecretKeyId(secretKeyId).
-            setSecretKey(secretKey).setType(UserType.APP_SECRET);
+        setSecretKey(secretKey).setType(UserType.APP_SECRET);
     EMQClientFactory clientFactory = new EMQClientFactory(credential,
-            generateHttpClient(10, 10));
-    QueueService.Iface queueClient = clientFactory.newQueueClient(
-            "http://awsbj0.emq.api.xiaomi.com");
-    MessageService.Iface messageClient = clientFactory.newMessageClient(
-            "http://awsbj0.emq.api.xiaomi.com");
+        generateHttpClient(10, 10));
+
+    Properties properties = new Properties();
+    properties.setProperty("galaxy.emq.service.endpoint", endpoint);
+    EMQClientConfig config = new EMQClientConfig(properties);
+
+    QueueService.Iface queueClient = clientFactory.newQueueClient(config);
+    MessageService.Iface messageClient = clientFactory.newMessageClient(config);
 
     try {
       CreateQueueRequest createQueueRequest = new CreateQueueRequest(name);
