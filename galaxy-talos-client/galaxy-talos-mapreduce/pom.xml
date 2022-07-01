@@ -14,7 +14,7 @@
     <version>2.5-SNAPSHOT</version>
 
     <properties>
-        <hadoop.version>2.4.0-mdh2.0.5</hadoop.version>
+        <hadoop.version>2.7.0</hadoop.version>
     </properties>
 
     <dependencies>
